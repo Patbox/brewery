@@ -1,0 +1,46 @@
+{
+  "requireDistillation": true,
+  "unfinishedEffects": [
+    {
+      "type": "potion",
+      "effect": "minecraft:poison",
+      "time": "60",
+      "value": "4"
+    },
+    {
+      "type": "potion",
+      "effect": "minecraft:darkness",
+      "time": "60",
+      "value": "4"
+    },
+    {
+      "type": "potion",
+      "effect": "minecraft:blindness",
+      "time": "60",
+      "value": "4"
+    }
+  ],
+  "info": {
+    "bestCookingTime": 24000.0,
+    "bestBarrelAge": -1200.0,
+    "bestBarrelType": [
+      ""
+    ]
+  },
+  "cookingQuality": "defaultQualityFunction(20.0, 0.0, 20.0, age) / 10",
+  "ingredients": [
+    {
+      "items": [
+        "minecraft:potato"
+      ],
+      "count": 6
+    }
+  ],
+  "barrels": [],
+  "baseQuality": "10",
+  "alcoholicValue": "50",
+  "name": {
+    "translate": "drinktype.brewery.vodka"
+  },
+  "color": "#EEEEFF"
+}

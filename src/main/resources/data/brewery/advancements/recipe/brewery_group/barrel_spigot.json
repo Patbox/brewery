@@ -1,0 +1,68 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "brewery:barrel_spigot"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_the_recipe2": {
+      "conditions": {
+        "recipe": "brewery:book_of_brewery"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "item_required": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:stone"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "item_required2": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:stick"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "item_use": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "brewery:barrel_spigot"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "item_required",
+      "item_required2",
+      "item_use",
+      "has_the_recipe",
+      "has_the_recipe2"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "brewery:barrel_spigot",
+      "brewery:book_of_brewery"
+    ]
+  }
+}

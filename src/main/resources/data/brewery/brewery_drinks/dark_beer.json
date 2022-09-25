@@ -1,0 +1,39 @@
+{
+  "info": {
+    "bestCookingTime": 480.0,
+    "bestBarrelAge": 9600.0,
+    "bestBarrelType": [
+      "dark_oak"
+    ]
+  },
+  "effects": [
+    {
+      "type": "potion",
+      "effect": "minecraft:saturation",
+      "time": "(quality - 5) * 3",
+      "value": "quality / 5 - 1.2"
+    }
+  ],
+  "cookingQuality": "cos(clamp((age / 60 - 8.0) * 0.3333333333333333, -2, 2))",
+  "ingredients": [
+    {
+      "items": [
+        "minecraft:wheat"
+      ],
+      "count": 6
+    }
+  ],
+  "barrels": [
+    {
+      "type": "dark_oak",
+      "qualityChange": "quality",
+      "minimalTime": 420
+    }
+  ],
+  "baseQuality": "defaultQualityFunction(8.0, 3.0, 18.0, age)",
+  "alcoholicValue": "7 * (0.75 + quality / 40)",
+  "name": {
+    "translate": "drinktype.brewery.dark_beer"
+  },
+  "color": "#650013"
+}

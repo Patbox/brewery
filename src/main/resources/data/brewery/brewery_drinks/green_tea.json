@@ -1,0 +1,32 @@
+{
+  "info": {
+    "bestCookingTime": 300.0,
+    "bestBarrelAge": -1200.0,
+    "bestBarrelType": [
+      ""
+    ]
+  },
+  "effects": [
+    {
+      "type": "potion",
+      "effect": "minecraft:resistance",
+      "time": "quality * 20",
+      "value": "0"
+    }
+  ],
+  "cookingQuality": "cos(clamp((age / 60 - 5.0) * 0.5, -2, 2))",
+  "ingredients": [
+    {
+      "items": [
+        "minecraft:jungle_leaves"
+      ]
+    }
+  ],
+  "barrels": [],
+  "baseQuality": "10",
+  "alcoholicValue": "0",
+  "name": {
+    "translate": "drinktype.brewery.green_tea"
+  },
+  "color": "#D9F959"
+}

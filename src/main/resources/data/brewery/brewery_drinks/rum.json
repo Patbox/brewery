@@ -1,0 +1,66 @@
+{
+  "requireDistillation": true,
+  "unfinishedEffects": [
+    {
+      "type": "potion",
+      "effect": "minecraft:poison",
+      "time": "60",
+      "value": "4"
+    },
+    {
+      "type": "potion",
+      "effect": "minecraft:darkness",
+      "time": "60",
+      "value": "4"
+    },
+    {
+      "type": "potion",
+      "effect": "minecraft:blindness",
+      "time": "60",
+      "value": "4"
+    }
+  ],
+  "info": {
+    "bestCookingTime": 480.0,
+    "bestBarrelAge": 16800.0,
+    "bestBarrelType": [
+      "*"
+    ]
+  },
+  "effects": [
+    {
+      "type": "potion",
+      "effect": "minecraft:fire_resistance",
+      "time": "(quality - 4) * 60",
+      "value": "0"
+    },
+    {
+      "type": "potion",
+      "effect": "minecraft:poison",
+      "time": "(6 - quality) * 10",
+      "value": "0"
+    }
+  ],
+  "cookingQuality": "cos(clamp((age / 60 - 8.0) * 0.25, -2, 2))",
+  "ingredients": [
+    {
+      "items": [
+        "minecraft:sugar"
+      ],
+      "count": 18
+    }
+  ],
+  "barrels": [
+    {
+      "type": "*",
+      "qualityChange": "quality",
+      "minimalTime": 300
+    }
+  ],
+  "baseQuality": "defaultQualityFunction(14.0, 4.0, 100.0, age)",
+  "alcoholicValue": "30 * (0.75 + quality / 40)",
+  "name": {
+    "translate": "drinktype.brewery.rum"
+  },
+  "color": "red"
+}

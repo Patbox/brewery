@@ -1,0 +1,52 @@
+{
+  "requireDistillation": true,
+  "unfinishedEffects": [
+    {
+      "type": "potion",
+      "effect": "minecraft:poison",
+      "time": "60",
+      "value": "4"
+    },
+    {
+      "type": "potion",
+      "effect": "minecraft:darkness",
+      "time": "60",
+      "value": "4"
+    },
+    {
+      "type": "potion",
+      "effect": "minecraft:blindness",
+      "time": "60",
+      "value": "4"
+    }
+  ],
+  "info": {
+    "bestCookingTime": 960.0,
+    "bestBarrelAge": 7200.0,
+    "bestBarrelType": [
+      "acacia"
+    ]
+  },
+  "cookingQuality": "cos(clamp((age / 60 - 16.0) * 0.25, -2, 2))",
+  "ingredients": [
+    {
+      "items": [
+        "minecraft:apple"
+      ],
+      "count": 12
+    }
+  ],
+  "barrels": [
+    {
+      "type": "acacia",
+      "qualityChange": "quality",
+      "minimalTime": 300
+    }
+  ],
+  "baseQuality": "defaultQualityFunction(6.0, 2.0, 5.0, age)",
+  "alcoholicValue": "14 * (0.75 + quality / 40)",
+  "name": {
+    "translate": "drinktype.brewery.apple_liquor"
+  },
+  "color": "red"
+}

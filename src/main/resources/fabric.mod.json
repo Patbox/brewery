@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "brewery",
+  "version": "${version}",
+
+  "name": "Brewery",
+  "description": "Create alcoholic and non-alcoholic drinks with cauldrons and barrels!",
+  "authors": [
+    "Patbox"
+  ],
+  "contact": {
+    "homepage": "https://pb4.eu",
+    "sources": "https://github.com/Patbox/brewery"
+  },
+
+  "license": "LGPLv3",
+  "icon": "assets/brewery/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "eu.pb4.brewery.BreweryInit"
+    ]
+  },
+  "mixins": [
+    "brewery.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.14.6",
+    "fabric": "*",
+    "minecraft": ">=1.19.1",
+    "java": ">=17"
+  }
+}

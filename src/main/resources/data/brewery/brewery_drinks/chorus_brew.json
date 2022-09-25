@@ -1,0 +1,42 @@
+{
+  "info": {
+    "bestCookingTime": 960.0,
+    "bestBarrelAge": 3000.0,
+    "bestBarrelType": [
+      "warped"
+    ]
+  },
+  "effects": [
+    {
+      "type": "teleport_random",
+      "distance": "quality * 8"
+    }
+  ],
+  "cookingQuality": "cos(clamp((age / 60 - 16.0) * 0.1, -2, 2))",
+  "ingredients": [
+    {
+      "items": [
+        "minecraft:chorus_fruit"
+      ],
+      "count": 16
+    }
+  ],
+  "barrels": [
+    {
+      "type": "warped",
+      "qualityChange": "quality",
+      "minimalTime": 300
+    },
+    {
+      "type": "*",
+      "qualityChange": "quality * 0.4",
+      "minimalTime": 300
+    }
+  ],
+  "baseQuality": "defaultQualityFunction(2.0, 2.0, 5.0, age)",
+  "alcoholicValue": "0",
+  "name": {
+    "translate": "drinktype.brewery.chorus_brew"
+  },
+  "color": "dark_purple"
+}

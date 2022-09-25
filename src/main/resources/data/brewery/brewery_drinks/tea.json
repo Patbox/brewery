@@ -1,0 +1,32 @@
+{
+  "info": {
+    "bestCookingTime": 300.0,
+    "bestBarrelAge": -1200.0,
+    "bestBarrelType": [
+      ""
+    ]
+  },
+  "effects": [
+    {
+      "type": "potion",
+      "effect": "minecraft:resistance",
+      "time": "quality * 15",
+      "value": "0"
+    }
+  ],
+  "cookingQuality": "cos(clamp((age / 60 - 5.0) * 0.5, -2, 2))",
+  "ingredients": [
+    {
+      "items": [
+        "minecraft:oak_leaves"
+      ]
+    }
+  ],
+  "barrels": [],
+  "baseQuality": "10",
+  "alcoholicValue": "0",
+  "name": {
+    "translate": "drinktype.brewery.tea"
+  },
+  "color": "#993D00"
+}

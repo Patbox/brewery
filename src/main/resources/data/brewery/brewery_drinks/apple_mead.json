@@ -1,0 +1,44 @@
+{
+  "info": {
+    "bestCookingTime": 180.0,
+    "bestBarrelAge": 4800.0,
+    "bestBarrelType": [
+      "*"
+    ]
+  },
+  "effects": [
+    {
+      "type": "potion",
+      "effect": "minecraft:speed",
+      "time": "(quality - 3) * 12",
+      "value": "quality / 3"
+    }
+  ],
+  "cookingQuality": "cos(clamp((age / 60 - 3.0) * 0.3333333333333333, -2, 2))",
+  "ingredients": [
+    {
+      "items": [
+        "minecraft:honey_bottle"
+      ],
+      "count": 3
+    },
+    {
+      "items": [
+        "minecraft:apple"
+      ]
+    }
+  ],
+  "barrels": [
+    {
+      "type": "*",
+      "qualityChange": "quality",
+      "minimalTime": 300
+    }
+  ],
+  "baseQuality": "defaultQualityFunction(4.0, 1.0, 2.0, age)",
+  "alcoholicValue": "11 * (0.75 + quality / 40)",
+  "name": {
+    "translate": "drinktype.brewery.apple_mead"
+  },
+  "color": "#FFDC91"
+}
