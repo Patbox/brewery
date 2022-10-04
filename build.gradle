@@ -111,7 +111,7 @@ curseforge {
 		apiKey = System.getenv("CURSEFORGE")
 
 		project {
-			id = ""
+			id = "681703"
 			releaseType = "release"
 			changelog = System.getenv("CHANGELOG")
 			changelogType = "markdown"
@@ -137,7 +137,7 @@ curseforge {
 if (System.getenv("MODRINTH")) {
 	modrinth {
 		token = System.getenv("MODRINTH")
-		projectId = ''// The ID of your modrinth project, slugs will not work.
+		projectId = 'nr7cSJlY'// The ID of your modrinth project, slugs will not work.
 		versionNumber = "" + version // The version of the mod to upload.
 		versionType = "release"
 		uploadFile = remapJar // This links to a task that builds your mod jar and sets "uploadFile" to the mod jar.

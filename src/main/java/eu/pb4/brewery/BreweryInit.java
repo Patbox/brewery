@@ -9,13 +9,16 @@ import eu.pb4.brewery.block.BrewBlocks;
 import eu.pb4.brewery.block.BrewCauldronBlock;
 import eu.pb4.brewery.block.entity.BrewBlockEntities;
 import eu.pb4.brewery.compat.PolydexCompat;
-import eu.pb4.brewery.drink.DefaultDrinks;
+import eu.pb4.brewery.drink.AlcoholValueEffect;
+import eu.pb4.brewery.drink.DefaultDefinitions;
 import eu.pb4.brewery.drink.DrinkType;
 import eu.pb4.brewery.item.BookOfBreweryItem;
 import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.other.BrewCommands;
 import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.polymer.api.resourcepack.PolymerRPUtils;
+import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.api.ModInitializer;
@@ -23,19 +26,25 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.cauldron.CauldronBehavior;
+import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class BreweryInit implements ModInitializer {
     public static final String MOD_ID = "brewery";
     public static final Map<Identifier, DrinkType> DRINK_TYPES = new Object2ObjectOpenHashMap<>();
     public static final Map<DrinkType, Identifier> DRINK_TYPE_ID = new Object2ObjectOpenCustomHashMap<>(Util.identityHashStrategy());
+    public static final List<AlcoholValueEffect.Value> ALCOHOL_EFFECTS = new ArrayList<>();
+    public static final Object2DoubleMap<Item> ITEM_ALCOHOL_REMOVAL_VALUES = new Object2DoubleOpenHashMap<>();
 
     public static final Logger LOGGER = LogUtils.getLogger();
 
@@ -73,36 +82,76 @@ public class BreweryInit implements ModInitializer {
     private static void loadDrinks(MinecraftServer server) {
         DRINK_TYPES.clear();
         DRINK_TYPE_ID.clear();
+        ITEM_ALCOHOL_REMOVAL_VALUES.clear();
+        ALCOHOL_EFFECTS.clear();
+
+        for (var res : server.getResourceManager().findResources("brewery_drinks", (x) -> x.getPath().endsWith(".json")).entrySet()) {
+            var id = new Identifier(res.getKey().getNamespace(), res.getKey().getPath().substring("brewery_drinks/".length(), res.getKey().getPath().length() - 5));
+
+            try {
+                var drinkType = DrinkType.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseReader(res.getValue().getReader())).getOrThrow(false, (x) -> {});
+
+                DRINK_TYPES.put(id, drinkType.getFirst());
+                DRINK_TYPE_ID.put(drinkType.getFirst(), id);
+            } catch (Throwable e) {
+                DRINK_TYPE_ID.remove(DRINK_TYPES.remove(id));
+                LOGGER.warn("{} isn't valid brewery definition!", res.getKey().toString());
+                e.printStackTrace();
+            }
+        }
+
+        for (var res : server.getResourceManager().findResources("", (x) -> x.getPath().equals("brewery_effects.json")).entrySet()) {
+            try {
+                var effects = AlcoholValueEffect.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseReader(res.getValue().getReader())).result().get().getFirst();
+
+                if (effects.replace()) {
+                    ALCOHOL_EFFECTS.clear();
+                    ITEM_ALCOHOL_REMOVAL_VALUES.clear();
+                }
+
+                ALCOHOL_EFFECTS.addAll(effects.entries());
+                ITEM_ALCOHOL_REMOVAL_VALUES.putAll(effects.itemReduction());
+            } catch (Throwable e) {
+                LOGGER.warn("{} isn't valid brewery effect definition!", res.getKey().toString());
+                e.printStackTrace();
+            }
+        }
+
 
         if (USE_GENERATOR) {
-            var dir = FabricLoader.getInstance().getGameDir().resolve("../src/main/resources/data/brewery/brewery_drinks/");
-
             var gson = new GsonBuilder().setPrettyPrinting().create();
 
-            DefaultDrinks.create((key, drinkType) -> {
-                var id = new Identifier("brewery:" + key);
-                DRINK_TYPES.put(id, drinkType);
-                DRINK_TYPE_ID.put(drinkType, id);
+            {
+                var dir = FabricLoader.getInstance().getGameDir().resolve("../src/main/resources/data/brewery/brewery_drinks/");
 
-                try {
-                    Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(JsonOps.INSTANCE, drinkType).getOrThrow(false, (x) -> {})));
-                } catch (Throwable e) {
-                    e.printStackTrace();
+
+                DefaultDefinitions.createBrews((key, drinkType) -> {
+                    var id = new Identifier("brewery:" + key);
+                    DRINK_TYPES.put(id, drinkType);
+                    DRINK_TYPE_ID.put(drinkType, id);
+
+                    try {
+                        Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(JsonOps.INSTANCE, drinkType).getOrThrow(false, (x) -> {
+                        })));
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
+
+            {
+                var effects = DefaultDefinitions.createEffects();
+
+                if (effects.replace()) {
+                    ALCOHOL_EFFECTS.clear();
                 }
-            });
-        } else {
-            for (var res : server.getResourceManager().findResources("brewery_drinks", (x) -> x.getPath().endsWith(".json")).entrySet()) {
-                var id = new Identifier(res.getKey().getNamespace(), res.getKey().getPath().substring(8, res.getKey().getPath().length() - 5));
 
+                ALCOHOL_EFFECTS.addAll(effects.entries());
                 try {
-                    var drinkType = DrinkType.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseReader(res.getValue().getReader())).getOrThrow(false, (x) -> {
-                    });
-
-                    DRINK_TYPES.put(id, drinkType.getFirst());
-                    DRINK_TYPE_ID.put(drinkType.getFirst(), id);
-                } catch (Throwable e) {
-                    DRINK_TYPE_ID.remove(DRINK_TYPES.remove(id));
-                    LOGGER.warn("{} isn't valid brewery definition!", res.getKey().toString());
+                    Files.writeString(FabricLoader.getInstance().getGameDir().resolve("../src/main/resources/data/brewery/brewery_effects.json"),
+                            gson.toJson(AlcoholValueEffect.CODEC.encodeStart(JsonOps.INSTANCE, effects).result().get()
+                            ));
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }

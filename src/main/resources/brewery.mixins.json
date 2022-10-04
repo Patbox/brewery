@@ -8,7 +8,8 @@
     "BrewingStandScreenHandlerPotionSlotMixin",
     "LivingEntityMixin",
     "MilkBucketItemMixin",
-    "ServerPlayerEntityMixin"
+    "ServerPlayerEntityMixin",
+    "StatusEffectInstanceMixin"
   ],
   "injectors": {
     "defaultRequire": 1

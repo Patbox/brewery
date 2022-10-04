@@ -35,6 +35,8 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
     private DefaultedList<ItemStack> inventory;
     private String barrelType = "void";
     private long lastTicked = -1;
+    private int loadedTime;
+    private boolean requestUpdate;
 
     public BrewBarrelSpigotBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(BrewBlockEntities.BARREL_SPIGOT, blockPos, blockState);
@@ -48,19 +50,33 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
 
         var barrel = (BrewBarrelSpigotBlockEntity) t;
 
+        barrel.loadedTime++;
+
+        if (barrel.requestUpdate && world.getTime() % 20 == 0) {
+            barrel.updateAges();
+        }
+    }
+
+    private void requestUpdate() {
+        this.requestUpdate = true;
+    }
+
+    public void updateAges() {
         var currentTime = world.getTime();
 
 
-        if (barrel.lastTicked == -1) {
-            barrel.lastTicked = world.getTime();
+        if (this.lastTicked == -1) {
+            this.lastTicked = world.getTime();
             return;
         }
 
         var agingMultiplier = world.getGameRules().get(BrewGameRules.BARREL_AGING_MULTIPLIER).get();
 
-        barrel.tickContents(world.getGameRules().getBoolean(BrewGameRules.AGE_UNLOADED) ? (currentTime - barrel.lastTicked) * agingMultiplier : agingMultiplier);
+        this.tickContents(world.getGameRules().getBoolean(BrewGameRules.AGE_UNLOADED) ? (currentTime - this.lastTicked) * agingMultiplier : this.loadedTime * agingMultiplier);
 
-        barrel.lastTicked = currentTime;
+        this.lastTicked = currentTime;
+        this.loadedTime = 0;
+        this.requestUpdate = false;
     }
 
     protected void writeNbt(NbtCompound nbt) {
@@ -94,52 +110,29 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
         for (int i = 0; i < this.size(); i++) {
             var stack = this.getStack(i);
             if (!stack.isEmpty()) {
-                if (stack.isOf(BrewItems.DRINK_ITEM)) {
-                    var type = DrinkUtils.getType(stack);
-                    if (type != null) {
-                        var barrelInfo = type.getBarrelInfo(this.barrelType);
-
-                        if (barrelInfo != null) {
-                            stack.getOrCreateNbt().putString(DrinkUtils.BARREL_TYPE_NBT, this.barrelType);
-                            var currentAge = DrinkUtils.getAgeInTicks(stack, -barrelInfo.baseTime());
-                            var newAge = currentAge + l;
-
-                            stack.getNbt().putDouble(DrinkUtils.AGE_NBT, newAge);
-
-                            var mult = DrinkUtils.getIngredientMultiplier(stack);
-
-                            if (newAge >= 0) {
-                                var quality = barrelInfo.qualityChange().expression()
-                                        .setVariable(ExpressionUtil.QUALITY_KEY, type.baseQuality().expression().setVariable(ExpressionUtil.AGE_KEY, newAge / 20d).evaluate())
-                                        .setVariable(ExpressionUtil.AGE_KEY, newAge / 20d)
-                                        .evaluate() * mult;
-
-                                if (quality >= 0) {
-                                    stack.getNbt().putDouble(DrinkUtils.QUALITY_NBT, Math.min(quality, 10));
-                                } else {
-                                    this.setStack(i, new ItemStack(BrewItems.FAILED_DRINK_ITEM));
-                                }
-                            }
-                        }
-                    }
-                } else if (stack.isOf(BrewItems.INGREDIENT_MIXTURE)) {
+                if (stack.isOf(BrewItems.INGREDIENT_MIXTURE) || stack.isOf(BrewItems.DRINK_ITEM)) {
                     var age = DrinkUtils.getAgeInTicks(stack, 0) + l;
                     var ageSec = age / 20d;
+
+                    var oldType = DrinkUtils.getType(stack);
+
+                    if (oldType == null && stack.getOrCreateNbt().contains(DrinkUtils.TYPE_NBT)) {
+                        continue;
+                    }
 
                     var ingredients = IngredientMixtureItem.getIngredients(stack);
                     var types = DrinkUtils.findTypes(ingredients, this.barrelType);
 
-                    if (types.isEmpty()) {
+                    if (types.isEmpty() && oldType == null) {
                         this.setStack(i, new ItemStack(BrewItems.FAILED_DRINK_ITEM));
                     } else {
                         double quality = Double.MIN_VALUE;
                         DrinkType match = null;
-                        boolean isMatchGeneric = true;
+                        //boolean isMatchGeneric = true;
 
                         for (var type : types) {
                             var barrelInfo = type.getBarrelInfo(this.barrelType);
-                            var generic = barrelInfo.type().equals("*");
-                            if (ageSec >= barrelInfo.baseTime() && (!generic || isMatchGeneric)) {
+                            if (ageSec >= barrelInfo.baseTime()) {
                                 var newAge = ageSec - barrelInfo.baseTime();
 
                                 var q = barrelInfo.qualityChange().expression()
@@ -147,12 +140,14 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
                                         .setVariable(ExpressionUtil.AGE_KEY, newAge)
                                         .evaluate();
 
-                                if (q > quality || generic != isMatchGeneric) {
+                                if (q > quality) {
                                     quality = q;
                                     match = type;
-                                    isMatchGeneric = generic;
                                 }
                             }
+                        }
+                        if (match == null && oldType != null) {
+                            match = oldType;
                         }
 
                         if (match == null) {
@@ -160,8 +155,28 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
                         } else if (quality < 0) {
                             this.setStack(i, new ItemStack(BrewItems.FAILED_DRINK_ITEM));
                         } else {
-                            this.setStack(i, DrinkUtils.createDrink(BreweryInit.DRINK_TYPE_ID.get(match),
-                                    match.cookingQualityMult().expression().setVariable("age", stack.getNbt().getDouble(DrinkUtils.AGE_COOK_NBT) / 20d).evaluate()));
+                            if (stack.isOf(BrewItems.INGREDIENT_MIXTURE)) {
+                                var nStack = new ItemStack(BrewItems.DRINK_ITEM);
+                                nStack.setNbt(stack.getNbt());
+                                stack = nStack;
+                                this.setStack(i, stack);
+                            }
+                            stack.getOrCreateNbt().putDouble(DrinkUtils.AGE_NBT, age);
+                            stack.getOrCreateNbt().putString(DrinkUtils.TYPE_NBT, BreweryInit.DRINK_TYPE_ID.get(match).toString());
+
+                            var barrelInfo = match.getBarrelInfo(this.barrelType);
+
+                            if (barrelInfo != null) {
+                                stack.getOrCreateNbt().putString(DrinkUtils.BARREL_TYPE_NBT, this.barrelType);
+
+                                var mult = match.cookingQualityMult().expression().setVariable("age", stack.getNbt().getDouble(DrinkUtils.AGE_COOK_NBT) / 20d).evaluate();
+
+                                if (quality * mult >= 0) {
+                                    stack.getNbt().putDouble(DrinkUtils.QUALITY_NBT, Math.min(quality * mult, 10));
+                                } else {
+                                    this.setStack(i, new ItemStack(BrewItems.FAILED_DRINK_ITEM));
+                                }
+                            }
                         }
                     }
                 }
@@ -226,6 +241,7 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
     }
 
     public void openGui(ServerPlayerEntity player) {
+        this.updateAges();
         new Gui(player);
     }
 
@@ -244,11 +260,7 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
                             var barrelType = DrinkUtils.getBarrelType(stack);
                             return super.canInsert(stack) && type != null && !type.barrelInfo().isEmpty() &&
                                     (barrelType.isEmpty() || barrelType.equals(BrewBarrelSpigotBlockEntity.this.barrelType) || DrinkUtils.getAgeInTicks(stack) <= 0);
-                        } else if (stack.isOf(BrewItems.INGREDIENT_MIXTURE)) {
-                            return true;
-                        } else {
-                            return false;
-                        }
+                        } else return stack.isOf(BrewItems.INGREDIENT_MIXTURE);
                     }
 
                     @Override
@@ -269,10 +281,11 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
         @Override
         public void onTick() {
             if (BrewBarrelSpigotBlockEntity.this.isRemoved()
-                    || BrewBarrelSpigotBlockEntity.this.getPos().getSquaredDistanceFromCenter(this.player.getX(), this.player.getY(), this.player.getZ()) > 20*20) {
+                    || BrewBarrelSpigotBlockEntity.this.getPos().getSquaredDistanceFromCenter(this.player.getX(), this.player.getY(), this.player.getZ()) > 20 * 20) {
                 this.close();
             }
 
+            BrewBarrelSpigotBlockEntity.this.requestUpdate();
             super.onTick();
         }
     }

@@ -1,6 +1,7 @@
 {
-  "requireDistillation": true,
-  "unfinishedEffects": [
+  "version": 1,
+  "require_distillation": true,
+  "unfinished_brew_effects": [
     {
       "type": "potion",
       "effect": "minecraft:poison",
@@ -20,14 +21,14 @@
       "value": "4"
     }
   ],
-  "info": {
-    "bestCookingTime": 960.0,
-    "bestBarrelAge": 7200.0,
-    "bestBarrelType": [
+  "book_information": {
+    "best_cooking_time": 960.0,
+    "best_barrel_age": 12000.0,
+    "best_barrel_type": [
       "acacia"
     ]
   },
-  "cookingQuality": "cos(clamp((age / 60 - 16.0) * 0.25, -2, 2))",
+  "cooking_quality_multiplier": "cos(clamp((age / 60 - 16.0) * 0.25, -2, 2))",
   "ingredients": [
     {
       "items": [
@@ -36,15 +37,15 @@
       "count": 12
     }
   ],
-  "barrels": [
+  "barrel_definitions": [
     {
       "type": "acacia",
-      "qualityChange": "quality",
-      "minimalTime": 300
+      "quality_value": "quality",
+      "reveal_time": 300
     }
   ],
-  "baseQuality": "defaultQualityFunction(6.0, 2.0, 5.0, age)",
-  "alcoholicValue": "14 * (0.75 + quality / 40)",
+  "base_quality_value": "defaultQualityFunction(10.0, 8.0, 120.0, age)",
+  "alcoholic_value": "30 * (0.75 + quality / 40)",
   "name": {
     "translate": "drinktype.brewery.apple_liquor"
   },

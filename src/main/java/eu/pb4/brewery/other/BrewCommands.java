@@ -1,5 +1,6 @@
 package eu.pb4.brewery.other;
 
+import com.google.gson.GsonBuilder;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
@@ -9,7 +10,7 @@ import com.mojang.serialization.JsonOps;
 import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.GenericModInfo;
 import eu.pb4.brewery.drink.AlcoholManager;
-import eu.pb4.brewery.drink.DefaultDrinks;
+import eu.pb4.brewery.drink.DefaultDefinitions;
 import eu.pb4.brewery.drink.DrinkType;
 import eu.pb4.brewery.drink.DrinkUtils;
 import me.lucko.fabric.api.permissions.v0.Permissions;
@@ -82,10 +83,11 @@ public class BrewCommands {
             if (!Files.exists(dir)) {
                 Files.createDirectories(dir);
             }
+            var gson = new GsonBuilder().setPrettyPrinting().create();
 
-            DefaultDrinks.create((key, type) -> {
+            DefaultDefinitions.createBrews((key, type) -> {
                 try {
-                    Files.writeString(dir.resolve(key + ".json"), DrinkType.CODEC.encodeStart(JsonOps.INSTANCE, type).getOrThrow(false, (x) -> {}).toString());
+                    Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(JsonOps.INSTANCE, type).getOrThrow(false, (x) -> {})));
                 } catch (Throwable e) {
                     e.printStackTrace();
                 }

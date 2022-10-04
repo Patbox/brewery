@@ -1,20 +1,22 @@
 {
-  "info": {
-    "bestCookingTime": 480.0,
-    "bestBarrelAge": 4200.0,
-    "bestBarrelType": [
+  "version": 1,
+  "book_information": {
+    "best_cooking_time": 480.0,
+    "best_barrel_age": 4200.0,
+    "best_barrel_type": [
       "oak"
     ]
   },
-  "effects": [
+  "entries": [
     {
       "type": "potion",
+      "locked": false,
       "effect": "minecraft:saturation",
-      "time": "(quality - 5) * 3",
+      "time": "(quality - 5) * 6",
       "value": "quality / 5 - 1.2"
     }
   ],
-  "cookingQuality": "cos(clamp((age / 60 - 8.0) * 0.3333333333333333, -2, 2))",
+  "cooking_quality_multiplier": "cos(clamp((age / 60 - 8.0) * 0.3333333333333333, -2, 2))",
   "ingredients": [
     {
       "items": [
@@ -23,20 +25,20 @@
       "count": 6
     }
   ],
-  "barrels": [
+  "barrel_definitions": [
     {
       "type": "oak",
-      "qualityChange": "quality",
-      "minimalTime": 300
+      "quality_value": "quality",
+      "reveal_time": 300
     },
     {
       "type": "*",
-      "qualityChange": "quality * 0.8",
-      "minimalTime": 300
+      "quality_value": "quality * 0.8",
+      "reveal_time": 300
     }
   ],
-  "baseQuality": "defaultQualityFunction(3.5, 2.0, 5.0, age)",
-  "alcoholicValue": "6 * (0.75 + quality / 40)",
+  "base_quality_value": "defaultQualityFunction(3.5, 2.0, 5.0, age)",
+  "alcoholic_value": "6 * (0.75 + quality / 40)",
   "name": {
     "translate": "drinktype.brewery.beer"
   },

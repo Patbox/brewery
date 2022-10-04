@@ -13,4 +13,10 @@ public record WrappedExpression(String input, Expression expression) {
                 ExpressionUtil.AGE_KEY, ExpressionUtil.QUALITY_KEY
         );
     }
+
+    public static WrappedExpression createDefaultCE(String input) {
+        return create(input,
+                ExpressionUtil.AGE_KEY, ExpressionUtil.QUALITY_KEY, ExpressionUtil.USER_ALCOHOL_LEVEL_KEY
+        );
+    }
 }

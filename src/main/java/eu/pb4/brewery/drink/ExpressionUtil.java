@@ -7,7 +7,9 @@ import net.objecthunter.exp4j.function.Function;
 public class ExpressionUtil {
     public static final String AGE_KEY = "age";
     public static final String QUALITY_KEY = "quality";
+    public static final String USER_ALCOHOL_LEVEL_KEY = "userAlcoholLevel";
     public static final Codec<WrappedExpression> COMMON_EXPRESSION = ExpressionUtil.createCodec(AGE_KEY, QUALITY_KEY);
+    public static final Codec<WrappedExpression> COMMON_CE_EXPRESSION = ExpressionUtil.createCodec(AGE_KEY, QUALITY_KEY, USER_ALCOHOL_LEVEL_KEY);
     public static final Function[] FUNCTIONS = new Function[] {
             new Function("max", 2) {
                 @Override
@@ -21,6 +23,12 @@ public class ExpressionUtil {
                     return Math.min(args[0], args[1]);
                 }
             },
+            new Function("closesTo", 3) {
+                @Override
+                public double apply(double... args) {
+                    return Math.abs(args[0] - args[1]) < Math.abs(args[0] - args[2]) ? args[1] : args[2];
+                }
+            },
             new Function("clamp", 3) {
                 @Override
                 public double apply(double... args) {
@@ -31,6 +39,12 @@ public class ExpressionUtil {
                     } else {
                         return args[0];
                     }
+                }
+            },
+            new Function("random", 0) {
+                @Override
+                public double apply(double... args) {
+                    return Math.random();
                 }
             },
             new Function("defaultQualityFunction", 4) {

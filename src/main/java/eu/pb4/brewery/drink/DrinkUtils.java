@@ -18,12 +18,24 @@ public class DrinkUtils {
     public static final String QUALITY_MULT_NBT = "BrewQualityMult";
     public static final String BARREL_TYPE_NBT = "BrewBarrelType";
     public static final String DISTILLATED_NBT = "BrewDistillated";
+
     @Nullable
     public static DrinkType getType(ItemStack stack) {
         if (stack.isOf(BrewItems.DRINK_ITEM) && stack.hasNbt()) {
             var id = Identifier.tryParse(stack.getNbt().getString(TYPE_NBT));
 
-            return BreweryInit.DRINK_TYPES.get(id);
+            var type = BreweryInit.DRINK_TYPES.get(id);
+
+            if (type != null) {
+                return type;
+            } else if (id.getPath().startsWith("drinks/")) {
+                // Bug in 0.1.0 caused drinks to have wrong ids assigned (didn't cause functionality loss). So here is the patch
+                // to handle these old drinks.
+                var id2 = new Identifier(id.getNamespace(), id.getPath().substring("drinks/".length()));
+                type = BreweryInit.DRINK_TYPES.get(id2);
+
+                return type;
+            }
         }
 
         return null;

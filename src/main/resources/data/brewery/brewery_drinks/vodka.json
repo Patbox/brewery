@@ -1,6 +1,7 @@
 {
-  "requireDistillation": true,
-  "unfinishedEffects": [
+  "version": 1,
+  "require_distillation": true,
+  "unfinished_brew_effects": [
     {
       "type": "potion",
       "effect": "minecraft:poison",
@@ -20,14 +21,28 @@
       "value": "4"
     }
   ],
-  "info": {
-    "bestCookingTime": 24000.0,
-    "bestBarrelAge": -1200.0,
-    "bestBarrelType": [
+  "book_information": {
+    "best_cooking_time": 24000.0,
+    "best_barrel_age": -1200.0,
+    "best_barrel_type": [
       ""
     ]
   },
-  "cookingQuality": "defaultQualityFunction(20.0, 0.0, 20.0, age) / 10",
+  "entries": [
+    {
+      "type": "delayed",
+      "delay": "60 * quality",
+      "entries": [
+        {
+          "type": "potion",
+          "effect": "minecraft:blindness",
+          "time": "10",
+          "value": "0"
+        }
+      ]
+    }
+  ],
+  "cooking_quality_multiplier": "defaultQualityFunction(20.0, 0.0, 20.0, age) / 10",
   "ingredients": [
     {
       "items": [
@@ -36,9 +51,8 @@
       "count": 6
     }
   ],
-  "barrels": [],
-  "baseQuality": "10",
-  "alcoholicValue": "50",
+  "base_quality_value": "10",
+  "alcoholic_value": "50",
   "name": {
     "translate": "drinktype.brewery.vodka"
   },

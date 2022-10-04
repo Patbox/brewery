@@ -1,20 +1,22 @@
 {
-  "info": {
-    "bestCookingTime": 300.0,
-    "bestBarrelAge": -1200.0,
-    "bestBarrelType": [
+  "version": 1,
+  "book_information": {
+    "best_cooking_time": 300.0,
+    "best_barrel_age": -1200.0,
+    "best_barrel_type": [
       ""
     ]
   },
-  "effects": [
+  "entries": [
     {
       "type": "potion",
+      "locked": false,
       "effect": "minecraft:resistance",
       "time": "quality * 20",
       "value": "0"
     }
   ],
-  "cookingQuality": "cos(clamp((age / 60 - 5.0) * 0.5, -2, 2))",
+  "cooking_quality_multiplier": "cos(clamp((age / 60 - 5.0) * 0.5, -2, 2))",
   "ingredients": [
     {
       "items": [
@@ -22,9 +24,8 @@
       ]
     }
   ],
-  "barrels": [],
-  "baseQuality": "10",
-  "alcoholicValue": "0",
+  "base_quality_value": "10",
+  "alcoholic_value": "0",
   "name": {
     "translate": "drinktype.brewery.green_tea"
   },

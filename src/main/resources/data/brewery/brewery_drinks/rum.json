@@ -1,6 +1,7 @@
 {
-  "requireDistillation": true,
-  "unfinishedEffects": [
+  "version": 1,
+  "require_distillation": true,
+  "unfinished_brew_effects": [
     {
       "type": "potion",
       "effect": "minecraft:poison",
@@ -20,28 +21,34 @@
       "value": "4"
     }
   ],
-  "info": {
-    "bestCookingTime": 480.0,
-    "bestBarrelAge": 16800.0,
-    "bestBarrelType": [
+  "book_information": {
+    "best_cooking_time": 480.0,
+    "best_barrel_age": 19200.0,
+    "best_barrel_type": [
       "*"
     ]
   },
-  "effects": [
+  "entries": [
     {
       "type": "potion",
+      "locked": false,
       "effect": "minecraft:fire_resistance",
       "time": "(quality - 4) * 60",
       "value": "0"
     },
     {
       "type": "potion",
+      "locked": false,
       "effect": "minecraft:poison",
       "time": "(6 - quality) * 10",
       "value": "0"
+    },
+    {
+      "type": "set_on_fire",
+      "time": "(quality - 2) * 10"
     }
   ],
-  "cookingQuality": "cos(clamp((age / 60 - 8.0) * 0.25, -2, 2))",
+  "cooking_quality_multiplier": "cos(clamp((age / 60 - 8.0) * 0.25, -2, 2))",
   "ingredients": [
     {
       "items": [
@@ -50,15 +57,15 @@
       "count": 18
     }
   ],
-  "barrels": [
+  "barrel_definitions": [
     {
       "type": "*",
-      "qualityChange": "quality",
-      "minimalTime": 300
+      "quality_value": "quality",
+      "reveal_time": 300
     }
   ],
-  "baseQuality": "defaultQualityFunction(14.0, 4.0, 100.0, age)",
-  "alcoholicValue": "30 * (0.75 + quality / 40)",
+  "base_quality_value": "defaultQualityFunction(16.0, 5.0, 100.0, age)",
+  "alcoholic_value": "30 * (0.75 + quality / 40)",
   "name": {
     "translate": "drinktype.brewery.rum"
   },

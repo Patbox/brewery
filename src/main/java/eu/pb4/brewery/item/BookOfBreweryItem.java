@@ -19,7 +19,6 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -123,7 +122,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
                 e2.printStackTrace();
             }
 
-            if (indexEntries.size() == 14) {
+            if (indexEntries.size() == 12) {
                 builder.addPage(indexEntries.toArray(new Text[0]));
                 indexEntries.clear();
             }
@@ -201,7 +200,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
         var x = new ArrayList<Text>();
         for (var t : list) {
             x.add(t);
-            if (x.size() == 12) {
+            if (x.size() == 10) {
                 builder.addPage(x.toArray(new Text[0]));
                 x.clear();
             }

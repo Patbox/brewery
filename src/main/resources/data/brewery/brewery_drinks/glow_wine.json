@@ -14,6 +14,12 @@
       "effect": "minecraft:regeneration",
       "time": "(quality - 5) * 15",
       "value": "0"
+    },
+    {
+      "type": "potion",
+      "effect": "minecraft:glowing",
+      "time": "(quality - 3) * 30",
+      "value": "0"
     }
   ],
   "cooking_quality_multiplier": "cos(clamp((age / 60 - 5.0) * 0.25, -2, 2))",
@@ -35,7 +41,7 @@
   "base_quality_value": "defaultQualityFunction(30.0, 30.0, 240.0, age)",
   "alcoholic_value": "8 * (0.75 + quality / 40)",
   "name": {
-    "translate": "drinktype.brewery.wine"
+    "translate": "drinktype.brewery.glow_wine"
   },
-  "color": "#722F37"
+  "color": "#FFFDD1"
 }

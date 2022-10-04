@@ -1,17 +1,24 @@
 package eu.pb4.brewery.drink;
 
+import com.mojang.serialization.RecordBuilder;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.Items;
+import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.Vec3d;
 
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
-public class DefaultDrinks {
-    public static void create(BiConsumer<String, DrinkType> consumer) {
+public class DefaultDefinitions {
+    public static void createBrews(BiConsumer<String, DrinkType> consumer) {
         consumer.accept("beer", DrinkType.create(
                         Text.translatable("drinktype.brewery.beer"),
                         TextColor.fromRgb(0xffd333),
@@ -22,7 +29,7 @@ public class DefaultDrinks {
                         ExpressionUtil.defaultQuality(3.5, 2, 5),
                         "6 * (0.75 + quality / 40)",
                         List.of(
-                                ConsumptionEffect.of(StatusEffects.SATURATION, "(quality - 5) * 3", "quality / 5 - 1.2")
+                                ConsumptionEffect.of(StatusEffects.SATURATION, "(quality - 5) * 6", "quality / 5 - 1.2", false)
                         ),
                         ExpressionUtil.defaultBoiling(8, 1d / 3),
                         List.of(
@@ -41,7 +48,7 @@ public class DefaultDrinks {
                         ExpressionUtil.defaultQuality(8, 3, 18),
                         "7 * (0.75 + quality / 40)",
                         List.of(
-                                ConsumptionEffect.of(StatusEffects.SATURATION, "(quality - 5) * 3", "quality / 5 - 1.2")
+                                ConsumptionEffect.of(StatusEffects.SATURATION, "(quality - 5) * 8", "quality / 5 - 1.2", false)
                         ),
                         ExpressionUtil.defaultBoiling(8, 1d / 3),
                         List.of(
@@ -60,7 +67,7 @@ public class DefaultDrinks {
                         ExpressionUtil.defaultQuality(3, 2, 4),
                         "5 * (0.75 + quality / 40)",
                         List.of(
-                                ConsumptionEffect.of(StatusEffects.SATURATION, "(quality - 5) * 2", "quality / 5 - 1.4")
+                                ConsumptionEffect.of(StatusEffects.SATURATION, "(quality - 5) * 4", "quality / 5 - 1.4", false)
                         ),
                         ExpressionUtil.defaultBoiling(8, 1d / 3),
                         List.of(
@@ -77,10 +84,30 @@ public class DefaultDrinks {
                         List.of(
                                 DrinkType.BarrelInfo.of("*", "quality", 60 * 5)
                         ),
-                        ExpressionUtil.defaultQuality(30, 30, 120),
+                        ExpressionUtil.defaultQuality(30, 30, 240),
                         "8 * (0.75 + quality / 40)",
                         List.of(
-                                ConsumptionEffect.of(StatusEffects.REGENERATION, "(quality - 5) * 10", "1")
+                                ConsumptionEffect.of(StatusEffects.REGENERATION, "(quality - 5) * 15", "0", false)
+                        ),
+                        ExpressionUtil.defaultBoiling(5, 1d / 4),
+                        List.of(
+                                DrinkType.BrewIngredient.of(5, Items.SWEET_BERRIES)
+                        ),
+                        DrinkInfo.defaults(5, 30, "*", List.of())
+                )
+        );
+
+        consumer.accept("glow_wine", DrinkType.create(
+                        Text.translatable("drinktype.brewery.glow_wine"),
+                        TextColor.fromRgb(0xfffdd1),
+                        List.of(
+                                DrinkType.BarrelInfo.of("*", "quality", 60 * 5)
+                        ),
+                        ExpressionUtil.defaultQuality(30, 30, 240),
+                        "8 * (0.75 + quality / 40)",
+                        List.of(
+                                ConsumptionEffect.of(StatusEffects.REGENERATION, "(quality - 5) * 15", "0", false),
+                                ConsumptionEffect.of(StatusEffects.GLOWING, "(quality - 3) * 30", "0", true)
                         ),
                         ExpressionUtil.defaultBoiling(5, 1d / 4),
                         List.of(
@@ -96,10 +123,10 @@ public class DefaultDrinks {
                         List.of(
                                 DrinkType.BarrelInfo.of("*", "quality", 60 * 5)
                         ),
-                        ExpressionUtil.defaultQuality(4, 1, 2),
+                        ExpressionUtil.defaultQuality(4, 1, 6),
                         "9 * (0.75 + quality / 40)",
                         List.of(
-                                ConsumptionEffect.of(StatusEffects.SPEED, "(quality - 3) * 10", "(quality - 2) / 3")
+                                ConsumptionEffect.of(StatusEffects.SPEED, "(quality - 3) * 10", "(quality - 2) / 3", false)
                         ),
                         ExpressionUtil.defaultBoiling(3, 1d / 3),
                         List.of(
@@ -116,10 +143,10 @@ public class DefaultDrinks {
                         List.of(
                                 DrinkType.BarrelInfo.of("*", "quality", 60 * 5)
                         ),
-                        ExpressionUtil.defaultQuality(4, 1, 2),
+                        ExpressionUtil.defaultQuality(4, 2, 8),
                         "11 * (0.75 + quality / 40)",
                         List.of(
-                                ConsumptionEffect.of(StatusEffects.SPEED, "(quality - 3) * 12", "quality / 3")
+                                ConsumptionEffect.of(StatusEffects.SPEED, "(quality - 3) * 12", "quality / 3", false)
                         ),
                         ExpressionUtil.defaultBoiling(3, 1d / 3),
                         List.of(
@@ -136,10 +163,10 @@ public class DefaultDrinks {
                         List.of(
                                 DrinkType.BarrelInfo.of("dark_oak", "quality", 60 * 5)
                         ),
-                        ExpressionUtil.defaultQuality(18, 2, 40),
+                        ExpressionUtil.defaultQuality(18, 2, 50),
                         "26 * (0.75 + quality / 40)",
                         List.of(
-                                ConsumptionEffect.of(StatusEffects.ABSORPTION, "(quality - 4) * 12", "quality / 2 - 2")
+                                ConsumptionEffect.of(StatusEffects.ABSORPTION, "(quality - 4) * 12", "quality / 2 - 2", false)
                         ),
                         ExpressionUtil.defaultBoiling(10, 1d / 4),
                         List.of(
@@ -155,7 +182,7 @@ public class DefaultDrinks {
                         List.of(
                                 DrinkType.BarrelInfo.of("*", "quality", 60 * 5)
                         ),
-                        ExpressionUtil.defaultQuality(3.5, 1),
+                        ExpressionUtil.defaultQuality(3.5, 5),
                         "7 * (0.75 + quality / 40)",
                         List.of(
                         ),
@@ -173,8 +200,8 @@ public class DefaultDrinks {
                         List.of(
                                 DrinkType.BarrelInfo.of("acacia", "quality", 60 * 5)
                         ),
-                        ExpressionUtil.defaultQuality(6, 2, 5),
-                        "14 * (0.75 + quality / 40)",
+                        ExpressionUtil.defaultQuality(10, 8, 120),
+                        "30 * (0.75 + quality / 40)",
                         List.of(
 
                         ),
@@ -184,11 +211,11 @@ public class DefaultDrinks {
                         ),
                         true,
                         List.of(
-                                ConsumptionEffect.of(StatusEffects.POISON, "60", "4"),
-                                ConsumptionEffect.of(StatusEffects.DARKNESS, "60", "4"),
-                                ConsumptionEffect.of(StatusEffects.BLINDNESS, "60", "4")
+                                ConsumptionEffect.of(StatusEffects.POISON, "60", "4", true),
+                                ConsumptionEffect.of(StatusEffects.DARKNESS, "60", "4", true),
+                                ConsumptionEffect.of(StatusEffects.BLINDNESS, "60", "4", true)
                         ),
-                        DrinkInfo.defaults(16, 6, "acacia", List.of())
+                        DrinkInfo.defaults(16, 10, "acacia", List.of())
 
                 )
         );
@@ -199,11 +226,12 @@ public class DefaultDrinks {
                         List.of(
                                 DrinkType.BarrelInfo.of("*", "quality", 60 * 5)
                         ),
-                        ExpressionUtil.defaultQuality(14, 4, 100),
+                        ExpressionUtil.defaultQuality(16, 5, 100),
                         "30 * (0.75 + quality / 40)",
                         List.of(
-                                ConsumptionEffect.of(StatusEffects.FIRE_RESISTANCE, "(quality - 4) * 60", "0"),
-                                ConsumptionEffect.of(StatusEffects.POISON, "(6 - quality) * 10", "0")
+                                ConsumptionEffect.of(StatusEffects.FIRE_RESISTANCE, "(quality - 4) * 60", "0", false),
+                                ConsumptionEffect.of(StatusEffects.POISON, "(6 - quality) * 10", "0", false),
+                                ConsumptionEffect.SetOnFire.of("(quality - 2) * 10")
                         ),
                         ExpressionUtil.defaultBoiling(8, 1d / 4),
                         List.of(
@@ -211,11 +239,11 @@ public class DefaultDrinks {
                         ),
                         true,
                         List.of(
-                                ConsumptionEffect.of(StatusEffects.POISON, "60", "4"),
-                                ConsumptionEffect.of(StatusEffects.DARKNESS, "60", "4"),
-                                ConsumptionEffect.of(StatusEffects.BLINDNESS, "60", "4")
+                                ConsumptionEffect.of(StatusEffects.POISON, "60", "4", true),
+                                ConsumptionEffect.of(StatusEffects.DARKNESS, "60", "4", true),
+                                ConsumptionEffect.of(StatusEffects.BLINDNESS, "60", "4", true)
                         ),
-                        DrinkInfo.defaults(8, 14, "*", List.of())
+                        DrinkInfo.defaults(8, 16, "*", List.of())
                 )
         );
 
@@ -225,16 +253,23 @@ public class DefaultDrinks {
                         List.of(),
                         "10",
                         "50",
-                        List.of(),
+                        List.of(
+                                ConsumptionEffect.Delayed.of(
+                                        List.of(
+                                                ConsumptionEffect.of(StatusEffects.BLINDNESS, "10", "0", true)
+                                        ),
+                                        "60 * quality"
+                                )
+                        ),
                         ExpressionUtil.defaultQuality(20, 0) + " / 10",
                         List.of(
                                 DrinkType.BrewIngredient.of(6, Items.POTATO)
                         ),
                         true,
                         List.of(
-                                ConsumptionEffect.of(StatusEffects.POISON, "60", "4"),
-                                ConsumptionEffect.of(StatusEffects.DARKNESS, "60", "4"),
-                                ConsumptionEffect.of(StatusEffects.BLINDNESS, "60", "4")
+                                ConsumptionEffect.of(StatusEffects.POISON, "60", "4", true),
+                                ConsumptionEffect.of(StatusEffects.DARKNESS, "60", "4", true),
+                                ConsumptionEffect.of(StatusEffects.BLINDNESS, "60", "4", true)
                         ),
                         DrinkInfo.defaults(20 / 60d * 1200, -1, "", List.of())
                 )
@@ -250,7 +285,7 @@ public class DefaultDrinks {
                         ExpressionUtil.defaultQuality(2, 2, 5),
                         "0",
                         List.of(
-                                new ConsumptionEffect.TeleportRandom(WrappedExpression.createDefault("quality * 8"))
+                                ConsumptionEffect.TeleportRandom.of("quality * 10")
                         ),
                         ExpressionUtil.defaultBoiling(16, 1d / 10),
                         List.of(
@@ -267,7 +302,7 @@ public class DefaultDrinks {
                         "10",
                         "0",
                         List.of(
-                                ConsumptionEffect.of(StatusEffects.RESISTANCE, "quality * 15", "0")
+                                ConsumptionEffect.of(StatusEffects.RESISTANCE, "quality * 15", "0", false)
                         ),
                         ExpressionUtil.defaultBoiling(5, 1d / 2),
                         List.of(
@@ -284,7 +319,7 @@ public class DefaultDrinks {
                         "10",
                         "0",
                         List.of(
-                                ConsumptionEffect.of(StatusEffects.RESISTANCE, "quality * 20", "0")
+                                ConsumptionEffect.of(StatusEffects.RESISTANCE, "quality * 20", "0", false)
                         ),
                         ExpressionUtil.defaultBoiling(5, 1d / 2),
                         List.of(
@@ -293,5 +328,28 @@ public class DefaultDrinks {
                         DrinkInfo.defaults(5, -1, "", List.of())
                 )
         );
+    }
+
+    public static AlcoholValueEffect createEffects() {
+        return new AlcoholValueEffect(false, List.of(
+                new AlcoholValueEffect.Value(50, 20 * 4, List.of(
+                        ConsumptionEffect.Potion.of(StatusEffects.WEAKNESS, "4", "min(max((userAlcoholLevel - 60) / 30, 0), 2)", true, false, false)
+                )),
+                new AlcoholValueEffect.Value(60, 20 * 4, List.of(
+                        ConsumptionEffect.Potion.of(StatusEffects.SLOWNESS, "4", "min(max((userAlcoholLevel - 70) / 30, 0), 2)", true, false, false)
+                )),
+                new AlcoholValueEffect.Value(70, 20 * 16, List.of(
+                        ConsumptionEffect.Potion.of(StatusEffects.NAUSEA, "16", "0", true, false, false)
+                )),
+                new AlcoholValueEffect.Value(70, 20 * 6, List.of(
+                        ConsumptionEffect.Velocity.of("random() - 0.5", "random() / 2 - 0.25", "random() - 0.5", "(0.3 + random() / 10) * ((userAlcoholLevel - 70) / 80 + 1)")
+                )),
+                new AlcoholValueEffect.Value(90, 20 * 16, List.of(
+                        ConsumptionEffect.Potion.of(StatusEffects.DARKNESS, "16", "0", true, false, false)
+                )),
+                new AlcoholValueEffect.Value(90, 20 * 4, List.of(
+                        ConsumptionEffect.Damage.of("brewery.alcohol_poisoning", "(userAlcoholLevel - 110) / 10 + 1")
+                ))
+        ), Map.of(Items.BREAD, 3d, Items.MILK_BUCKET, 10d));
     }
 }

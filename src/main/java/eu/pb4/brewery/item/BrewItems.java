@@ -25,7 +25,7 @@ public class BrewItems {
     public static final DrinkItem DRINK_ITEM = register("drink_bottle", new DrinkItem(new Item.Settings().group(ITEM_GROUP)));
     public static final Item FAILED_DRINK_ITEM = register("failed_drink_bottle", new FailedDrinkItem(new Item.Settings().group(ITEM_GROUP)));
     public static final Item INGREDIENT_MIXTURE = register("ingredient_mixture", new IngredientMixtureItem(new Item.Settings()));
-    public static final Item DEBUG_BLOCK_TICKER = register("debug/block_ticker", new BlockTickerItem(new Item.Settings()));
+    public static final Item DEBUG_BLOCK_TICKER = register("debug/block_ticker", new BlockTickerItem(new Item.Settings().group(ITEM_GROUP)));
 
     public static void register() {
 

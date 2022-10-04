@@ -1,20 +1,22 @@
 {
-  "info": {
-    "bestCookingTime": 480.0,
-    "bestBarrelAge": 4200.0,
-    "bestBarrelType": [
+  "version": 1,
+  "book_information": {
+    "best_cooking_time": 480.0,
+    "best_barrel_age": 4200.0,
+    "best_barrel_type": [
       "birch"
     ]
   },
-  "effects": [
+  "entries": [
     {
       "type": "potion",
+      "locked": false,
       "effect": "minecraft:saturation",
-      "time": "(quality - 5) * 2",
+      "time": "(quality - 5) * 4",
       "value": "quality / 5 - 1.4"
     }
   ],
-  "cookingQuality": "cos(clamp((age / 60 - 8.0) * 0.3333333333333333, -2, 2))",
+  "cooking_quality_multiplier": "cos(clamp((age / 60 - 8.0) * 0.3333333333333333, -2, 2))",
   "ingredients": [
     {
       "items": [
@@ -23,15 +25,15 @@
       "count": 6
     }
   ],
-  "barrels": [
+  "barrel_definitions": [
     {
       "type": "birch",
-      "qualityChange": "quality",
-      "minimalTime": 300
+      "quality_value": "quality",
+      "reveal_time": 300
     }
   ],
-  "baseQuality": "defaultQualityFunction(3.0, 2.0, 4.0, age)",
-  "alcoholicValue": "5 * (0.75 + quality / 40)",
+  "base_quality_value": "defaultQualityFunction(3.0, 2.0, 4.0, age)",
+  "alcoholic_value": "5 * (0.75 + quality / 40)",
   "name": {
     "translate": "drinktype.brewery.wheat_beer"
   },

@@ -1,0 +1,86 @@
+{
+  "replace": false,
+  "entries": [
+    {
+      "minimumValue": 50.0,
+      "rate": 4.0,
+      "effects": [
+        {
+          "type": "potion",
+          "show_icon": false,
+          "effect": "minecraft:weakness",
+          "time": "4",
+          "value": "min(max((userAlcoholLevel - 60) / 30, 0), 2)"
+        }
+      ]
+    },
+    {
+      "minimumValue": 60.0,
+      "rate": 4.0,
+      "effects": [
+        {
+          "type": "potion",
+          "show_icon": false,
+          "effect": "minecraft:slowness",
+          "time": "4",
+          "value": "min(max((userAlcoholLevel - 70) / 30, 0), 2)"
+        }
+      ]
+    },
+    {
+      "minimumValue": 70.0,
+      "rate": 16.0,
+      "effects": [
+        {
+          "type": "potion",
+          "show_icon": false,
+          "effect": "minecraft:nausea",
+          "time": "16",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "minimumValue": 70.0,
+      "rate": 6.0,
+      "effects": [
+        {
+          "type": "velocity",
+          "x": "random() - 0.5",
+          "y": "random() / 2 - 0.25",
+          "z": "random() - 0.5",
+          "normalized": "(0.3 + random() / 10) * ((userAlcoholLevel - 70) / 80 + 1)"
+        }
+      ]
+    },
+    {
+      "minimumValue": 90.0,
+      "rate": 16.0,
+      "effects": [
+        {
+          "type": "potion",
+          "show_icon": false,
+          "effect": "minecraft:darkness",
+          "time": "16",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "minimumValue": 90.0,
+      "rate": 4.0,
+      "effects": [
+        {
+          "type": "damage",
+          "fire": true,
+          "name": "brewery.alcohol_poisoning",
+          "value": "(userAlcoholLevel - 110) / 10 + 1"
+        }
+      ]
+    }
+  ],
+  "alcohol_reduction_items": {
+    "minecraft:bread": 3.0,
+    "minecraft:milk_bucket": 10.0
+  }
+}

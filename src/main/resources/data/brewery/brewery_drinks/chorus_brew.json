@@ -1,18 +1,19 @@
 {
-  "info": {
-    "bestCookingTime": 960.0,
-    "bestBarrelAge": 3000.0,
-    "bestBarrelType": [
+  "version": 1,
+  "book_information": {
+    "best_cooking_time": 960.0,
+    "best_barrel_age": 3000.0,
+    "best_barrel_type": [
       "warped"
     ]
   },
-  "effects": [
+  "entries": [
     {
       "type": "teleport_random",
-      "distance": "quality * 8"
+      "distance": "quality * 10"
     }
   ],
-  "cookingQuality": "cos(clamp((age / 60 - 16.0) * 0.1, -2, 2))",
+  "cooking_quality_multiplier": "cos(clamp((age / 60 - 16.0) * 0.1, -2, 2))",
   "ingredients": [
     {
       "items": [
@@ -21,20 +22,20 @@
       "count": 16
     }
   ],
-  "barrels": [
+  "barrel_definitions": [
     {
       "type": "warped",
-      "qualityChange": "quality",
-      "minimalTime": 300
+      "quality_value": "quality",
+      "reveal_time": 300
     },
     {
       "type": "*",
-      "qualityChange": "quality * 0.4",
-      "minimalTime": 300
+      "quality_value": "quality * 0.4",
+      "reveal_time": 300
     }
   ],
-  "baseQuality": "defaultQualityFunction(2.0, 2.0, 5.0, age)",
-  "alcoholicValue": "0",
+  "base_quality_value": "defaultQualityFunction(2.0, 2.0, 5.0, age)",
+  "alcoholic_value": "0",
   "name": {
     "translate": "drinktype.brewery.chorus_brew"
   },
