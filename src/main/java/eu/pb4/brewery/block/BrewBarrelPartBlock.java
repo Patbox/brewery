@@ -20,6 +20,8 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Property;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -101,8 +103,8 @@ public final class BrewBarrelPartBlock extends Block implements PolymerBlock, Bl
     }
 
     @Override
-    public String getTranslationKey() {
-        return "container.brewery." + this.barrelMaterial.type() + "_barrel";
+    public MutableText getName() {
+        return this.barrelMaterial.name().copy();
     }
 
     public BlockState getState(Block block, int x, int y, Direction direction) {

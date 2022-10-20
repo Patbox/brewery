@@ -2,6 +2,7 @@ package eu.pb4.brewery.other;
 
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 public class BrewUtils {
 
@@ -55,4 +56,8 @@ public class BrewUtils {
     }
 
 
+    public static Identifier tryParsingId(String type, Identifier fallback) {
+        var x = Identifier.tryParse(type);
+        return x != null ? x : fallback;
+    }
 }

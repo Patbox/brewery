@@ -104,7 +104,7 @@ public class PolydexCompat {
 
             if (!type.barrelInfo().isEmpty()) {
                 GuiElementInterface element;
-                var universal = type.getBarrelInfo("*");
+                var universal = type.getBarrelInfo(DrinkType.BarrelInfo.ANY);
 
                 if (universal != null) {
                     element = ANY_BARREL;

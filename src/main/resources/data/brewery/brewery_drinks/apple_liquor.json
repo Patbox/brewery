@@ -39,7 +39,7 @@
   ],
   "barrel_definitions": [
     {
-      "type": "acacia",
+      "type": "minecraft:acacia",
       "quality_value": "quality",
       "reveal_time": 300
     }

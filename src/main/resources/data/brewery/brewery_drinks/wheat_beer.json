@@ -27,7 +27,7 @@
   ],
   "barrel_definitions": [
     {
-      "type": "birch",
+      "type": "minecraft:birch",
       "quality_value": "quality",
       "reveal_time": 300
     }

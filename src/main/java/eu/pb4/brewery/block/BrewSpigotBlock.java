@@ -49,7 +49,7 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
     public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
         var facing = state.get(FACING);
 
-            for (var pattern : BrewBlockPatterns.BARREL_PATTERNS) {
+            for (var pattern : BrewBlocks.BARREL_PATTERNS) {
                 var result = pattern.getRight().testTransform(world, pos.offset(facing)
                         .add(facing.getOffsetZ(), 1, -facing.getOffsetX()), facing, Direction.UP);
                 if (result != null) {
@@ -58,7 +58,7 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
 
                     var be = world.getBlockEntity(pos);
                     if (be instanceof BrewBarrelSpigotBlockEntity spigotBlock) {
-                        spigotBlock.setBarrelType(pattern.getLeft().type());
+                        spigotBlock.setBarrelType(pattern.getLeft());
                         for (var x = 0; x < result.getWidth(); x++) {
                             for (var y = 0; y < result.getHeight(); y++) {
                                 for (var z = 0; z < result.getDepth(); z++) {
@@ -83,7 +83,7 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
     @Override
     public BlockState getPlacementState(ItemPlacementContext ctx) {
         if (ctx.getSide().getAxis() != Direction.Axis.Y) {
-            for (var pattern : BrewBlockPatterns.BARREL_PATTERNS) {
+            for (var pattern : BrewBlocks.BARREL_PATTERNS) {
                 var result = pattern.getRight().testTransform(ctx.getWorld(), ctx.getBlockPos().offset(ctx.getSide().getOpposite())
                         .add(-ctx.getSide().getOffsetZ(), 1, ctx.getSide().getOffsetX()), ctx.getSide().getOpposite(), Direction.UP);
                 if (result != null) {

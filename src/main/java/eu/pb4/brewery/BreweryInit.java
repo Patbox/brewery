@@ -4,7 +4,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
-import eu.pb4.brewery.block.BrewBlockPatterns;
 import eu.pb4.brewery.block.BrewBlocks;
 import eu.pb4.brewery.block.BrewCauldronBlock;
 import eu.pb4.brewery.block.entity.BrewBlockEntities;
@@ -50,7 +49,7 @@ public class BreweryInit implements ModInitializer {
 
     public static final boolean IS_DEV = FabricLoader.getInstance().isDevelopmentEnvironment();
     public static final boolean DISPLAY_DEV = IS_DEV && false;
-    public static final boolean USE_GENERATOR = IS_DEV && false;
+    public static final boolean USE_GENERATOR = IS_DEV && true;
 
     public static Identifier id(String path) {
         return new Identifier(MOD_ID, path);
@@ -64,7 +63,6 @@ public class BreweryInit implements ModInitializer {
         BrewBlocks.register();
         BrewBlockEntities.register();
         BrewItems.register();
-        BrewBlockPatterns.register();
         BrewGameRules.register();
 
         ServerLifecycleEvents.SERVER_STARTED.register(BreweryInit::loadDrinks);

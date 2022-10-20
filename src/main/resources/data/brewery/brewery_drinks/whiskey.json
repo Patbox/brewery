@@ -27,7 +27,7 @@
   ],
   "barrel_definitions": [
     {
-      "type": "dark_oak",
+      "type": "minecraft:dark_oak",
       "quality_value": "quality",
       "reveal_time": 300
     }

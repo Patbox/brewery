@@ -24,7 +24,7 @@
   ],
   "barrel_definitions": [
     {
-      "type": "warped",
+      "type": "minecraft:warped",
       "quality_value": "quality",
       "reveal_time": 300
     },

@@ -136,6 +136,17 @@ Executes command as player, ignoring the OP level
 }
 ```
 
+### Freeze
+Freezes player (like powdered snow)
+```json5
+{
+  "type": "freeze",
+  // Sets player on fire for time in seconds. Also has "current" variable
+  // If lower than 0, it's not applied
+  "time": {/* EXPRESSION */}
+}
+```
+
 ### Potion effect
 Applies specified potion status effect to player
 ```json5
@@ -196,7 +207,7 @@ Sets player on fire
   "type": "set_on_fire",
   // Sets player on fire for time in seconds. Also has "current" variable
   // If lower than 0, it's not applied
-  "value": {/* EXPRESSION */}
+  "time": {/* EXPRESSION */}
 }
 ```
 

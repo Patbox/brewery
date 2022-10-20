@@ -1,10 +1,9 @@
 package eu.pb4.brewery.drink;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.brewery.duck.StatusEffectInstanceExt;
+import eu.pb4.brewery.other.TypeMapCodec;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffect;
@@ -17,65 +16,35 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.event.GameEvent;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
-import java.util.stream.Stream;
 
-public interface ConsumptionEffect {
+public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<ConsumptionEffect> {
 
-    Codec<ConsumptionEffect> CODEC = new MapCodec.MapCodecCodec<>(new MapCodec<>() {
-        private final BiMap<String, MapCodec<ConsumptionEffect>> codecs = HashBiMap.create();
-        private boolean init = true;
+    static void register(Identifier identifier, MapCodec<ConsumptionEffect> codec) {
+        ((TypeMapCodec) CODEC).register(identifier.toString(), codec);
+    }
 
-        @Override
-        public <T> Stream<T> keys(DynamicOps<T> ops) {
-            return Stream.of(ops.createString("type"));
-        }
-
-        @Override
-        public <T> DataResult<ConsumptionEffect> decode(DynamicOps<T> ops, MapLike<T> input) {
-            this.init();
-            var type = ops.getStringValue(input.get("type")).result();
-
-            if (type.isEmpty()) {
-                return DataResult.error("Missing type");
-            }
-
-            var data = codecs.get(type.get().toLowerCase(Locale.ROOT));
-            if (data != null) {
-                return data.decode(ops, input);
-            }
-
-            return DataResult.error("Invalid type");
-        }
-
-        @Override
-        public <T> RecordBuilder<T> encode(ConsumptionEffect input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
-            this.init();
-            return input.codec().encode(input, ops, prefix.add("type", ops.createString(codecs.inverse().get(input.codec()))));
-        }
-
-        private void init() {
-            if (this.init) {
-                codecs.put("potion", (MapCodec<ConsumptionEffect>) (Object) Potion.CODEC);
-                codecs.put("teleport_random", (MapCodec<ConsumptionEffect>) (Object) TeleportRandom.CODEC);
-                codecs.put("execute_command", (MapCodec<ConsumptionEffect>) (Object) ExecuteCommand.CODEC);
-                codecs.put("random", (MapCodec<ConsumptionEffect>) (Object) Random.CODEC);
-                codecs.put("set_on_fire", (MapCodec<ConsumptionEffect>) (Object) SetOnFire.CODEC);
-                codecs.put("set_alcohol_level", (MapCodec<ConsumptionEffect>) (Object) SetAlcoholLevel.CODEC);
-                codecs.put("delayed", (MapCodec<ConsumptionEffect>) (Object) Delayed.CODEC);
-                codecs.put("velocity", (MapCodec<ConsumptionEffect>) (Object) Velocity.CODEC);
-                codecs.put("damage", (MapCodec<ConsumptionEffect>) (Object) Damage.CODEC);
-                this.init = false;
-            }
-        }
+    MapCodec<ConsumptionEffect> MAP_CODEC = new TypeMapCodec<>((self) -> {
+        self.register("potion", (MapCodec<ConsumptionEffect>) (Object) Potion.CODEC);
+        self.register("teleport_random", (MapCodec<ConsumptionEffect>) (Object) TeleportRandom.CODEC);
+        self.register("execute_command", (MapCodec<ConsumptionEffect>) (Object) ExecuteCommand.CODEC);
+        self.register("random", (MapCodec<ConsumptionEffect>) (Object) Random.CODEC);
+        self.register("set_on_fire", (MapCodec<ConsumptionEffect>) (Object) SetOnFire.CODEC);
+        self.register("freeze", (MapCodec<ConsumptionEffect>) (Object) Freeze.CODEC);
+        self.register("set_alcohol_level", (MapCodec<ConsumptionEffect>) (Object) SetAlcoholLevel.CODEC);
+        self.register("delayed", (MapCodec<ConsumptionEffect>) (Object) Delayed.CODEC);
+        self.register("velocity", (MapCodec<ConsumptionEffect>) (Object) Velocity.CODEC);
+        self.register("damage", (MapCodec<ConsumptionEffect>) (Object) Damage.CODEC);
     });
+
+    Codec<ConsumptionEffect> CODEC = new MapCodec.MapCodecCodec<>(MAP_CODEC);
 
     static ConsumptionEffect of(StatusEffect effect, String time, String value, boolean locked) {
         return new ConsumptionEffect.Potion(effect, WrappedExpression.createDefaultCE(time), WrappedExpression.createDefaultCE(value), locked, false, true);
@@ -217,6 +186,36 @@ public interface ConsumptionEffect {
 
             if (value >= 0) {
                 user.setFireTicks((int) value);
+            }
+        }
+
+        @Override
+        public MapCodec<ConsumptionEffect> codec() {
+            return (MapCodec<ConsumptionEffect>) (Object) CODEC;
+        }
+    }
+
+    record Freeze(WrappedExpression time) implements ConsumptionEffect {
+        public static MapCodec<Freeze> CODEC = RecordCodecBuilder.mapCodec(instance ->
+                instance.group(
+                        ExpressionUtil.createCodec(ExpressionUtil.AGE_KEY, ExpressionUtil.QUALITY_KEY, ExpressionUtil.USER_ALCOHOL_LEVEL_KEY, "current")
+                                .fieldOf("time").forGetter(Freeze::time)
+                ).apply(instance, Freeze::new));
+
+        public static ConsumptionEffect of(String time) {
+            return new Freeze(WrappedExpression.create(time, ExpressionUtil.AGE_KEY, ExpressionUtil.QUALITY_KEY, ExpressionUtil.USER_ALCOHOL_LEVEL_KEY, "current"));
+        }
+
+        public void apply(LivingEntity user, double age, double quality) {
+            var value = this.time.expression()
+                    .setVariable(ExpressionUtil.AGE_KEY, age)
+                    .setVariable(ExpressionUtil.QUALITY_KEY, quality)
+                    .setVariable(ExpressionUtil.USER_ALCOHOL_LEVEL_KEY, AlcoholManager.of(user).getModifiedAlcoholLevel())
+                    .setVariable("current", user.getFireTicks() / 20d)
+                    .evaluate() * 20;
+
+            if (value >= 0) {
+                user.setFrozenTicks((int) value);
             }
         }
 
@@ -430,8 +429,7 @@ public interface ConsumptionEffect {
                     .evaluate();
 
             if (value >= 0) {
-                var source = new DamageSource(this.name) {
-                };
+                var source = new DamageSource(this.name) {};
                 if (this.magic) {
                     source.setUsesMagic();
                 }

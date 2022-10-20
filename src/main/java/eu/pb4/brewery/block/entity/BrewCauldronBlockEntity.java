@@ -51,8 +51,8 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
             }
 
             if (cauldron.hologram == null) {
-                var seconds = (cauldron.timeCooking / 20) % 60;
-                var minutes = (cauldron.timeCooking / (20 * 60));
+                var seconds = (int) (cauldron.timeCooking / 20) % 60;
+                var minutes = (int) (cauldron.timeCooking / (20 * 60));
                 cauldron.hologram = Holograms.create(world1, Vec3d.ofBottomCenter(pos).add(0, 1.3, 0), Text.literal(minutes + ":" + (seconds < 10 ? "0" : "") + seconds));
                 cauldron.hologram.show();
             }

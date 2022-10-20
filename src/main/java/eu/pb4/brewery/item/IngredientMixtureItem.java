@@ -41,6 +41,12 @@ public class IngredientMixtureItem extends Item implements PolymerItem {
             var time = stack.getNbt().getDouble(DrinkUtils.AGE_COOK_NBT);
             double mult = world != null ? world.getGameRules().get(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER).get() : 1;
 
+            var age = DrinkUtils.getAgeInSeconds(stack) / mult;
+
+            if (age > 0) {
+                tooltip.add(Text.translatable("text.brewery.age", BrewUtils.fromTimeShort(age).formatted(Formatting.GRAY)));
+            }
+
             tooltip.add(Text.translatable("text.brewery.cooked_for", BrewUtils.fromTimeShort(time / 20d / mult).formatted(Formatting.GRAY)));
             for (var ingredient : getIngredients(stack)) {
                 tooltip.add(Text.empty().append("" + ingredient.getCount()).append(" × ").append(ingredient.getName()).formatted(Formatting.GRAY));

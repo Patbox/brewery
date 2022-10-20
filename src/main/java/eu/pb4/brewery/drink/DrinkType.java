@@ -2,11 +2,13 @@ package eu.pb4.brewery.drink;
 
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import eu.pb4.brewery.other.BrewUtils;
 import eu.pb4.brewery.other.WrappedText;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
@@ -15,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import static eu.pb4.brewery.BreweryInit.id;
 
 public record DrinkType(WrappedText name, TextColor color, List<BarrelInfo> barrelInfo, WrappedExpression baseQuality, WrappedExpression alcoholicValue,
                         List<ConsumptionEffect> consumptionEffects, WrappedExpression cookingQualityMult, List<BrewIngredient> ingredients,
@@ -89,7 +93,7 @@ public record DrinkType(WrappedText name, TextColor color, List<BarrelInfo> barr
     }
 
     @Nullable
-    public BarrelInfo getBarrelInfo(String barrelType) {
+    public BarrelInfo getBarrelInfo(Identifier barrelType) {
         BarrelInfo def = null;
         for (var info : this.barrelInfo) {
             if (info.type.equals(barrelType)) {
@@ -105,21 +109,30 @@ public record DrinkType(WrappedText name, TextColor color, List<BarrelInfo> barr
         return DrinkUtils.getAgeInSeconds(itemStack) >= 0 && (!this.requireDistillation || DrinkUtils.getDistillationStatus(itemStack));
     }
 
-    public record BarrelInfo(String type, WrappedExpression qualityChange, int baseTime) {
+    public record BarrelInfo(Identifier type, WrappedExpression qualityChange, int baseTime) {
+        public static final Identifier ANY = id("any_barrel");
+        public static final Identifier NONE = id("none");
+
         public static BarrelInfo of(String type, String qualityChange, int baseTime) {
+            return of(type.equals("*") ? ANY : new Identifier(type), qualityChange, baseTime);
+        }
+
+        public static BarrelInfo of(Identifier type, String qualityChange, int baseTime) {
             return new BarrelInfo(type, WrappedExpression.createDefault(qualityChange), baseTime);
         }
 
+        protected static Codec<Identifier> TYPE_CODEC = Codec.STRING.xmap(x -> x.equals("*") ? ANY : BrewUtils.tryParsingId(x, NONE), x -> x.equals(ANY) ? "*" : x.toString());
+
         public static Codec<BarrelInfo> CODEC_V1 = RecordCodecBuilder.create(instance ->
                 instance.group(
-                        Codec.STRING.fieldOf("type").forGetter(BarrelInfo::type),
+                        TYPE_CODEC.fieldOf("type").forGetter(BarrelInfo::type),
                         ExpressionUtil.COMMON_EXPRESSION.fieldOf("quality_value").forGetter(BarrelInfo::qualityChange),
                         Codecs.POSITIVE_INT.fieldOf("reveal_time").forGetter(BarrelInfo::baseTime)
                 ).apply(instance, BarrelInfo::new));
 
         public static Codec<BarrelInfo> CODEC_V0 = RecordCodecBuilder.create(instance ->
                 instance.group(
-                        Codec.STRING.fieldOf("type").forGetter(BarrelInfo::type),
+                        TYPE_CODEC.fieldOf("type").forGetter(BarrelInfo::type),
                         ExpressionUtil.COMMON_EXPRESSION.fieldOf("qualityChange").forGetter(BarrelInfo::qualityChange),
                         Codecs.POSITIVE_INT.fieldOf("minimalTime").forGetter(BarrelInfo::baseTime)
                     ).apply(instance, BarrelInfo::new));

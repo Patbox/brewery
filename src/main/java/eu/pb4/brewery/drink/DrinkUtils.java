@@ -116,7 +116,7 @@ public class DrinkUtils {
         return 1;
     }
 
-    public static List<DrinkType> findTypes(List<ItemStack> ingredients, String barrelType) {
+    public static List<DrinkType> findTypes(List<ItemStack> ingredients, Identifier barrelType) {
         if (ingredients.isEmpty()) {
             return List.of();
         }

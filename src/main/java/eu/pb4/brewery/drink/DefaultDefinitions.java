@@ -24,6 +24,7 @@ public class DefaultDefinitions {
                         TextColor.fromRgb(0xffd333),
                         List.of(
                                 DrinkType.BarrelInfo.of("oak", "quality", 60 * 5),
+                                DrinkType.BarrelInfo.of("dark_oak", "quality", 60 * 5),
                                 DrinkType.BarrelInfo.of("*", "quality * 0.8", 60 * 5)
                         ),
                         ExpressionUtil.defaultQuality(3.5, 2, 5),

@@ -104,7 +104,7 @@ public class DrinkItem extends Item implements PolymerItem {
             if (type.isFinished(stack)) {
                 return type.name().text();
             } else {
-                return Text.translatable("item.brewery.ingredient_mixture_specific", type.name());
+                return Text.translatable("item.brewery.ingredient_mixture_specific", type.name().text());
             }
         } else {
             var id = stack.hasNbt() ? stack.getNbt().getString(DrinkUtils.TYPE_NBT) : null;
