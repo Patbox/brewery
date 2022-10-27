@@ -98,7 +98,7 @@ public record DrinkType(WrappedText name, TextColor color, List<BarrelInfo> barr
         for (var info : this.barrelInfo) {
             if (info.type.equals(barrelType)) {
                 return info;
-            } else if (info.type.equals("*")) {
+            } else if (info.type.equals(BarrelInfo.ANY)) {
                 def = info;
             }
         }

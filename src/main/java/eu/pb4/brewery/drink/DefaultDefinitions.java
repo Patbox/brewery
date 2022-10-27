@@ -112,7 +112,7 @@ public class DefaultDefinitions {
                         ),
                         ExpressionUtil.defaultBoiling(5, 1d / 4),
                         List.of(
-                                DrinkType.BrewIngredient.of(5, Items.SWEET_BERRIES)
+                                DrinkType.BrewIngredient.of(5, Items.GLOW_BERRIES)
                         ),
                         DrinkInfo.defaults(5, 30, "*", List.of())
                 )

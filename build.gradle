@@ -29,6 +29,8 @@ repositories {
 			includeGroup "maven.modrinth"
 		}
 	}
+
+	mavenLocal()
 }
 
 dependencies {
@@ -40,11 +42,11 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation include('fr.catcore:server-translations-api:1.4.17+1.19.2')
-	modImplementation include('eu.pb4:polymer:0.2.16+1.19.2')
+	modImplementation include('fr.catcore:server-translations-api:1.4.18+1.19.2')
+	modImplementation include('eu.pb4:polymer:0.2.17+1.19.2')
 	modImplementation include("eu.pb4:hologram-api:0.2.2+1.19")
 	modImplementation include("eu.pb4:sgui:1.1.5+1.19.1")
-	modImplementation include("eu.pb4:placeholder-api:2.0.0-beta.7+1.19")
+	modImplementation include("eu.pb4:placeholder-api:2.0.0-pre.1+1.19.2")
 	modImplementation include("me.lucko:fabric-permissions-api:0.1-SNAPSHOT")
 	modImplementation include('xyz.nucleoid:more-codecs:0.2.2+1.18')
 
