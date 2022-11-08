@@ -51,6 +51,8 @@
   "gamerule.brewery:alcohol_value_multiplier": "Alcohol value multiplier",
   "gamerule.brewery:barrel_aging_multiplier": "Barrel aging multiplier",
   "gamerule.brewery:cauldron_cooking_time_multiplier": "Cauldron cooking multiplier",
+  "gamerule.brewery:show_age": "Show drinks age",
+  "gamerule.brewery:show_quality": "Show drinks quality",
 
   "polydex.brewery.brewing_recipe": "Brewery Recipe",
   "polydex.brewery.ingredients": "Ingredients",

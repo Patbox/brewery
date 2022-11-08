@@ -47,38 +47,50 @@ public class ExpressionUtil {
                     return Math.random();
                 }
             },
-            new Function("defaultQualityFunction", 4) {
-                @Override
-                public double apply(double... args) {
-                    var day = args[3] / 1200;
-
-                    if (day <= 0) {
-                        return 0;
-                    } else if (day >= (args[0] + args[1] + args[2])) {
-                        return -1;
-                    } else if (day >= args[0] && day <= args[0] + args[1]) {
-                        return 10;
-                    } else {
-                        double x;
-
-                        if (day < args[0]) {
-                            x = day / (Math.max(args[0], 0.001));
-                        } else {
-                            x = (args[2] + args[0] + args[1] - day) / (Math.max(args[2], 0.001));
-                        }
-
-                        return (3 * x * x - 2 * x * x * x) * 10;
-                    }
-                }
-            }
+            getQualFunc("defaultQualityFunction", 1200, 10),
+            getQualFunc("smooth_value_days", 1200, 1),
+            getQualFunc("smooth_value_minutes", 60, 1),
+            getQualFunc("smooth_value_seconds", 1, 1)
     };
 
+    private static Function getQualFunc(String name, double timeScale, double valueScale) {
+        return new Function(name, 4) {
+            @Override
+            public double apply(double... args) {
+                var day = args[3] / timeScale;
+
+                if (day <= 0) {
+                    return 0;
+                } else if (day >= (args[0] + args[1] + args[2])) {
+                    return -1;
+                } else if (day >= args[0] && day <= args[0] + args[1]) {
+                    return valueScale;
+                } else {
+                    double x;
+
+                    if (day < args[0]) {
+                        x = day / (Math.max(args[0], 0.001));
+                    } else {
+                        x = (args[2] + args[0] + args[1] - day) / (Math.max(args[2], 0.001));
+                    }
+
+                    return (3 * x * x - 2 * x * x * x) * valueScale;
+                }
+            }
+        };
+    }
+
+
     public static String defaultQuality(double mcDaysIdeal, double lockedTime, double qualityFalloff) {
-        return "defaultQualityFunction(" + mcDaysIdeal + ", " + lockedTime + ", " + qualityFalloff + ", age)";
+        return "smooth_value_days(" + mcDaysIdeal + ", " + lockedTime + ", " + qualityFalloff + ", age) * 10";
     }
 
     public static String defaultQuality(double mcDaysIdeal, double lockedTime) {
-        return "defaultQualityFunction(" + mcDaysIdeal + ", " + lockedTime + ", " + mcDaysIdeal + ", age)";
+        return "smooth_value_days(" + mcDaysIdeal + ", " + lockedTime + ", " + mcDaysIdeal + ", age) * 10";
+    }
+
+    public static String defaultBoilingVodka(double minutesIdeal, double lockedTime) {
+        return "smooth_value_minutes(" + minutesIdeal + ", " + lockedTime + ", " + minutesIdeal + ", age)";
     }
 
     public static String defaultBoiling(double minutes, double percent) {

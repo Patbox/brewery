@@ -14,7 +14,7 @@ import net.minecraft.nbt.NbtOps;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AlcoholManager {
+public final class AlcoholManager {
     private final LivingEntity entity;
     public double alcoholLevel = 0;
     public double quality = -1;

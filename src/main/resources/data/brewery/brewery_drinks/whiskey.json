@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "book_information": {
     "best_cooking_time": 600.0,
     "best_barrel_age": 21600.0,
@@ -7,15 +7,6 @@
       "dark_oak"
     ]
   },
-  "entries": [
-    {
-      "type": "potion",
-      "locked": false,
-      "effect": "minecraft:absorption",
-      "time": "(quality - 4) * 12",
-      "value": "quality / 2 - 2"
-    }
-  ],
   "cooking_quality_multiplier": "cos(clamp((age / 60 - 10.0) * 0.25, -2, 2))",
   "ingredients": [
     {
@@ -25,17 +16,26 @@
       "count": 10
     }
   ],
+  "base_quality_value": "smooth_value_days(18.0, 2.0, 50.0, age) * 10",
+  "alcoholic_value": "26 * (0.75 + quality / 40)",
+  "entries": [
+    {
+      "type": "potion",
+      "locked": false,
+      "effect": "minecraft:absorption",
+      "time": "(quality - 4) * 12",
+      "value": "quality / 2 - 2"
+    }
+  ],
+  "name": {
+    "translate": "drinktype.brewery.whiskey"
+  },
+  "color": "gold",
   "barrel_definitions": [
     {
       "type": "minecraft:dark_oak",
       "quality_value": "quality",
       "reveal_time": 300
     }
-  ],
-  "base_quality_value": "defaultQualityFunction(18.0, 2.0, 50.0, age)",
-  "alcoholic_value": "26 * (0.75 + quality / 40)",
-  "name": {
-    "translate": "drinktype.brewery.whiskey"
-  },
-  "color": "gold"
+  ]
 }

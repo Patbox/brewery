@@ -262,7 +262,7 @@ public class DefaultDefinitions {
                                         "60 * quality"
                                 )
                         ),
-                        ExpressionUtil.defaultQuality(20, 0) + " / 10",
+                        ExpressionUtil.defaultBoilingVodka(20, 0.5),
                         List.of(
                                 DrinkType.BrewIngredient.of(6, Items.POTATO)
                         ),
@@ -272,7 +272,7 @@ public class DefaultDefinitions {
                                 ConsumptionEffect.of(StatusEffects.DARKNESS, "60", "4", true),
                                 ConsumptionEffect.of(StatusEffects.BLINDNESS, "60", "4", true)
                         ),
-                        DrinkInfo.defaults(20 / 60d * 1200, -1, "", List.of())
+                        DrinkInfo.defaults(20, -1, "", List.of())
                 )
         );
 

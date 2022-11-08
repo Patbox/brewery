@@ -31,7 +31,7 @@ Main drink format
 ```json5
 {
   // Current version of the format. It's required
-  "version": 1,
+  "version": 2,
   // Name of the drink
   "name": {/* TEXT */},
   // Color of the drink, 
@@ -47,8 +47,8 @@ Main drink format
       "count": {/* NUMBER */}
     }
   ],
-  // Makes drink require distillation before being finished
-  "require_distillation": {/* BOOLEAN */},
+  // Required number of distillation runs
+  "distillation_runs": {/* NUMBER */},
   // Quality multiplier added used for drink. has "age" parameter.
   "cooking_quality_multiplier": {/* EXPRESSION */},
   // Base quality function. Should have value of "10", if drink doesn't use barrel. Has "age" parameter
@@ -85,6 +85,12 @@ Main drink format
   }
 }
 ```
+
+## Extra expression functions
+- `smooth_value_days(<MINIMUM_TIME_FOR_BEST>, <TIME_WITHOUT_CHANGING>, <FALLOUT_TIME>, age)` - <VALUES> are in days, returns between 0 and 1, or -1 after fallout
+- `smooth_value_minutes(<MINIMUM_TIME_FOR_BEST>, <TIME_WITHOUT_CHANGING>, <FALLOUT_TIME>, age)` - <VALUES> are in minutes, returns same as above
+- `smooth_value_seconds(<MINIMUM_TIME_FOR_BEST>, <TIME_WITHOUT_CHANGING>, <FALLOUT_TIME>, age)` - <VALUES> are in seconds, returns same as above
+
 
 ## Consumption Effects types
 

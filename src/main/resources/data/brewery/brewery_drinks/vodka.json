@@ -1,6 +1,5 @@
 {
-  "version": 1,
-  "require_distillation": true,
+  "version": 2,
   "unfinished_brew_effects": [
     {
       "type": "potion",
@@ -22,12 +21,21 @@
     }
   ],
   "book_information": {
-    "best_cooking_time": 24000.0,
-    "best_barrel_age": -1200.0,
-    "best_barrel_type": [
-      ""
-    ]
+    "best_cooking_time": 1200.0,
+    "best_barrel_age": -1200.0
   },
+  "cooking_quality_multiplier": "smooth_value_minutes(20.0, 0.5, 20.0, age)",
+  "ingredients": [
+    {
+      "items": [
+        "minecraft:potato"
+      ],
+      "count": 6
+    }
+  ],
+  "distillation_runs": 1,
+  "base_quality_value": "10",
+  "alcoholic_value": "50",
   "entries": [
     {
       "type": "delayed",
@@ -42,17 +50,6 @@
       ]
     }
   ],
-  "cooking_quality_multiplier": "defaultQualityFunction(20.0, 0.0, 20.0, age) / 10",
-  "ingredients": [
-    {
-      "items": [
-        "minecraft:potato"
-      ],
-      "count": 6
-    }
-  ],
-  "base_quality_value": "10",
-  "alcoholic_value": "50",
   "name": {
     "translate": "drinktype.brewery.vodka"
   },

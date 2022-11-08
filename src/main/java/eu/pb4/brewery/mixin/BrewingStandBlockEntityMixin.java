@@ -50,8 +50,7 @@ public abstract class BrewingStandBlockEntityMixin {
                             for (var type : types) {
                                 if (type.requireDistillation()) {
                                     var q = type.cookingQualityMult().expression()
-                                            .setVariable(ExpressionUtil.QUALITY_KEY, type.baseQuality().expression().setVariable(ExpressionUtil.AGE_KEY,
-                                                    stack.getNbt().getDouble(DrinkUtils.AGE_COOK_NBT) / 20d).evaluate())
+                                            .setVariable(ExpressionUtil.AGE_KEY, stack.getNbt().getDouble(DrinkUtils.AGE_COOK_NBT) / 20d)
                                             .evaluate();
 
                                     if (q > quality) {
@@ -64,13 +63,18 @@ public abstract class BrewingStandBlockEntityMixin {
                             if (match == null || quality < 0) {
                                 slots.set(i, new ItemStack(BrewItems.FAILED_DRINK_ITEM));
                             } else {
-                                var drink = DrinkUtils.createDrink(BreweryInit.DRINK_TYPE_ID.get(match), quality);
-                                drink.getOrCreateNbt().putBoolean(DrinkUtils.DISTILLATED_NBT, true);
+                                var drink = new ItemStack(BrewItems.DRINK_ITEM);
+                                drink.setNbt(stack.getNbt());
+                                drink.getOrCreateNbt().putString(DrinkUtils.TYPE_NBT, BreweryInit.DRINK_TYPE_ID.get(match).toString());
+
+                                drink.getOrCreateNbt().putDouble(DrinkUtils.QUALITY_NBT, quality * 10);
+
+                                drink.getOrCreateNbt().putInt(DrinkUtils.DISTILLATED_NBT, drink.getOrCreateNbt().getInt(DrinkUtils.DISTILLATED_NBT) + 1);
                                 slots.set(i, drink);
                             }
                         }
                     } else {
-                        stack.getOrCreateNbt().putBoolean(DrinkUtils.DISTILLATED_NBT, true);
+                        stack.getOrCreateNbt().putInt(DrinkUtils.DISTILLATED_NBT, stack.getOrCreateNbt().getInt(DrinkUtils.DISTILLATED_NBT) + 1);
                     }
                 }
             }

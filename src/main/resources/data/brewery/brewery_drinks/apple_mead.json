@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "book_information": {
     "best_cooking_time": 180.0,
     "best_barrel_age": 4800.0,
@@ -7,15 +7,6 @@
       "*"
     ]
   },
-  "entries": [
-    {
-      "type": "potion",
-      "locked": false,
-      "effect": "minecraft:speed",
-      "time": "(quality - 3) * 12",
-      "value": "quality / 3"
-    }
-  ],
   "cooking_quality_multiplier": "cos(clamp((age / 60 - 3.0) * 0.3333333333333333, -2, 2))",
   "ingredients": [
     {
@@ -30,17 +21,26 @@
       ]
     }
   ],
+  "base_quality_value": "smooth_value_days(4.0, 2.0, 8.0, age) * 10",
+  "alcoholic_value": "11 * (0.75 + quality / 40)",
+  "entries": [
+    {
+      "type": "potion",
+      "locked": false,
+      "effect": "minecraft:speed",
+      "time": "(quality - 3) * 12",
+      "value": "quality / 3"
+    }
+  ],
+  "name": {
+    "translate": "drinktype.brewery.apple_mead"
+  },
+  "color": "#FFDC91",
   "barrel_definitions": [
     {
       "type": "*",
       "quality_value": "quality",
       "reveal_time": 300
     }
-  ],
-  "base_quality_value": "defaultQualityFunction(4.0, 2.0, 8.0, age)",
-  "alcoholic_value": "11 * (0.75 + quality / 40)",
-  "name": {
-    "translate": "drinktype.brewery.apple_mead"
-  },
-  "color": "#FFDC91"
+  ]
 }

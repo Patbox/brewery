@@ -37,7 +37,7 @@ public class IngredientMixtureItem extends Item implements PolymerItem {
     }
 
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        if (stack.hasNbt()) {
+        if (stack.hasNbt() && world.getGameRules().getBoolean(BrewGameRules.SHOW_AGE)) {
             var time = stack.getNbt().getDouble(DrinkUtils.AGE_COOK_NBT);
             double mult = world != null ? world.getGameRules().get(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER).get() : 1;
 
@@ -51,8 +51,6 @@ public class IngredientMixtureItem extends Item implements PolymerItem {
             for (var ingredient : getIngredients(stack)) {
                 tooltip.add(Text.empty().append("" + ingredient.getCount()).append(" × ").append(ingredient.getName()).formatted(Formatting.GRAY));
             }
-        } else {
-            tooltip.add(Text.literal("Invalid brew"));
         }
     }
 

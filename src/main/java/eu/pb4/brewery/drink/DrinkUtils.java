@@ -59,7 +59,10 @@ public class DrinkUtils {
 
     public static boolean getDistillationStatus(ItemStack stack) {
         if (stack.hasNbt()) {
-            return stack.getNbt().getBoolean(DISTILLATED_NBT);
+            var type = DrinkUtils.getType(stack);
+            if (type != null) {
+                return stack.getNbt().getInt(DISTILLATED_NBT) >= type.distillationRuns();
+            }
         }
 
         return false;
@@ -88,12 +91,18 @@ public class DrinkUtils {
     }
 
     public static ItemStack createDrink(Identifier type, int age, double quality, boolean distillated) {
+        var typex = BreweryInit.DRINK_TYPES.get(type);
+
+        return createDrink(type, age, quality, distillated ? typex != null ? typex.distillationRuns() : 1 : 0);
+    }
+
+    public static ItemStack createDrink(Identifier type, int age, double quality, int distillated) {
         var stack = new ItemStack(BrewItems.DRINK_ITEM);
 
         stack.getOrCreateNbt().putInt(AGE_NBT, age);
         stack.getOrCreateNbt().putDouble(QUALITY_NBT, quality);
         stack.getOrCreateNbt().putString(TYPE_NBT, type.toString());
-        stack.getOrCreateNbt().putBoolean(DISTILLATED_NBT, distillated);
+        stack.getOrCreateNbt().putInt(DISTILLATED_NBT, distillated);
 
         return stack;
     }

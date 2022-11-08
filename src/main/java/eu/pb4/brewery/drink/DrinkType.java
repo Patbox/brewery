@@ -22,7 +22,7 @@ import static eu.pb4.brewery.BreweryInit.id;
 
 public record DrinkType(WrappedText name, TextColor color, List<BarrelInfo> barrelInfo, WrappedExpression baseQuality, WrappedExpression alcoholicValue,
                         List<ConsumptionEffect> consumptionEffects, WrappedExpression cookingQualityMult, List<BrewIngredient> ingredients,
-                        boolean requireDistillation, List<ConsumptionEffect> unfinishedEffects, Optional<DrinkInfo> info) {
+                        int distillationRuns, List<ConsumptionEffect> unfinishedEffects, Optional<DrinkInfo> info, boolean showQuality) {
     public static final Codec<DrinkType> CODEC = new MapCodec.MapCodecCodec<>(new MapCodec<>() {
         @Override
         public <T> Stream<T> keys(DynamicOps<T> ops) {
@@ -35,6 +35,7 @@ public record DrinkType(WrappedText name, TextColor color, List<BarrelInfo> barr
             return switch (version) {
                 case 0 -> DrinkType.CODEC_V0.decode(ops, input);
                 case 1 -> DrinkType.CODEC_V1.decode(ops, input);
+                case 2 -> DrinkType.CODEC_V2.decode(ops, input);
 
                 default -> DataResult.error("Unsupported brew version: " + version + "!");
             };
@@ -42,9 +43,25 @@ public record DrinkType(WrappedText name, TextColor color, List<BarrelInfo> barr
 
         @Override
         public <T> RecordBuilder<T> encode(DrinkType input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
-            return CODEC_V1.encode(input, ops, prefix.add("version", ops.createInt(1)));
+            return CODEC_V2.encode(input, ops, prefix.add("version", ops.createInt(2)));
         }
     });
+    public static MapCodec<DrinkType> CODEC_V2 = RecordCodecBuilder.mapCodec(instance ->
+            instance.group(
+                    WrappedText.CODEC.fieldOf("name").forGetter(DrinkType::name),
+                    TextColor.CODEC.fieldOf("color").forGetter(DrinkType::color),
+                    Codec.list(BarrelInfo.CODEC_V1).optionalFieldOf("barrel_definitions", List.of()).forGetter(DrinkType::barrelInfo),
+                    ExpressionUtil.createCodec(ExpressionUtil.AGE_KEY).fieldOf("base_quality_value").forGetter(DrinkType::baseQuality),
+                    ExpressionUtil.COMMON_EXPRESSION.fieldOf("alcoholic_value").forGetter(DrinkType::alcoholicValue),
+                    Codec.list(ConsumptionEffect.CODEC).optionalFieldOf("entries", new ArrayList<>()).forGetter(DrinkType::consumptionEffects),
+                    ExpressionUtil.createCodec(ExpressionUtil.AGE_KEY).fieldOf("cooking_quality_multiplier").forGetter(DrinkType::cookingQualityMult),
+                    Codec.list(BrewIngredient.CODEC_V1).optionalFieldOf("ingredients", new ArrayList<>()).forGetter(DrinkType::ingredients),
+                    Codec.INT.optionalFieldOf("distillation_runs", 0).forGetter(DrinkType::distillationRuns),
+                    Codec.list(ConsumptionEffect.CODEC).optionalFieldOf("unfinished_brew_effects", new ArrayList<>()).forGetter(DrinkType::unfinishedEffects),
+                    DrinkInfo.CODEC.optionalFieldOf("book_information").forGetter(DrinkType::info),
+                    Codec.BOOL.optionalFieldOf("show_quality", true).forGetter(DrinkType::showQuality)
+            ).apply(instance, DrinkType::new));
+
     public static MapCodec<DrinkType> CODEC_V1 = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
                     WrappedText.CODEC.fieldOf("name").forGetter(DrinkType::name),
@@ -55,10 +72,11 @@ public record DrinkType(WrappedText name, TextColor color, List<BarrelInfo> barr
                     Codec.list(ConsumptionEffect.CODEC).optionalFieldOf("entries", new ArrayList<>()).forGetter(DrinkType::consumptionEffects),
                     ExpressionUtil.createCodec(ExpressionUtil.AGE_KEY).fieldOf("cooking_quality_multiplier").forGetter(DrinkType::cookingQualityMult),
                     Codec.list(BrewIngredient.CODEC_V1).optionalFieldOf("ingredients", new ArrayList<>()).forGetter(DrinkType::ingredients),
-                    Codec.BOOL.optionalFieldOf("require_distillation", false).forGetter(DrinkType::requireDistillation),
+                    Codec.BOOL.xmap(x -> x ? 1 : 0, i -> i == 1).optionalFieldOf("require_distillation", 0).forGetter(DrinkType::distillationRuns),
                     Codec.list(ConsumptionEffect.CODEC).optionalFieldOf("unfinished_brew_effects", new ArrayList<>()).forGetter(DrinkType::unfinishedEffects),
-                    DrinkInfo.CODEC.optionalFieldOf("book_information").forGetter(DrinkType::info)
-                    ).apply(instance, DrinkType::new));
+                    DrinkInfo.CODEC.optionalFieldOf("book_information").forGetter(DrinkType::info),
+                    Codec.BOOL.optionalFieldOf("show_quality", true).forGetter(DrinkType::showQuality)
+            ).apply(instance, DrinkType::new));
 
     public static MapCodec<DrinkType> CODEC_V0 = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
@@ -70,11 +88,13 @@ public record DrinkType(WrappedText name, TextColor color, List<BarrelInfo> barr
                     Codec.list(ConsumptionEffect.CODEC).optionalFieldOf("entries", new ArrayList<>()).forGetter(DrinkType::consumptionEffects),
                     ExpressionUtil.createCodec(ExpressionUtil.AGE_KEY).fieldOf("cookingQuality").forGetter(DrinkType::cookingQualityMult),
                     Codec.list(BrewIngredient.CODEC_V0).optionalFieldOf("ingredients", new ArrayList<>()).forGetter(DrinkType::ingredients),
-                    Codec.BOOL.optionalFieldOf("requireDistillation", false).forGetter(DrinkType::requireDistillation),
+                    Codec.BOOL.xmap(x -> x ? 1 : 0, i -> i == 1).optionalFieldOf("requireDistillation", 0).forGetter(DrinkType::distillationRuns),
                     Codec.list(ConsumptionEffect.CODEC).optionalFieldOf("unfinishedEffects", new ArrayList<>()).forGetter(DrinkType::unfinishedEffects),
-                    DrinkInfo.OLD_CODEC.optionalFieldOf("info").forGetter(DrinkType::info)
+                    DrinkInfo.OLD_CODEC.optionalFieldOf("info").forGetter(DrinkType::info),
+                    Codec.BOOL.optionalFieldOf("show_quality", true).forGetter(DrinkType::showQuality)
             ).apply(instance, DrinkType::new));
-
+    
+    
     public static DrinkType create(Text name, TextColor color, List<BarrelInfo> barrelInfo, String quality, String alcoholicValue, List<ConsumptionEffect> consumptionEffects, String cookingTime, List<BrewIngredient> ingredients, DrinkInfo info) {
         return create(name, color, barrelInfo, quality, alcoholicValue, consumptionEffects, cookingTime, ingredients, false, List.of(), info);
     }
@@ -83,15 +103,26 @@ public record DrinkType(WrappedText name, TextColor color, List<BarrelInfo> barr
     public static DrinkType create(Text name, TextColor color, List<BarrelInfo> barrelInfo, String quality, String alcoholicValue,
                                    List<ConsumptionEffect> consumptionEffects, String cookingTime, List<BrewIngredient> ingredients,
                                    boolean requireDistillation, List<ConsumptionEffect> unfinishedEffects, DrinkInfo info) {
+        return create(name, color, barrelInfo, quality, alcoholicValue, consumptionEffects, cookingTime, ingredients, requireDistillation ? 1 : 0, unfinishedEffects, info);
+
+    }
+
+    public static DrinkType create(Text name, TextColor color, List<BarrelInfo> barrelInfo, String quality, String alcoholicValue,
+                                   List<ConsumptionEffect> consumptionEffects, String cookingTime, List<BrewIngredient> ingredients,
+                                   int distillationRuns, List<ConsumptionEffect> unfinishedEffects, DrinkInfo info) {
         return new DrinkType(WrappedText.of(name), color, barrelInfo,
                 WrappedExpression.create(quality, ExpressionUtil.AGE_KEY),
                 WrappedExpression.createDefault(alcoholicValue),
                 consumptionEffects,
                 WrappedExpression.create(cookingTime, ExpressionUtil.AGE_KEY),
-                ingredients, requireDistillation, unfinishedEffects, Optional.of(info)
+                ingredients, distillationRuns, unfinishedEffects, Optional.of(info), true
         );
     }
 
+    public boolean requireDistillation() {
+        return this.distillationRuns > 0;
+    }
+    
     @Nullable
     public BarrelInfo getBarrelInfo(Identifier barrelType) {
         BarrelInfo def = null;
@@ -106,7 +137,7 @@ public record DrinkType(WrappedText name, TextColor color, List<BarrelInfo> barr
     }
 
     public boolean isFinished(ItemStack itemStack) {
-        return DrinkUtils.getAgeInSeconds(itemStack) >= 0 && (!this.requireDistillation || DrinkUtils.getDistillationStatus(itemStack));
+        return DrinkUtils.getAgeInSeconds(itemStack) >= 0 && (!this.requireDistillation() || DrinkUtils.getDistillationStatus(itemStack));
     }
 
     public record BarrelInfo(Identifier type, WrappedExpression qualityChange, int baseTime) {

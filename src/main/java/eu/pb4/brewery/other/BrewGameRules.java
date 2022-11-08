@@ -29,6 +29,14 @@ public class BrewGameRules {
             id("alcohol_value_multiplier").toString(), CATEGORY, GameRuleFactory.createDoubleRule(1, 0)
     );
 
+    public static GameRules.Key<GameRules.BooleanRule> SHOW_AGE = GameRuleRegistry.register(
+            id("show_age").toString(), CATEGORY, GameRuleFactory.createBooleanRule(true)
+    );
+
+    public static GameRules.Key<GameRules.BooleanRule> SHOW_QUALITY = GameRuleRegistry.register(
+            id("show_quality").toString(), CATEGORY, GameRuleFactory.createBooleanRule(true)
+    );
+
     public static void register() {
     }
 }

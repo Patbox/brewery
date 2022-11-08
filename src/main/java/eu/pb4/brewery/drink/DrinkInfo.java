@@ -26,10 +26,10 @@ public record DrinkInfo(double bestCookingTime, double bestBarrelAge, List<Strin
             ).apply(instance, DrinkInfo::new));
 
     public static DrinkInfo defaults(double bestCookingTimeMinutes, double bestBarrelAgeDays, String bestBarrelType, List<Text> texts) {
-        return new DrinkInfo(bestCookingTimeMinutes * 60, bestBarrelAgeDays * 1200, List.of(bestBarrelType), texts.stream().map(x -> WrappedText.of(x)).collect(Collectors.toList()));
+        return new DrinkInfo(bestCookingTimeMinutes * 60, bestBarrelAgeDays * 1200, bestBarrelType.isEmpty() ? List.of() : List.of(bestBarrelType), texts.stream().map(x -> WrappedText.of(x)).collect(Collectors.toList()));
     }
 
     public static DrinkInfo defaults(double bestCookingTimeMinutes, double bestBarrelAgeDays, List<Text> texts) {
-        return defaults(bestCookingTimeMinutes, bestBarrelAgeDays, "*", texts);
+        return defaults(bestCookingTimeMinutes, bestBarrelAgeDays,  bestBarrelAgeDays > 0 ? "*" : "", texts);
     }
 }

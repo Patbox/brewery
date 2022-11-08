@@ -15,6 +15,7 @@ import eu.pb4.brewery.item.BookOfBreweryItem;
 import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.other.BrewCommands;
 import eu.pb4.brewery.other.BrewGameRules;
+import eu.pb4.brewery.other.BrewNetworking;
 import eu.pb4.polymer.api.resourcepack.PolymerRPUtils;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
@@ -49,7 +50,7 @@ public class BreweryInit implements ModInitializer {
 
     public static final boolean IS_DEV = FabricLoader.getInstance().isDevelopmentEnvironment();
     public static final boolean DISPLAY_DEV = IS_DEV && false;
-    public static final boolean USE_GENERATOR = IS_DEV && true;
+    public static final boolean USE_GENERATOR = IS_DEV && false;
 
     public static Identifier id(String path) {
         return new Identifier(MOD_ID, path);
@@ -65,6 +66,8 @@ public class BreweryInit implements ModInitializer {
         BrewItems.register();
         BrewGameRules.register();
 
+        BrewNetworking.register();
+
         ServerLifecycleEvents.SERVER_STARTED.register(BreweryInit::loadDrinks);
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((x, y, z) -> BreweryInit.loadDrinks(x));
 
@@ -77,11 +80,20 @@ public class BreweryInit implements ModInitializer {
         }
     }
 
-    private static void loadDrinks(MinecraftServer server) {
+    public static void clearData() {
         DRINK_TYPES.clear();
         DRINK_TYPE_ID.clear();
         ITEM_ALCOHOL_REMOVAL_VALUES.clear();
         ALCOHOL_EFFECTS.clear();
+    }
+
+    public static void addDrink(Identifier identifier, DrinkType type) {
+        DRINK_TYPES.put(identifier, type);
+        DRINK_TYPE_ID.put(type, identifier);
+    }
+
+    private static void loadDrinks(MinecraftServer server) {
+        clearData();
 
         for (var res : server.getResourceManager().findResources("brewery_drinks", (x) -> x.getPath().endsWith(".json")).entrySet()) {
             var id = new Identifier(res.getKey().getNamespace(), res.getKey().getPath().substring("brewery_drinks/".length(), res.getKey().getPath().length() - 5));
@@ -89,8 +101,7 @@ public class BreweryInit implements ModInitializer {
             try {
                 var drinkType = DrinkType.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseReader(res.getValue().getReader())).getOrThrow(false, (x) -> {});
 
-                DRINK_TYPES.put(id, drinkType.getFirst());
-                DRINK_TYPE_ID.put(drinkType.getFirst(), id);
+                addDrink(id, drinkType.getFirst());
             } catch (Throwable e) {
                 DRINK_TYPE_ID.remove(DRINK_TYPES.remove(id));
                 LOGGER.warn("{} isn't valid brewery definition!", res.getKey().toString());
@@ -125,8 +136,7 @@ public class BreweryInit implements ModInitializer {
 
                 DefaultDefinitions.createBrews((key, drinkType) -> {
                     var id = new Identifier("brewery:" + key);
-                    DRINK_TYPES.put(id, drinkType);
-                    DRINK_TYPE_ID.put(drinkType, id);
+                    addDrink(id, drinkType);
 
                     try {
                         Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(JsonOps.INSTANCE, drinkType).getOrThrow(false, (x) -> {

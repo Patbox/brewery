@@ -1,21 +1,9 @@
 {
-  "version": 1,
+  "version": 2,
   "book_information": {
     "best_cooking_time": 300.0,
-    "best_barrel_age": -1200.0,
-    "best_barrel_type": [
-      ""
-    ]
+    "best_barrel_age": -1200.0
   },
-  "entries": [
-    {
-      "type": "potion",
-      "locked": false,
-      "effect": "minecraft:resistance",
-      "time": "quality * 15",
-      "value": "0"
-    }
-  ],
   "cooking_quality_multiplier": "cos(clamp((age / 60 - 5.0) * 0.5, -2, 2))",
   "ingredients": [
     {
@@ -26,6 +14,15 @@
   ],
   "base_quality_value": "10",
   "alcoholic_value": "0",
+  "entries": [
+    {
+      "type": "potion",
+      "locked": false,
+      "effect": "minecraft:resistance",
+      "time": "quality * 15",
+      "value": "0"
+    }
+  ],
   "name": {
     "translate": "drinktype.brewery.tea"
   },

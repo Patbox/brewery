@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "book_information": {
     "best_cooking_time": 420.0,
     "best_barrel_age": 4200.0,
@@ -16,17 +16,17 @@
       "count": 14
     }
   ],
+  "base_quality_value": "smooth_value_days(3.5, 5.0, 3.5, age) * 10",
+  "alcoholic_value": "7 * (0.75 + quality / 40)",
+  "name": {
+    "translate": "drinktype.brewery.cider"
+  },
+  "color": "#F86820",
   "barrel_definitions": [
     {
       "type": "*",
       "quality_value": "quality",
       "reveal_time": 300
     }
-  ],
-  "base_quality_value": "defaultQualityFunction(3.5, 5.0, 3.5, age)",
-  "alcoholic_value": "7 * (0.75 + quality / 40)",
-  "name": {
-    "translate": "drinktype.brewery.cider"
-  },
-  "color": "#F86820"
+  ]
 }

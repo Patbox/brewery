@@ -1,6 +1,5 @@
 {
-  "version": 1,
-  "require_distillation": true,
+  "version": 2,
   "unfinished_brew_effects": [
     {
       "type": "potion",
@@ -28,6 +27,18 @@
       "*"
     ]
   },
+  "cooking_quality_multiplier": "cos(clamp((age / 60 - 8.0) * 0.25, -2, 2))",
+  "ingredients": [
+    {
+      "items": [
+        "minecraft:sugar"
+      ],
+      "count": 18
+    }
+  ],
+  "distillation_runs": 1,
+  "base_quality_value": "smooth_value_days(16.0, 5.0, 100.0, age) * 10",
+  "alcoholic_value": "30 * (0.75 + quality / 40)",
   "entries": [
     {
       "type": "potion",
@@ -48,26 +59,15 @@
       "time": "(quality - 2) * 10"
     }
   ],
-  "cooking_quality_multiplier": "cos(clamp((age / 60 - 8.0) * 0.25, -2, 2))",
-  "ingredients": [
-    {
-      "items": [
-        "minecraft:sugar"
-      ],
-      "count": 18
-    }
-  ],
+  "name": {
+    "translate": "drinktype.brewery.rum"
+  },
+  "color": "red",
   "barrel_definitions": [
     {
       "type": "*",
       "quality_value": "quality",
       "reveal_time": 300
     }
-  ],
-  "base_quality_value": "defaultQualityFunction(16.0, 5.0, 100.0, age)",
-  "alcoholic_value": "30 * (0.75 + quality / 40)",
-  "name": {
-    "translate": "drinktype.brewery.rum"
-  },
-  "color": "red"
+  ]
 }

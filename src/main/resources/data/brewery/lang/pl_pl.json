@@ -50,6 +50,8 @@
   "gamerule.brewery:alcohol_value_multiplier": "Mnożnik wartości alkoholu",
   "gamerule.brewery:barrel_aging_multiplier": "Mnożnik starzenia w beczce",
   "gamerule.brewery:cauldron_cooking_time_multiplier": "Mnożnik czasu gotowania",
+  "gamerule.brewery:show_age": "Pokaż wiek trunku",
+  "gamerule.brewery:show_quality": "Pokaż jakość trunku",
 
   "polydex.brewery.brewing_recipe": "Receptura Brewery",
   "polydex.brewery.ingredients": "Składniki",

@@ -20,6 +20,9 @@
   "entrypoints": {
     "main": [
       "eu.pb4.brewery.BreweryInit"
+    ],
+    "client": [
+      "eu.pb4.brewery.client.BreweryClientInit"
     ]
   },
   "mixins": [
