@@ -3,7 +3,7 @@ package eu.pb4.brewery.drink;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.item.Item;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
 
 import java.util.List;
 import java.util.Map;
@@ -13,7 +13,7 @@ public record AlcoholValueEffect(boolean replace, List<Value> entries, Map<Item,
             instance.group(
                     Codec.BOOL.fieldOf("replace").forGetter(AlcoholValueEffect::replace),
                     Codec.list(Value.CODEC).fieldOf("entries").forGetter(AlcoholValueEffect::entries),
-                    Codec.unboundedMap(Registry.ITEM.getCodec(), Codec.DOUBLE).optionalFieldOf("alcohol_reduction_items", Map.of()).forGetter(AlcoholValueEffect::itemReduction)
+                    Codec.unboundedMap(Registries.ITEM.getCodec(), Codec.DOUBLE).optionalFieldOf("alcohol_reduction_items", Map.of()).forGetter(AlcoholValueEffect::itemReduction)
 
             ).apply(instance, AlcoholValueEffect::new)
     );

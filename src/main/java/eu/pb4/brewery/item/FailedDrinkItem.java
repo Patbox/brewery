@@ -1,6 +1,7 @@
 package eu.pb4.brewery.item;
 
-import eu.pb4.polymer.api.item.PolymerItem;
+import eu.pb4.polymer.core.api.item.PolymerItem;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.FoodComponent;
@@ -32,8 +33,8 @@ public class FailedDrinkItem extends Item implements PolymerItem {
     }
 
     @Override
-    public ItemStack getPolymerItemStack(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
-        var out =  PolymerItem.super.getPolymerItemStack(itemStack, player);
+    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipContext context, @Nullable ServerPlayerEntity player) {
+        var out =  PolymerItem.super.getPolymerItemStack(itemStack, context, player);
         out.getOrCreateNbt().putInt("CustomPotionColor", 0x051a0a);
         return out;
     }

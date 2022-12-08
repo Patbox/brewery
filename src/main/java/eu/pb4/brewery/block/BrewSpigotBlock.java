@@ -2,7 +2,7 @@ package eu.pb4.brewery.block;
 
 import eu.pb4.brewery.block.entity.BrewBarrelSpigotBlockEntity;
 import eu.pb4.brewery.block.entity.BrewBlockEntities;
-import eu.pb4.polymer.api.block.PolymerBlock;
+import eu.pb4.polymer.core.api.block.PolymerBlock;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;

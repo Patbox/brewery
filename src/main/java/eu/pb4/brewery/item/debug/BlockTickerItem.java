@@ -2,7 +2,7 @@ package eu.pb4.brewery.item.debug;
 
 import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.block.entity.TickableContents;
-import eu.pb4.polymer.api.item.PolymerItem;
+import eu.pb4.polymer.core.api.item.PolymerItem;
 import net.minecraft.item.*;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -37,17 +37,6 @@ public class BlockTickerItem extends Item implements PolymerItem {
     @Override
     public boolean hasGlint(ItemStack stack) {
         return true;
-    }
-
-    @Override
-    public void appendStacks(ItemGroup group, DefaultedList<ItemStack> stacks) {
-        if (BreweryInit.IS_DEV && group == this.getGroup()) {
-            stacks.add(create(20));
-            stacks.add(create(60 * 20));
-            stacks.add(create(60 * 60 * 20));
-            stacks.add(create(24000));
-            stacks.add(create(24000 * 7));
-        }
     }
 
     public ItemStack create(int ticks) {

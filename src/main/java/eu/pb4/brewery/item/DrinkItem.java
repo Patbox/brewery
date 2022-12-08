@@ -6,7 +6,7 @@ import eu.pb4.brewery.drink.DrinkUtils;
 import eu.pb4.brewery.drink.ExpressionUtil;
 import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.brewery.other.BrewUtils;
-import eu.pb4.polymer.api.item.PolymerItem;
+import eu.pb4.polymer.core.api.item.PolymerItem;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.LivingEntity;
@@ -177,8 +177,8 @@ public class DrinkItem extends Item implements PolymerItem {
     }
 
     @Override
-    public ItemStack getPolymerItemStack(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
-        var out = PolymerItem.super.getPolymerItemStack(itemStack, player);
+    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipContext context, @Nullable ServerPlayerEntity player) {
+        var out = PolymerItem.super.getPolymerItemStack(itemStack, context, player);
 
         var type = DrinkUtils.getType(itemStack);
 
@@ -190,13 +190,5 @@ public class DrinkItem extends Item implements PolymerItem {
 
 
         return out;
-    }
-
-    public void appendStacks(ItemGroup group, DefaultedList<ItemStack> stacks) {
-        if (this.isIn(group)) {
-            for (var entry : BreweryInit.DRINK_TYPES.entrySet()) {
-                stacks.add(DrinkUtils.createDrink(entry.getKey(), 0, 10, entry.getValue().requireDistillation()));
-            }
-        }
     }
 }

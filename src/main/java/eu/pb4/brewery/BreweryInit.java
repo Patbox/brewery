@@ -16,7 +16,6 @@ import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.other.BrewCommands;
 import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.brewery.other.BrewNetworking;
-import eu.pb4.polymer.api.resourcepack.PolymerRPUtils;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
@@ -58,7 +57,6 @@ public class BreweryInit implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        PolymerRPUtils.addAssetSource(MOD_ID);
         GenericModInfo.build(FabricLoader.getInstance().getModContainer(MOD_ID).get());
 
         BrewBlocks.register();

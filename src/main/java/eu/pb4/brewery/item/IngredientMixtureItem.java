@@ -3,7 +3,7 @@ package eu.pb4.brewery.item;
 import eu.pb4.brewery.drink.DrinkUtils;
 import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.brewery.other.BrewUtils;
-import eu.pb4.polymer.api.item.PolymerItem;
+import eu.pb4.polymer.core.api.item.PolymerItem;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -60,8 +60,8 @@ public class IngredientMixtureItem extends Item implements PolymerItem {
     }
 
     @Override
-    public ItemStack getPolymerItemStack(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
-        var out = PolymerItem.super.getPolymerItemStack(itemStack, player);
+    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipContext context, @Nullable ServerPlayerEntity player) {
+        var out = PolymerItem.super.getPolymerItemStack(itemStack, context, player);
         out.getOrCreateNbt().putInt("CustomPotionColor", 3694022);
         return out;
     }

@@ -6,11 +6,11 @@ import eu.pb4.brewery.other.BrewUtils;
 import eu.pb4.brewery.other.WrappedText;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.dynamic.Codecs;
-import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -184,14 +184,14 @@ public record DrinkType(WrappedText name, TextColor color, List<BarrelInfo> barr
 
         public static Codec<BrewIngredient> CODEC_V1 = RecordCodecBuilder.create(instance ->
                 instance.group(
-                        Codec.list(Registry.ITEM.getCodec()).fieldOf("items").forGetter(BrewIngredient::items),
+                        Codec.list(Registries.ITEM.getCodec()).fieldOf("items").forGetter(BrewIngredient::items),
                         Codec.INT.optionalFieldOf("count", 1).forGetter(BrewIngredient::count),
                         ItemStack.CODEC.optionalFieldOf("dropped_stack", ItemStack.EMPTY).forGetter(BrewIngredient::returnedItemStack)
                 ).apply(instance, BrewIngredient::new));
 
         public static Codec<BrewIngredient> CODEC_V0 = RecordCodecBuilder.create(instance ->
                 instance.group(
-                        Codec.list(Registry.ITEM.getCodec()).fieldOf("items").forGetter(BrewIngredient::items),
+                        Codec.list(Registries.ITEM.getCodec()).fieldOf("items").forGetter(BrewIngredient::items),
                         Codec.INT.optionalFieldOf("count", 1).forGetter(BrewIngredient::count),
                         ItemStack.CODEC.optionalFieldOf("returnedItemStack", ItemStack.EMPTY).forGetter(BrewIngredient::returnedItemStack)
                 ).apply(instance, BrewIngredient::new));
