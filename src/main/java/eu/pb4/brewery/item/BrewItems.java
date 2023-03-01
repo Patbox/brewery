@@ -12,6 +12,7 @@ import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 import static eu.pb4.brewery.BreweryInit.id;
 
@@ -37,7 +38,7 @@ public class BrewItems {
                 e.add(BARREL_SPIGOT);
 
                 for (var entry : BreweryInit.DRINK_TYPES.entrySet()) {
-                    e.add(DrinkUtils.createDrink(entry.getKey(), 0, 10, entry.getValue().requireDistillation()));
+                    e.add(DrinkUtils.createDrink(entry.getKey(), 0, 10, entry.getValue().distillationRuns(), new Identifier("air")));
                 }
 
                 if (BreweryInit.IS_DEV) {

@@ -9,6 +9,7 @@ import eu.pb4.brewery.drink.ExpressionUtil;
 import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.item.IngredientMixtureItem;
 import eu.pb4.brewery.other.BrewGameRules;
+import eu.pb4.brewery.other.BrewUtils;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import it.unimi.dsi.fastutil.longs.LongArraySet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -18,6 +19,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
+import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtLongArray;
@@ -29,11 +31,15 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
+import java.util.stream.IntStream;
 
-public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEntity implements TickableContents {
+public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEntity implements TickableContents, SidedInventory {
+    private static final int[] SLOTS = IntStream.range(0, 27).toArray();
     private final LongSet parts = new LongArraySet();
     private DefaultedList<ItemStack> inventory;
     private long lastTicked = -1;
@@ -124,7 +130,7 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
                     }
 
                     var ingredients = IngredientMixtureItem.getIngredients(stack);
-                    var types = DrinkUtils.findTypes(ingredients, this.material.type());
+                    var types = DrinkUtils.findTypes(ingredients, this.material.type(), DrinkUtils.getHeatSource(stack));
 
                     if (types.isEmpty() && oldType == null) {
                         this.setStack(i, new ItemStack(BrewItems.FAILED_DRINK_ITEM));
@@ -249,6 +255,33 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
         new Gui(player);
     }
 
+    @Override
+    public int[] getAvailableSlots(Direction side) {
+        return SLOTS;
+    }
+
+    @Override
+    public boolean canInsert(int slot, ItemStack stack, @Nullable Direction dir) {
+        return canInsert(stack);
+    }
+
+    public boolean canInsert(ItemStack stack) {
+        if (stack.isOf(BrewItems.DRINK_ITEM)) {
+
+            var type = DrinkUtils.getType(stack);
+            var barrelType = DrinkUtils.getBarrelType(stack);
+            return type != null && !type.barrelInfo().isEmpty() &&
+                    (barrelType.isEmpty() || barrelType.equals(this.material.type()) || DrinkUtils.getAgeInTicks(stack) <= 0);
+        } else {
+            return stack.isOf(BrewItems.INGREDIENT_MIXTURE);
+        }
+    }
+
+    @Override
+    public boolean canExtract(int slot, ItemStack stack, Direction dir) {
+        return true;
+    }
+
     private class Gui extends SimpleGui {
         public Gui(ServerPlayerEntity player) {
             super(ScreenHandlerType.GENERIC_9X3, player, false);
@@ -258,13 +291,7 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
                 this.setSlotRedirect(i, new Slot(BrewBarrelSpigotBlockEntity.this, i, 0, 0) {
                     @Override
                     public boolean canInsert(ItemStack stack) {
-                        if (stack.isOf(BrewItems.DRINK_ITEM)) {
-
-                            var type = DrinkUtils.getType(stack);
-                            var barrelType = DrinkUtils.getBarrelType(stack);
-                            return super.canInsert(stack) && type != null && !type.barrelInfo().isEmpty() &&
-                                    (barrelType.isEmpty() || barrelType.equals(BrewBarrelSpigotBlockEntity.this.material.type()) || DrinkUtils.getAgeInTicks(stack) <= 0);
-                        } else return stack.isOf(BrewItems.INGREDIENT_MIXTURE);
+                        return BrewBarrelSpigotBlockEntity.this.canInsert(stack);
                     }
 
                     @Override

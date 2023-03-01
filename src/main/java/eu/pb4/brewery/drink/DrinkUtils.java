@@ -2,8 +2,12 @@ package eu.pb4.brewery.drink;
 
 import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.item.BrewItems;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,6 +22,7 @@ public class DrinkUtils {
     public static final String QUALITY_MULT_NBT = "BrewQualityMult";
     public static final String BARREL_TYPE_NBT = "BrewBarrelType";
     public static final String DISTILLATED_NBT = "BrewDistillated";
+    public static final String HEAT_SOURCE_NBT = "BrewHeatSource";
 
     @Nullable
     public static DrinkType getType(ItemStack stack) {
@@ -68,6 +73,15 @@ public class DrinkUtils {
         return false;
     }
 
+    @Nullable
+    public static Block getHeatSource(ItemStack stack) {
+        if (stack.hasNbt() && stack.getNbt().contains(HEAT_SOURCE_NBT)) {
+            return Registries.BLOCK.get(Identifier.tryParse(stack.getNbt().getString(HEAT_SOURCE_NBT)));
+        }
+
+        return Blocks.FIRE;
+    }
+
     public static boolean canBeDistillated(ItemStack stack) {
         var type = DrinkUtils.getType(stack);
         var already = DrinkUtils.getDistillationStatus(stack);
@@ -90,19 +104,14 @@ public class DrinkUtils {
         return getAgeInTicks(stack) / 20d;
     }
 
-    public static ItemStack createDrink(Identifier type, int age, double quality, boolean distillated) {
-        var typex = BreweryInit.DRINK_TYPES.get(type);
-
-        return createDrink(type, age, quality, distillated ? typex != null ? typex.distillationRuns() : 1 : 0);
-    }
-
-    public static ItemStack createDrink(Identifier type, int age, double quality, int distillated) {
+    public static ItemStack createDrink(Identifier type, int age, double quality, int distillated, Identifier heatingSource) {
         var stack = new ItemStack(BrewItems.DRINK_ITEM);
 
         stack.getOrCreateNbt().putInt(AGE_NBT, age);
         stack.getOrCreateNbt().putDouble(QUALITY_NBT, quality);
         stack.getOrCreateNbt().putString(TYPE_NBT, type.toString());
         stack.getOrCreateNbt().putInt(DISTILLATED_NBT, distillated);
+        stack.getOrCreateNbt().putString(HEAT_SOURCE_NBT, heatingSource.toString());
 
         return stack;
     }
@@ -125,14 +134,15 @@ public class DrinkUtils {
         return 1;
     }
 
-    public static List<DrinkType> findTypes(List<ItemStack> ingredients, Identifier barrelType) {
+    public static List<DrinkType> findTypes(List<ItemStack> ingredients, Identifier barrelType, Block heatSource) {
         if (ingredients.isEmpty()) {
             return List.of();
         }
         var list = new ArrayList<DrinkType>();
         base:
         for (var type : BreweryInit.DRINK_TYPES.values()) {
-            if (((barrelType == null && type.barrelInfo().isEmpty()) || (barrelType != null && type.getBarrelInfo(barrelType) != null)) && !type.ingredients().isEmpty()) {
+            if (((barrelType == null && type.barrelInfo().isEmpty()) || (barrelType != null && type.getBarrelInfo(barrelType) != null))
+                    && !type.ingredients().isEmpty() && (type.heatSource().isEmpty() || type.heatSource().get().contains(Registries.BLOCK.getEntry(heatSource)))) {
                 var ing = new ArrayList<ItemStack>(ingredients.size());
                 for (var i : ingredients) {
                     ing.add(new ItemStack(i.getItem(), i.getCount()));

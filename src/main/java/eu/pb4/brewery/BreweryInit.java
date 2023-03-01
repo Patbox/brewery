@@ -27,6 +27,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -91,13 +92,14 @@ public class BreweryInit implements ModInitializer {
     }
 
     private static void loadDrinks(MinecraftServer server) {
+        var ops = RegistryOps.of(JsonOps.INSTANCE, server.getRegistryManager());
         clearData();
 
         for (var res : server.getResourceManager().findResources("brewery_drinks", (x) -> x.getPath().endsWith(".json")).entrySet()) {
             var id = new Identifier(res.getKey().getNamespace(), res.getKey().getPath().substring("brewery_drinks/".length(), res.getKey().getPath().length() - 5));
 
             try {
-                var drinkType = DrinkType.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseReader(res.getValue().getReader())).getOrThrow(false, (x) -> {});
+                var drinkType = DrinkType.CODEC.decode(ops, JsonParser.parseReader(res.getValue().getReader())).getOrThrow(false, (x) -> {});
 
                 addDrink(id, drinkType.getFirst());
             } catch (Throwable e) {
@@ -109,7 +111,7 @@ public class BreweryInit implements ModInitializer {
 
         for (var res : server.getResourceManager().findResources("", (x) -> x.getPath().equals("brewery_effects.json")).entrySet()) {
             try {
-                var effects = AlcoholValueEffect.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseReader(res.getValue().getReader())).result().get().getFirst();
+                var effects = AlcoholValueEffect.CODEC.decode(ops, JsonParser.parseReader(res.getValue().getReader())).result().get().getFirst();
 
                 if (effects.replace()) {
                     ALCOHOL_EFFECTS.clear();
@@ -137,7 +139,7 @@ public class BreweryInit implements ModInitializer {
                     addDrink(id, drinkType);
 
                     try {
-                        Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(JsonOps.INSTANCE, drinkType).getOrThrow(false, (x) -> {
+                        Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(ops, drinkType).getOrThrow(false, (x) -> {
                         })));
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -155,7 +157,7 @@ public class BreweryInit implements ModInitializer {
                 ALCOHOL_EFFECTS.addAll(effects.entries());
                 try {
                     Files.writeString(FabricLoader.getInstance().getGameDir().resolve("../src/main/resources/data/brewery/brewery_effects.json"),
-                            gson.toJson(AlcoholValueEffect.CODEC.encodeStart(JsonOps.INSTANCE, effects).result().get()
+                            gson.toJson(AlcoholValueEffect.CODEC.encodeStart(ops, effects).result().get()
                             ));
                 } catch (IOException e) {
                     e.printStackTrace();

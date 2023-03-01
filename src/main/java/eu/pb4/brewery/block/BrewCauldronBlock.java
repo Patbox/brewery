@@ -31,7 +31,7 @@ public class BrewCauldronBlock extends BlockWithEntity implements PolymerBlock {
         }
 
         var blockBelow = world.getBlockState(pos.down());
-        return blockBelow.isIn(BlockTags.FIRE) || blockBelow.isIn(BlockTags.CAMPFIRES);
+        return blockBelow.isIn(BrewBlockTags.IS_HEAT_SOURCE);
     }
 
     public static ActionResult tryReplaceCauldron(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) {

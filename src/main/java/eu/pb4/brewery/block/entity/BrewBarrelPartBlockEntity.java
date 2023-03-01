@@ -2,6 +2,7 @@ package eu.pb4.brewery.block.entity;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.inventory.SidedInventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
@@ -39,5 +40,9 @@ public final class BrewBarrelPartBlockEntity extends BlockEntity {
     @Nullable
     public BlockPos getContainer() {
         return this.container;
+    }
+
+    public BrewBarrelSpigotBlockEntity getContainerBe() {
+        return this.world.getBlockEntity(this.getContainer()) instanceof BrewBarrelSpigotBlockEntity be ? be : null;
     }
 }

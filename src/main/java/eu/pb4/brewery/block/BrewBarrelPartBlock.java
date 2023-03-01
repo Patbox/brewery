@@ -7,6 +7,7 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.BlockHalf;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootTable;
 import net.minecraft.loot.LootTables;
@@ -27,12 +28,13 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldAccess;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
 
-public final class BrewBarrelPartBlock extends Block implements PolymerBlock, BlockEntityProvider {
+public final class BrewBarrelPartBlock extends Block implements PolymerBlock, BlockEntityProvider, InventoryProvider {
     public final BarrelMaterial barrelMaterial;
     public static final Property<Shape> SHAPE = EnumProperty.of("shape", Shape.class);
 
@@ -123,6 +125,16 @@ public final class BrewBarrelPartBlock extends Block implements PolymerBlock, Bl
             return this.getDefaultState().with(SHAPE, y == 0 ? pair1.getLeft() : pair1.getRight());
         }
 
+
+        return null;
+    }
+
+    @Override
+    public SidedInventory getInventory(BlockState state, WorldAccess world, BlockPos pos) {
+
+        if(world.getBlockEntity(pos) instanceof BrewBarrelPartBlockEntity be) {
+            return be.getContainerBe();
+        }
 
         return null;
     }

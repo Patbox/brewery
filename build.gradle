@@ -42,11 +42,11 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation include('fr.catcore:server-translations-api:1.4.18+1.19.2')
-	modImplementation include('eu.pb4:polymer-core:0.3.0-rc.3+1.19.3')
+	modImplementation include('fr.catcore:server-translations-api:1.4.19+1.19.3')
+	modImplementation include('eu.pb4:polymer-core:0.3.11+1.19.3')
 	modImplementation include("eu.pb4:hologram-api:0.2.3+1.19.3")
-	modImplementation include("eu.pb4:sgui:1.2.0+1.19.3")
-	modImplementation include("eu.pb4:placeholder-api:2.0.0-pre.2+1.19.3")
+	modImplementation include("eu.pb4:sgui:1.2.1+1.19.3")
+	modImplementation include("eu.pb4:placeholder-api:2.0.0-pre.4+1.19.3")
 	modImplementation include("me.lucko:fabric-permissions-api:0.1-SNAPSHOT")
 	//modImplementation include('xyz.nucleoid:more-codecs:0.2.2+1.18')
 

@@ -39,7 +39,7 @@ public abstract class BrewingStandBlockEntityMixin {
                 if (DrinkUtils.canBeDistillated(stack)) {
                     if (stack.isOf(BrewItems.INGREDIENT_MIXTURE)) {
                         var ingredients = IngredientMixtureItem.getIngredients(stack);
-                        var types = DrinkUtils.findTypes(ingredients, null);
+                        var types = DrinkUtils.findTypes(ingredients, null, DrinkUtils.getHeatSource(stack));
 
                         if (types.isEmpty()) {
                             slots.set(i, new ItemStack(BrewItems.FAILED_DRINK_ITEM));

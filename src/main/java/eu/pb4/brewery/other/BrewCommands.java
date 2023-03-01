@@ -129,15 +129,15 @@ public class BrewCommands {
             age = 0;
         }
 
-        boolean distillated;
+        int distillated;
 
         try {
-            distillated = BoolArgumentType.getBool(context, "distillated");
+            distillated = BoolArgumentType.getBool(context, "distillated") ? type.distillationRuns() : 0;
         } catch (Throwable e) {
-            distillated = type.requireDistillation();
+            distillated = 0;
         }
 
-        context.getSource().getPlayerOrThrow().giveItemStack(DrinkUtils.createDrink(id, age, quality, distillated));
+        context.getSource().getPlayerOrThrow().giveItemStack(DrinkUtils.createDrink(id, age, quality, distillated, new Identifier("air")));
 
         return 1;
     }

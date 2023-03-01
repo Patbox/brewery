@@ -14,6 +14,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Style;
@@ -114,7 +116,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
 
         for (var e : types) {
             var type = e.getValue();
-            indexEntries.add(type.name().text().copy().styled(x -> x.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/_gui " + e.getKey())).withUnderline(true)));
+            indexEntries.add(type.name().text().copy().styled(x -> x.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/brewery$gui " + e.getKey())).withUnderline(true)));
 
             try {
                 buildInfo(e.getKey(), e.getValue(), barrelAgingMultiplier, cookingTimeMultiplier);
@@ -225,7 +227,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
         new BrewGui(player, identifier, false, runnable).open();
     }
 
-    private static final class IndexGui extends BookGui {
+    public static final class IndexGui extends BookGui {
         public static ItemStack book;
         private final ItemStack stack;
         private final Hand hand;
@@ -250,13 +252,14 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
         @Override
         public boolean onCommand(String command) {
             try {
-
-                if (command.startsWith("/_gui ")) {
-                    var id = Identifier.tryParse(command.substring(6));
+                if (command.startsWith("/brewery$gui ")) {
+                    var id = Identifier.tryParse(command.substring("/brewery$gui ".length()));
 
                     if (id != null) {
-                        this.close();
-                        new BrewGui(player, id, true, () -> this.open()).open();
+                        this.player.server.execute(() -> {
+                            this.player.playSound(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
+                            new BrewGui(player, id, true, () -> this.open()).open();
+                        });
                     }
                 }
                 return true;
@@ -275,6 +278,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
         @Override
         public void setPage(int page) {
             super.setPage(page);
+            this.player.playSound(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
 
             if (this.stack == this.player.getStackInHand(hand)) {
                 this.stack.getOrCreateNbt().putInt("Page", page);
@@ -282,7 +286,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
         }
     }
 
-    private static final class BrewGui extends BookGui {
+    public static final class BrewGui extends BookGui {
         public static final Map<Identifier, ItemStack> BOOKS = new HashMap<>();
         private final Runnable runnable;
         private boolean forceReopen;
@@ -291,6 +295,12 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
             super(player, BOOKS.get(identifier));
             this.runnable = runnable;
             this.forceReopen = forceReopen;
+        }
+
+        @Override
+        public void setPage(int page) {
+            super.setPage(page);
+            this.player.playSound(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
         }
 
         @Override

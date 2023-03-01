@@ -21,6 +21,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
@@ -127,8 +128,8 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
             for (var nbt : this.inventory) {
                 ingredients.add(ItemStack.fromNbt((NbtCompound) nbt));
             }
-
-            var types = DrinkUtils.findTypes(ingredients, null);
+            var heatSource = this.getWorld().getBlockState(this.pos.down()).getBlock();
+            var types = DrinkUtils.findTypes(ingredients, null, heatSource);
 
             var age = this.timeCooking * agingMultiplier;
 
@@ -154,10 +155,11 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
 
                     out.getOrCreateNbt().putDouble(DrinkUtils.AGE_COOK_NBT, age);
                     out.getOrCreateNbt().put("Ingredients", this.inventory.copy());
+                    out.getOrCreateNbt().putString(DrinkUtils.HEAT_SOURCE_NBT, Registries.BLOCK.getId(heatSource).toString());
 
                     player.giveItemStack(out);
                 } else {
-                    player.giveItemStack(DrinkUtils.createDrink(BreweryInit.DRINK_TYPE_ID.get(match), 0, quality * 10, false));
+                    player.giveItemStack(DrinkUtils.createDrink(BreweryInit.DRINK_TYPE_ID.get(match), 0, quality * 10, 0, Registries.BLOCK.getId(heatSource)));
                 }
             }
 
