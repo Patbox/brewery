@@ -17,14 +17,6 @@ public record DrinkInfo(double bestCookingTime, double bestBarrelAge, List<Strin
                 Codec.list(WrappedText.CODEC).optionalFieldOf("texts", List.of()).forGetter(DrinkInfo::additionalInfo)
             ).apply(instance, DrinkInfo::new));
 
-    public static Codec<DrinkInfo> OLD_CODEC = RecordCodecBuilder.create(instance ->
-            instance.group(
-                    Codec.DOUBLE.optionalFieldOf("bestCookingTime", -1d).forGetter(DrinkInfo::bestCookingTime),
-                    Codec.DOUBLE.optionalFieldOf("bestBarrelAge", -1d).forGetter(DrinkInfo::bestBarrelAge),
-                    Codec.list(Codec.STRING).optionalFieldOf("bestBarrelType", List.of()).forGetter(DrinkInfo::bestBarrelType),
-                    Codec.list(WrappedText.CODEC).optionalFieldOf("texts", List.of()).forGetter(DrinkInfo::additionalInfo)
-            ).apply(instance, DrinkInfo::new));
-
     public static DrinkInfo defaults(double bestCookingTimeMinutes, double bestBarrelAgeDays, String bestBarrelType, List<Text> texts) {
         return new DrinkInfo(bestCookingTimeMinutes * 60, bestBarrelAgeDays * 1200, bestBarrelType.isEmpty() ? List.of() : List.of(bestBarrelType), texts.stream().map(x -> WrappedText.of(x)).collect(Collectors.toList()));
     }

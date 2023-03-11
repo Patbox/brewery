@@ -2,15 +2,25 @@ package eu.pb4.brewery.drink;
 
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.duck.StatusEffectInstanceExt;
 import eu.pb4.brewery.other.TypeMapCodec;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageType;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.passive.FoxEntity;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryCodecs;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryElementCodec;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.entry.RegistryFixedCodec;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -398,27 +408,18 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
     }
 
 
-    record Damage(String name, WrappedExpression value, boolean magic, boolean bypassArmor, boolean bypassProtection,
-                  boolean fire, boolean unblockable
-    ) implements ConsumptionEffect {
+    record Damage(RegistryEntry<DamageType> type, WrappedExpression value) implements ConsumptionEffect {
         public static MapCodec<Damage> CODEC = RecordCodecBuilder.mapCodec(instance ->
                 instance.group(
-                        Codec.STRING.fieldOf("name").forGetter(Damage::name),
-                        ExpressionUtil.COMMON_CE_EXPRESSION.fieldOf("value").forGetter(Damage::value),
-                        Codec.BOOL.optionalFieldOf("magic", true).forGetter(Damage::magic),
-                        Codec.BOOL.optionalFieldOf("bypass_armor", true).forGetter(Damage::bypassArmor),
-                        Codec.BOOL.optionalFieldOf("bypass_protection", true).forGetter(Damage::bypassProtection),
-                        Codec.BOOL.optionalFieldOf("fire", false).forGetter(Damage::bypassProtection),
-                        Codec.BOOL.optionalFieldOf("unblockable", true).forGetter(Damage::unblockable)
+                        RegistryFixedCodec.of(RegistryKeys.DAMAGE_TYPE).fieldOf("id").forGetter(Damage::type),
+                        ExpressionUtil.COMMON_CE_EXPRESSION.fieldOf("value").forGetter(Damage::value)
                 ).apply(instance, Damage::new));
-
-        public static ConsumptionEffect of(String name, String value, boolean magic, boolean bypassArmor, boolean bypassProtection,
-                                           boolean fire, boolean unblockable) {
-            return new Damage(name, WrappedExpression.createDefaultCE(value), magic, bypassArmor, bypassProtection, fire, unblockable);
+        public static ConsumptionEffect of(MinecraftServer server, RegistryKey<DamageType> type, String value) {
+            return new Damage(server.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE).getEntry(type).get(), WrappedExpression.createDefaultCE(value));
         }
 
-        public static ConsumptionEffect of(String name, String value) {
-            return of(name, value, true, true, true, false, true);
+        public static ConsumptionEffect of(MinecraftServer server, Identifier type, String value) {
+            return new Damage(server.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE).getEntry(RegistryKey.of(RegistryKeys.DAMAGE_TYPE, type)).get(), WrappedExpression.createDefaultCE(value));
         }
 
         public void apply(LivingEntity user, double age, double quality) {
@@ -429,18 +430,7 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
                     .evaluate();
 
             if (value >= 0) {
-                var source = new DamageSource(this.name) {};
-                if (this.magic) {
-                    source.setUsesMagic();
-                }
-
-                if (this.bypassArmor) {
-                    source.setBypassesArmor();
-                }
-
-                if (this.bypassProtection) {
-                    source.setBypassesProtection();
-                }
+                var source = new DamageSource(type);
 
                 user.damage(source, (float) value);
             }

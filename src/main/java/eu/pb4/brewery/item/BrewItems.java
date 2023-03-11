@@ -33,7 +33,7 @@ public class BrewItems {
             .displayName(Text.literal("Brewery"))
             .icon(() -> Items.BARREL.getDefaultStack())
 
-            .entries((f, e, op) -> {
+            .entries((ctx, e) -> {
                 e.add(BOOK_ITEM);
                 e.add(BARREL_SPIGOT);
 

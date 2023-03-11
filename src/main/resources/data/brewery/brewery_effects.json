@@ -72,8 +72,7 @@
       "effects": [
         {
           "type": "damage",
-          "fire": true,
-          "name": "brewery.alcohol_poisoning",
+          "id": "brewery:alcohol_poisoning",
           "value": "(userAlcoholLevel - 110) / 10 + 1"
         }
       ]

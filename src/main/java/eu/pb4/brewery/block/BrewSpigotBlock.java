@@ -3,14 +3,20 @@ package eu.pb4.brewery.block;
 import eu.pb4.brewery.block.entity.BrewBarrelSpigotBlockEntity;
 import eu.pb4.brewery.block.entity.BrewBlockEntities;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
+import eu.pb4.polymer.core.api.utils.PolymerUtils;
+import eu.pb4.polymer.virtualentity.api.BlockWithElementHolder;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -21,10 +27,12 @@ import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 
-public final class BrewSpigotBlock extends HorizontalFacingBlock implements PolymerBlock, BlockEntityProvider {
+public final class BrewSpigotBlock extends HorizontalFacingBlock implements PolymerBlock, BlockEntityProvider, BlockWithElementHolder {
 
     public BrewSpigotBlock(Settings settings) {
         super(settings);
@@ -49,32 +57,32 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
     public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
         var facing = state.get(FACING);
 
-            for (var pattern : BrewBlocks.BARREL_PATTERNS) {
-                var result = pattern.getRight().testTransform(world, pos.offset(facing)
-                        .add(facing.getOffsetZ(), 1, -facing.getOffsetX()), facing, Direction.UP);
-                if (result != null) {
-                    var mat = pattern.getLeft();
-                    var partBlockType = BrewBlocks.BARREL_PARTS.get(mat.type());
+        for (var pattern : BrewBlocks.BARREL_PATTERNS) {
+            var result = pattern.getRight().testTransform(world, pos.offset(facing)
+                    .add(facing.getOffsetZ(), 1, -facing.getOffsetX()), facing, Direction.UP);
+            if (result != null) {
+                var mat = pattern.getLeft();
+                var partBlockType = BrewBlocks.BARREL_PARTS.get(mat.type());
 
-                    var be = world.getBlockEntity(pos);
-                    if (be instanceof BrewBarrelSpigotBlockEntity spigotBlock) {
-                        spigotBlock.setBarrelType(pattern.getLeft());
-                        for (var x = 0; x < result.getWidth(); x++) {
-                            for (var y = 0; y < result.getHeight(); y++) {
-                                for (var z = 0; z < result.getDepth(); z++) {
-                                    var blockPosition = result.translate(x, y, z);
-                                    var partState = partBlockType.getState(blockPosition.getBlockState().getBlock(), x, y, facing);
-                                    if (partState != null) {
-                                        world.setBlockState(blockPosition.getBlockPos(), partState, 2);
-                                        spigotBlock.addPart(blockPosition.getBlockPos());
-                                        world.getBlockEntity(blockPosition.getBlockPos(), BrewBlockEntities.BARREL_PART).get().setContainer(pos);
-                                    }
+                var be = world.getBlockEntity(pos);
+                if (be instanceof BrewBarrelSpigotBlockEntity spigotBlock) {
+                    spigotBlock.setBarrelType(pattern.getLeft());
+                    for (var x = 0; x < result.getWidth(); x++) {
+                        for (var y = 0; y < result.getHeight(); y++) {
+                            for (var z = 0; z < result.getDepth(); z++) {
+                                var blockPosition = result.translate(x, y, z);
+                                var partState = partBlockType.getState(blockPosition.getBlockState().getBlock(), x, y, facing);
+                                if (partState != null) {
+                                    world.setBlockState(blockPosition.getBlockPos(), partState, 2);
+                                    spigotBlock.addPart(blockPosition.getBlockPos());
+                                    world.getBlockEntity(blockPosition.getBlockPos(), BrewBlockEntities.BARREL_PART).get().setContainer(pos);
                                 }
                             }
                         }
                     }
                 }
             }
+        }
 
         super.onPlaced(world, pos, state, placer, itemStack);
     }
@@ -144,5 +152,27 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
         return BrewBarrelSpigotBlockEntity::ticker;
+    }
+
+    @Override
+    public ElementHolder createElementHolder(BlockPos pos, BlockState initialBlockState) {
+        var holder = new ElementHolder();
+        var m = new Matrix4f();
+
+        for (var i = 0; i < 3; i++) {
+            for (var o = 0; o < 2; o++) {
+                var a = new ItemDisplayElement(PolymerUtils.createPlayerHead("ewogICJ0aW1lc3RhbXAiIDogMTY3ODU0MTAyNzMwNiwKICAicHJvZmlsZUlkIiA6ICI4MTc1MTc4NzQ2MjE0NmY2YjllOWM3MTYyMWRiODQwZSIsCiAgInByb2ZpbGVOYW1lIiA6ICJSZWFwcGVhcmFuY2UiLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNmY3NTVjNDc1YTcwODcxMGQwNGRiZDk0YjNiZDI5MDZlMDFhODMwY2IwNGE2Y2QyYWExY2JhOTk2YmU3OGYyZCIsCiAgICAgICJtZXRhZGF0YSIgOiB7CiAgICAgICAgIm1vZGVsIiA6ICJzbGltIgogICAgICB9CiAgICB9CiAgfQp9"));
+                a.setModelTransformation(ModelTransformationMode.FIXED);
+                a.setDisplayHeight(5f);
+                a.setDisplayWidth(5f);
+                a.setViewRange(0.5f);
+                a.setTransformation(m.identity().rotateY(MathHelper.HALF_PI-initialBlockState.get(FACING).getHorizontal() * MathHelper.HALF_PI)
+                        .translate(-1.3f - i * 1.2f, 0, 0).scale(2)
+                        .rotateX(o * MathHelper.HALF_PI)
+                        .scale(0.15f, 3.001f, 2.001f));
+                holder.addElement(a);
+            }
+        }
+        return holder;
     }
 }

@@ -7,8 +7,9 @@ import eu.pb4.brewery.drink.DrinkUtils;
 import eu.pb4.brewery.drink.ExpressionUtil;
 import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.other.BrewGameRules;
-import eu.pb4.holograms.api.Holograms;
-import eu.pb4.holograms.api.holograms.WorldHologram;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
+import eu.pb4.polymer.virtualentity.api.elements.TextDisplayElement;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.LeveledCauldronBlock;
@@ -26,8 +27,9 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +38,8 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
     private NbtList inventory = new NbtList();
     private long lastTicked = -1;
     private double timeCooking = 0;
-    private WorldHologram hologram = null;
+    private ElementHolder elementHolder;
+    private TextDisplayElement[] textDisplayElement = new TextDisplayElement[4];
 
     public BrewCauldronBlockEntity(BlockPos pos, BlockState state) {
         super(BrewBlockEntities.CAULDRON, pos, state);
@@ -51,11 +54,23 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
                 return;
             }
 
-            if (cauldron.hologram == null) {
+            if (cauldron.elementHolder == null) {
+                cauldron.elementHolder = new ElementHolder();;
+                var matrix = new Matrix4f();
                 var seconds = (int) (cauldron.timeCooking / 20) % 60;
                 var minutes = (int) (cauldron.timeCooking / (20 * 60));
-                cauldron.hologram = Holograms.create(world1, Vec3d.ofBottomCenter(pos).add(0, 1.3, 0), Text.literal(minutes + ":" + (seconds < 10 ? "0" : "") + seconds));
-                cauldron.hologram.show();
+                var text = Text.literal(minutes + ":" + (seconds < 10 ? "0" : "") + seconds);
+                for (int i = 0; i < 4; i++) {
+                    var element = cauldron.textDisplayElement[i] = new TextDisplayElement();
+                    element.setTransformation(matrix.rotationY(i * MathHelper.HALF_PI).translate(0,-0.14f ,0.51f));
+                    element.setDisplayHeight(1f);
+                    element.setDisplayWidth(1f);
+                    element.setText(text);
+                    element.setViewRange(0.3f);
+                    cauldron.elementHolder.addElement(element);
+                }
+
+                ChunkAttachment.of(cauldron.elementHolder, world1, cauldron.pos);
             }
 
             if (BrewCauldronBlock.isValid(pos, state, world)) {
@@ -70,7 +85,11 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
                 if (cauldron.timeCooking % 20 == 0) {
                     var seconds = (int) (cauldron.timeCooking / 20) % 60;
                     var minutes = (int) (cauldron.timeCooking / (20 * 60));
-                    cauldron.hologram.setText(0, Text.literal(minutes + ":" + (seconds < 10 ? "0" : "") + seconds));
+                    var text = Text.literal(minutes + ":" + (seconds < 10 ? "0" : "") + seconds);
+                    for (int i = 0; i < 4; i++) {
+                        cauldron.textDisplayElement[i].setText(text);
+                    }
+                    cauldron.elementHolder.tick();
                 }
             }
 
@@ -81,10 +100,10 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
     @Override
     public void markRemoved() {
         super.markRemoved();
-        if (this.hologram != null) {
-            this.hologram.hide();
+        if (this.elementHolder != null) {
+            this.elementHolder.destroy();
         }
-        this.hologram = null;
+        this.elementHolder = null;
     }
 
     protected void writeNbt(NbtCompound nbt) {

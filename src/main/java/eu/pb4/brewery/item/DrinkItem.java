@@ -173,21 +173,35 @@ public class DrinkItem extends Item implements PolymerItem {
 
     @Override
     public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
+        var type = DrinkUtils.getType(itemStack);
+        if (type != null) {
+            return type.visuals().item();
+        }
+
         return Items.POTION;
     }
 
     @Override
     public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipContext context, @Nullable ServerPlayerEntity player) {
         var out = PolymerItem.super.getPolymerItemStack(itemStack, context, player);
-
         var type = DrinkUtils.getType(itemStack);
 
-        if (type != null && type.isFinished(itemStack)) {
-            out.getOrCreateNbt().putInt("CustomPotionColor", type.color().getRgb());
-        } else if (type != null) {
-            out.getOrCreateNbt().putInt("CustomPotionColor", ColorHelper.Argb.mixColor(type.color().getRgb(), 0x385dc6));
-        }
+        if (type != null) {
+            if (type.isFinished(itemStack)) {
+                out.getOrCreateNbt().putInt("CustomPotionColor", type.color().getRgb());
+            } else {
+                out.getOrCreateNbt().putInt("CustomPotionColor", ColorHelper.Argb.mixColor(type.color().getRgb(), 0x385dc6));
 
+            }
+
+            if (type.visuals().extraNbt().isPresent()) {
+                out.getOrCreateNbt().copyFrom(type.visuals().extraNbt().get());
+            }
+
+            if (type.visuals().model().isPresent()) {
+                out.getOrCreateNbt().putInt("CustomModelData", type.visuals().model().get().value());
+            }
+        }
 
         return out;
     }

@@ -1,16 +1,15 @@
 package eu.pb4.brewery.drink;
 
-import com.mojang.serialization.RecordBuilder;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffectInstance;
+import eu.pb4.brewery.BreweryInit;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.Items;
-import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.Identifier;
 
 
 import java.util.List;
@@ -331,7 +330,7 @@ public class DefaultDefinitions {
         );
     }
 
-    public static AlcoholValueEffect createEffects() {
+    public static AlcoholValueEffect createEffects(MinecraftServer server) {
         return new AlcoholValueEffect(false, List.of(
                 new AlcoholValueEffect.Value(50, 20 * 4, List.of(
                         ConsumptionEffect.Potion.of(StatusEffects.WEAKNESS, "4", "min(max((userAlcoholLevel - 60) / 30, 0), 2)", true, false, false)
@@ -349,7 +348,7 @@ public class DefaultDefinitions {
                         ConsumptionEffect.Potion.of(StatusEffects.DARKNESS, "16", "0", true, false, false)
                 )),
                 new AlcoholValueEffect.Value(90, 20 * 4, List.of(
-                        ConsumptionEffect.Damage.of("brewery.alcohol_poisoning", "(userAlcoholLevel - 110) / 10 + 1")
+                        ConsumptionEffect.Damage.of(server, BreweryInit.id("alcohol_poisoning"), "(userAlcoholLevel - 110) / 10 + 1")
                 ))
         ), Map.of(Items.BREAD, 3d, Items.MILK_BUCKET, 10d));
     }

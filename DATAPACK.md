@@ -36,6 +36,15 @@ Main drink format
   "name": {/* TEXT */},
   // Color of the drink, 
   "color": {/* COLOR */},
+  // Changes how item looks. Optional
+  "visual": {
+    // Changes base item
+    "item": "minecraft:potion",
+    // Additional nbt data that should be attached to item. Optional
+    "nbt": {/* ITEM NBT DATA */},
+    // Model identifier used for server resource pack. Optional
+    "model": "minecraft:item/dragon_breath"
+  },
   // Value of alcohol added to player, has "quality" and "age" parameters 
   "alcoholic_value": {/* EXPRESSION */},
   // List of Ingredients used in cauldron to create it

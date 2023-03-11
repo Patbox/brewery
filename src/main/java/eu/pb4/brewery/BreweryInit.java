@@ -25,8 +25,10 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.cauldron.CauldronBehavior;
+import net.minecraft.entity.damage.DamageType;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
@@ -148,7 +150,7 @@ public class BreweryInit implements ModInitializer {
             }
 
             {
-                var effects = DefaultDefinitions.createEffects();
+                var effects = DefaultDefinitions.createEffects(server);
 
                 if (effects.replace()) {
                     ALCOHOL_EFFECTS.clear();

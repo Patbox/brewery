@@ -30,7 +30,7 @@ public class TypeMapCodec<A extends TypeMapCodec.CodecContainer<A>> extends MapC
         var type = ops.getStringValue(input.get("type")).result();
 
         if (type.isEmpty()) {
-            return DataResult.error("Missing type");
+            return DataResult.error(() -> "Missing type");
         }
 
         try {
@@ -43,7 +43,7 @@ public class TypeMapCodec<A extends TypeMapCodec.CodecContainer<A>> extends MapC
         }
 
 
-        return DataResult.error("Invalid type");
+        return DataResult.error(() -> "Invalid type");
     }
 
     @Override
