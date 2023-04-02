@@ -1,7 +1,7 @@
 package eu.pb4.brewery.block;
 
 import eu.pb4.brewery.block.entity.BrewCauldronBlockEntity;
-import eu.pb4.polymer.core.api.block.PolymerBlock;
+import eu.pb4.polymer.api.block.PolymerBlock;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
@@ -10,7 +10,6 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.state.StateManager;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;

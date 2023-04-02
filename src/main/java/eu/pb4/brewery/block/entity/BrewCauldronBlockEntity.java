@@ -21,12 +21,12 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.Registries;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -155,11 +155,11 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
 
                     out.getOrCreateNbt().putDouble(DrinkUtils.AGE_COOK_NBT, age);
                     out.getOrCreateNbt().put("Ingredients", this.inventory.copy());
-                    out.getOrCreateNbt().putString(DrinkUtils.HEAT_SOURCE_NBT, Registries.BLOCK.getId(heatSource).toString());
+                    out.getOrCreateNbt().putString(DrinkUtils.HEAT_SOURCE_NBT, Registry.BLOCK.getId(heatSource).toString());
 
                     player.giveItemStack(out);
                 } else {
-                    player.giveItemStack(DrinkUtils.createDrink(BreweryInit.DRINK_TYPE_ID.get(match), 0, quality * 10, 0, Registries.BLOCK.getId(heatSource)));
+                    player.giveItemStack(DrinkUtils.createDrink(BreweryInit.DRINK_TYPE_ID.get(match), 0, quality * 10, 0, Registry.BLOCK.getId(heatSource)));
                 }
             }
 

@@ -25,7 +25,7 @@ public class ServerPlayNetworkHandlerMixin {
     @Shadow @Final private MinecraftServer server;
 
     @Inject(method = "handleCommandExecution", at = @At(value = "HEAD"), cancellable = true)
-    private void brewery$onCommand(CommandExecutionC2SPacket packet, LastSeenMessageList lastSeenMessages, CallbackInfo ci) {
+    private void brewery$onCommand(CommandExecutionC2SPacket packet, CallbackInfo ci) {
         if (packet.command().startsWith("brewery$gui") && (player.getMainHandStack().isOf(BrewItems.BOOK_ITEM) || player.getOffHandStack().isOf(BrewItems.BOOK_ITEM))) {
             var id = Identifier.tryParse(packet.command().substring("brewery$gui ".length()));
 

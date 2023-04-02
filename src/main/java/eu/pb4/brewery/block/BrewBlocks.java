@@ -7,11 +7,10 @@ import net.minecraft.block.Material;
 import net.minecraft.block.pattern.BlockPattern;
 import net.minecraft.block.pattern.BlockPatternBuilder;
 import net.minecraft.entity.EntityType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
+import net.minecraft.util.registry.Registry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,10 +71,10 @@ public class BrewBlocks {
     }
 
     private static <T extends Block> T register(String path, T block) {
-        return Registry.register(Registries.BLOCK, id(path), block);
+        return Registry.register(Registry.BLOCK, id(path), block);
     }
 
     private static <T extends Block> T register(Identifier path, T block) {
-        return Registry.register(Registries.BLOCK, path, block);
+        return Registry.register(Registry.BLOCK, path, block);
     }
 }

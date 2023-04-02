@@ -7,15 +7,15 @@ import eu.pb4.brewery.other.WrappedText;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryCodecs;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.tag.TagKey;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.dynamic.Codecs;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryCodecs;
+import net.minecraft.util.registry.RegistryEntry;
+import net.minecraft.util.registry.RegistryEntryList;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -65,7 +65,7 @@ public record DrinkType(WrappedText name, TextColor color, List<BarrelInfo> barr
                     Codec.list(ConsumptionEffect.CODEC).optionalFieldOf("unfinished_brew_effects", new ArrayList<>()).forGetter(DrinkType::unfinishedEffects),
                     DrinkInfo.CODEC.optionalFieldOf("book_information").forGetter(DrinkType::info),
                     Codec.BOOL.optionalFieldOf("show_quality", true).forGetter(DrinkType::showQuality),
-                    RegistryCodecs.entryList(RegistryKeys.BLOCK).optionalFieldOf("required_heat_source").forGetter(DrinkType::heatSource)
+                    RegistryCodecs.entryList(Registry.BLOCK_KEY).optionalFieldOf("required_heat_source").forGetter(DrinkType::heatSource)
             ).apply(instance, DrinkType::new));
 
     public static MapCodec<DrinkType> CODEC_V1 = RecordCodecBuilder.mapCodec(instance ->
@@ -82,7 +82,7 @@ public record DrinkType(WrappedText name, TextColor color, List<BarrelInfo> barr
                     Codec.list(ConsumptionEffect.CODEC).optionalFieldOf("unfinished_brew_effects", new ArrayList<>()).forGetter(DrinkType::unfinishedEffects),
                     DrinkInfo.CODEC.optionalFieldOf("book_information").forGetter(DrinkType::info),
                     Codec.BOOL.optionalFieldOf("show_quality", true).forGetter(DrinkType::showQuality),
-                    RegistryCodecs.entryList(RegistryKeys.BLOCK).optionalFieldOf("required_heat_source").forGetter(DrinkType::heatSource)
+                    RegistryCodecs.entryList(Registry.BLOCK_KEY).optionalFieldOf("required_heat_source").forGetter(DrinkType::heatSource)
             ).apply(instance, DrinkType::new));
     
     
@@ -108,7 +108,7 @@ public record DrinkType(WrappedText name, TextColor color, List<BarrelInfo> barr
                                    List<ConsumptionEffect> consumptionEffects, String cookingTime, List<BrewIngredient> ingredients,
                                    int distillationRuns, List<ConsumptionEffect> unfinishedEffects, DrinkInfo info, TagKey<Block> heatSource) {
         return create(name, color, barrelInfo, quality, alcoholicValue, consumptionEffects, cookingTime, ingredients,
-                distillationRuns, unfinishedEffects, info, Optional.of(RegistryEntryList.of(Registries.BLOCK.getEntryOwner(), heatSource)));
+                distillationRuns, unfinishedEffects, info, Optional.of(RegistryEntryList.of(RegistryEntry.of(Registry.BLOCK.get(heatSource.id())))));
     }
 
     public static DrinkType create(Text name, TextColor color, List<BarrelInfo> barrelInfo, String quality, String alcoholicValue,
@@ -188,14 +188,14 @@ public record DrinkType(WrappedText name, TextColor color, List<BarrelInfo> barr
 
         public static Codec<BrewIngredient> CODEC_V1 = RecordCodecBuilder.create(instance ->
                 instance.group(
-                        Codec.list(Registries.ITEM.getCodec()).fieldOf("items").forGetter(BrewIngredient::items),
+                        Codec.list(Registry.ITEM.getCodec()).fieldOf("items").forGetter(BrewIngredient::items),
                         Codec.INT.optionalFieldOf("count", 1).forGetter(BrewIngredient::count),
                         ItemStack.CODEC.optionalFieldOf("dropped_stack", ItemStack.EMPTY).forGetter(BrewIngredient::returnedItemStack)
                 ).apply(instance, BrewIngredient::new));
 
         public static Codec<BrewIngredient> CODEC_V0 = RecordCodecBuilder.create(instance ->
                 instance.group(
-                        Codec.list(Registries.ITEM.getCodec()).fieldOf("items").forGetter(BrewIngredient::items),
+                        Codec.list(Registry.ITEM.getCodec()).fieldOf("items").forGetter(BrewIngredient::items),
                         Codec.INT.optionalFieldOf("count", 1).forGetter(BrewIngredient::count),
                         ItemStack.CODEC.optionalFieldOf("returnedItemStack", ItemStack.EMPTY).forGetter(BrewIngredient::returnedItemStack)
                 ).apply(instance, BrewIngredient::new));

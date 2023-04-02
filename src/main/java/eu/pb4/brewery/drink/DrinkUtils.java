@@ -3,12 +3,11 @@ package eu.pb4.brewery.drink;
 import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.item.BrewItems;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -76,7 +75,7 @@ public class DrinkUtils {
     @Nullable
     public static Block getHeatSource(ItemStack stack) {
         if (stack.hasNbt() && stack.getNbt().contains(HEAT_SOURCE_NBT)) {
-            return Registries.BLOCK.get(Identifier.tryParse(stack.getNbt().getString(HEAT_SOURCE_NBT)));
+            return Registry.BLOCK.get(Identifier.tryParse(stack.getNbt().getString(HEAT_SOURCE_NBT)));
         }
 
         return Blocks.FIRE;
@@ -142,7 +141,7 @@ public class DrinkUtils {
         base:
         for (var type : BreweryInit.DRINK_TYPES.values()) {
             if (((barrelType == null && type.barrelInfo().isEmpty()) || (barrelType != null && type.getBarrelInfo(barrelType) != null))
-                    && !type.ingredients().isEmpty() && (type.heatSource().isEmpty() || type.heatSource().get().contains(Registries.BLOCK.getEntry(heatSource)))) {
+                    && !type.ingredients().isEmpty() && (type.heatSource().isEmpty() || type.heatSource().get().contains(heatSource.getRegistryEntry()))) {
                 var ing = new ArrayList<ItemStack>(ingredients.size());
                 for (var i : ingredients) {
                     ing.add(new ItemStack(i.getItem(), i.getCount()));

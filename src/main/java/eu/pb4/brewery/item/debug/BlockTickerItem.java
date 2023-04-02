@@ -1,13 +1,11 @@
 package eu.pb4.brewery.item.debug;
 
-import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.block.entity.TickableContents;
-import eu.pb4.polymer.core.api.item.PolymerItem;
+import eu.pb4.polymer.api.item.PolymerItem;
 import net.minecraft.item.*;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.collection.DefaultedList;
 import org.jetbrains.annotations.Nullable;
 
 public class BlockTickerItem extends Item implements PolymerItem {

@@ -10,7 +10,6 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.passive.FoxEntity;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
-import net.minecraft.registry.Registries;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -20,6 +19,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.event.GameEvent;
 
 import java.util.List;
@@ -58,9 +58,9 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
                   boolean particles, boolean showIcon) implements ConsumptionEffect {
         public static MapCodec<Potion> CODEC = RecordCodecBuilder.mapCodec(instance ->
                 instance.group(
-                        Registries.STATUS_EFFECT.createEntryCodec().comapFlatMap(
+                        Registry.STATUS_EFFECT.createEntryCodec().comapFlatMap(
                                         x -> DataResult.success(x.value()),
-                                        x -> Registries.STATUS_EFFECT.getEntry(Registries.STATUS_EFFECT.getRawId(x)).get())
+                                        x -> Registry.STATUS_EFFECT.getEntry(Registry.STATUS_EFFECT.getRawId(x)).get())
                                 .fieldOf("effect").forGetter(Potion::effect),
                         ExpressionUtil.COMMON_CE_EXPRESSION.fieldOf("time").forGetter(Potion::time),
                         ExpressionUtil.COMMON_CE_EXPRESSION.optionalFieldOf("value", WrappedExpression.createDefaultCE("0")).forGetter(Potion::value),

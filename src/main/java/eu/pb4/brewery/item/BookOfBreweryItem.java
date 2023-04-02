@@ -1,10 +1,9 @@
 package eu.pb4.brewery.item;
 
 import eu.pb4.brewery.BreweryInit;
-import eu.pb4.brewery.GenericModInfo;
 import eu.pb4.brewery.drink.DrinkType;
 import eu.pb4.brewery.other.BrewUtils;
-import eu.pb4.polymer.core.api.item.PolymerItem;
+import eu.pb4.polymer.api.item.PolymerItem;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.gui.BookGui;
 import net.fabricmc.loader.api.FabricLoader;
