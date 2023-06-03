@@ -70,6 +70,7 @@ public class BreweryInit implements ModInitializer {
         BrewNetworking.register();
 
         ServerLifecycleEvents.SERVER_STARTED.register(BreweryInit::loadDrinks);
+        ServerLifecycleEvents.SERVER_STARTED.register((s) -> CardboardWarning.checkAndAnnounce());
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((x, y, z) -> BreweryInit.loadDrinks(x));
 
         CommandRegistrationCallback.EVENT.register(BrewCommands::register);

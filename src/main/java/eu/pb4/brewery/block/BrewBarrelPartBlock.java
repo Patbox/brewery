@@ -12,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootTable;
 import net.minecraft.loot.LootTables;
 import net.minecraft.loot.context.LootContext;
+import net.minecraft.loot.context.LootContextParameterSet;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.loot.context.LootContextTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -93,8 +94,8 @@ public final class BrewBarrelPartBlock extends Block implements PolymerBlock, Bl
         }
     }
 
-    @Deprecated
-    public List<ItemStack> getDroppedStacks(BlockState state, LootContext.Builder builder) {
+    @Override
+    public List<ItemStack> getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder) {
         return state.get(SHAPE).state.apply(this.barrelMaterial).getDroppedStacks(builder);
     }
 

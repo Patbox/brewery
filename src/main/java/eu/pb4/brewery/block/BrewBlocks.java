@@ -3,7 +3,6 @@ package eu.pb4.brewery.block;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.Material;
 import net.minecraft.block.pattern.BlockPattern;
 import net.minecraft.block.pattern.BlockPatternBuilder;
 import net.minecraft.entity.EntityType;
@@ -56,7 +55,7 @@ public class BrewBlocks {
         registerBarrel(new Identifier(identifier), Text.translatable("container.brewery." + identifier + "_barrel"), planks, stairsBlock, fenceBlock);
     }
 
-    public static final Block BARREL_SPIGOT = register("barrel_spigot", new BrewSpigotBlock(AbstractBlock.Settings.of(Material.WOOD)));
+    public static final Block BARREL_SPIGOT = register("barrel_spigot", new BrewSpigotBlock(AbstractBlock.Settings.create()));
     public static final Block CAULDRON = register("cauldron", new BrewCauldronBlock(AbstractBlock.Settings.copy(Blocks.CAULDRON).dropsLike(Blocks.CAULDRON)));
 
     public static void register() {

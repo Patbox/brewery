@@ -29,7 +29,7 @@ public class BrewItems {
     public static final Item INGREDIENT_MIXTURE = register("ingredient_mixture", new IngredientMixtureItem(new Item.Settings()));
     public static final BlockTickerItem DEBUG_BLOCK_TICKER = register("debug/block_ticker", new BlockTickerItem(new Item.Settings()));
 
-    public static final ItemGroup ITEM_GROUP = PolymerItemGroupUtils.builder(id("group"))
+    public static final ItemGroup ITEM_GROUP = ItemGroup.create(null, -1)
             .displayName(Text.literal("Brewery"))
             .icon(() -> Items.BARREL.getDefaultStack())
 
@@ -52,7 +52,7 @@ public class BrewItems {
             .build();
 
     public static void register() {
-
+        PolymerItemGroupUtils.registerPolymerItemGroup(id("items"), ITEM_GROUP);
     }
 
     private static <T extends Item> T register(String path, T block) {

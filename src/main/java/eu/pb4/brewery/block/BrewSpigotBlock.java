@@ -18,6 +18,7 @@ import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
@@ -155,7 +156,7 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
     }
 
     @Override
-    public ElementHolder createElementHolder(BlockPos pos, BlockState initialBlockState) {
+    public @Nullable ElementHolder createElementHolder(ServerWorld world, BlockPos pos, BlockState initialBlockState) {
         var holder = new ElementHolder();
         var m = new Matrix4f();
 

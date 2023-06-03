@@ -317,7 +317,7 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
 
                 for (int i = 0; i < 16; ++i) {
                     double g = user.getX() + (user.getRandom().nextDouble() - 0.5D) * distance;
-                    double h = MathHelper.clamp(user.getY() + user.getRandom().nextDouble() - 0.5d, user.world.getBottomY(), user.world.getBottomY() + ((ServerWorld) user.world).getLogicalHeight() - 1);
+                    double h = MathHelper.clamp(user.getY() + user.getRandom().nextDouble() - 0.5d, user.getWorld().getBottomY(), user.getWorld().getBottomY() + ((ServerWorld) user.getWorld()).getLogicalHeight() - 1);
                     double j = user.getZ() + (user.getRandom().nextDouble() - 0.5D) * distance;
                     if (user.hasVehicle()) {
                         user.stopRiding();
@@ -325,9 +325,9 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
 
                     Vec3d vec3d = user.getPos();
                     if (user.teleport(g, h, j, true)) {
-                        user.world.emitGameEvent(GameEvent.TELEPORT, vec3d, GameEvent.Emitter.of(user));
+                        user.getWorld().emitGameEvent(GameEvent.TELEPORT, vec3d, GameEvent.Emitter.of(user));
                         SoundEvent soundEvent = user instanceof FoxEntity ? SoundEvents.ENTITY_FOX_TELEPORT : SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT;
-                        user.world.playSound(null, d, e, f, soundEvent, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                        user.getWorld().playSound(null, d, e, f, soundEvent, SoundCategory.PLAYERS, 1.0F, 1.0F);
                         user.playSound(soundEvent, 1.0F, 1.0F);
                         break;
                     }

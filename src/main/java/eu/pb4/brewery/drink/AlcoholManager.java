@@ -26,7 +26,7 @@ public final class AlcoholManager {
     }
 
     public void drink(DrinkType type, double quality, double alcoholicValue) {
-        var multiplier = this.entity.world.getGameRules().get(BrewGameRules.ALCOHOL_MULTIPLIER).get();
+        var multiplier = this.entity.getWorld().getGameRules().get(BrewGameRules.ALCOHOL_MULTIPLIER).get();
 
         this.alcoholLevel = Math.max(this.alcoholLevel + alcoholicValue * multiplier, alcoholicValue * multiplier);
         if (this.quality == -1) {

@@ -23,6 +23,9 @@
     ],
     "client": [
       "eu.pb4.brewery.client.BreweryClientInit"
+    ],
+    "preLaunch": [
+      "eu.pb4.brewery.CardboardWarning"
     ]
   },
   "mixins": [
@@ -32,7 +35,7 @@
   "depends": {
     "fabricloader": ">=0.14.6",
     "fabric": "*",
-    "minecraft": ">=1.19.1",
+    "minecraft": ">=1.20-",
     "java": ">=17"
   }
 }

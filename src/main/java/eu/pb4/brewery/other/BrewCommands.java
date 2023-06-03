@@ -101,7 +101,7 @@ public class BrewCommands {
 
     private static int showStats(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player) {
         var m = AlcoholManager.of(player);
-        ctx.getSource().sendFeedback(Text.translatable("text.brewery.stats", player.getDisplayName(), m.alcoholLevel, m.quality), false);
+        ctx.getSource().sendFeedback(() -> Text.translatable("text.brewery.stats", player.getDisplayName(), m.alcoholLevel, m.quality), false);
         return 0;
     }
 
@@ -145,7 +145,7 @@ public class BrewCommands {
 
     private static int about(CommandContext<ServerCommandSource> context) {
         for (var text : context.getSource().getEntity() instanceof ServerPlayerEntity ? GenericModInfo.getAboutFull() : GenericModInfo.getAboutConsole()) {
-            context.getSource().sendFeedback(text, false);
+            context.getSource().sendFeedback(() -> text, false);
         }
 
         return 1;
