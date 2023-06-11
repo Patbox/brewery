@@ -68,6 +68,8 @@ public class BrewBlocks {
         registerBarrel("mangrove", Blocks.MANGROVE_PLANKS, Blocks.MANGROVE_STAIRS, Blocks.MANGROVE_FENCE);
         registerBarrel("warped", Blocks.WARPED_PLANKS, Blocks.WARPED_STAIRS, Blocks.WARPED_FENCE);
         registerBarrel("crimson", Blocks.CRIMSON_PLANKS, Blocks.CRIMSON_STAIRS, Blocks.CRIMSON_FENCE);
+        registerBarrel("cherry", Blocks.CHERRY_PLANKS, Blocks.CHERRY_STAIRS, Blocks.CHERRY_FENCE);
+        registerBarrel("bamboo", Blocks.BAMBOO_PLANKS, Blocks.BAMBOO_STAIRS, Blocks.BAMBOO_FENCE);
     }
 
     private static <T extends Block> T register(String path, T block) {
