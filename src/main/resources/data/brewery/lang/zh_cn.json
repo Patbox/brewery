@@ -7,7 +7,7 @@
   "container.brewery.dark_oak_barrel": "深色橡木桶",
   "container.brewery.mangrove_barrel": "红树木桶",
   "container.brewery.crimson_barrel": "绯红木桶",
-  "container.brewery.warped_barrel": "Warped Barrel",
+  "container.brewery.warped_barrel": "诡异木桶",
   "container.brewery.cherry_barrel": "樱花木桶",
   "container.brewery.bamboo_barrel": "竹桶",
 
@@ -42,9 +42,9 @@
   "text.brewery.mc_days": "%s MC日(s)",
   "text.brewery.and": "和",
   "text.brewery.age": "年份: %s",
-  "text.brewery.stats": "%s 数值: 酒精含量: %s, 质量: %s",
+  "text.brewery.stats": "%s 当前状态: 体内酒精含量: %s, 质量: %s",
 
-  "death.attack.brewery.alcohol_poisoning": "%s 身体里已经全是酒精的模样了(酒精中毒)",
+  "death.attack.brewery.alcohol_poisoning": "%s 的身体里被塞满了酒(酒精中毒)",
 
   "text.brewery.about.version": "版本: %s",
   "text.brewery.about.contributors": "开发者",
