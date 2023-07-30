@@ -16,6 +16,13 @@
       "count": 6
     }
   ],
+  "barrel_definitions": [
+    {
+      "type": "minecraft:dark_oak",
+      "quality_value": "quality",
+      "reveal_time": 420
+    }
+  ],
   "base_quality_value": "smooth_value_days(8.0, 3.0, 18.0, age) * 10",
   "alcoholic_value": "7 * (0.75 + quality / 40)",
   "entries": [
@@ -30,12 +37,5 @@
   "name": {
     "translate": "drinktype.brewery.dark_beer"
   },
-  "color": "#650013",
-  "barrel_definitions": [
-    {
-      "type": "minecraft:dark_oak",
-      "quality_value": "quality",
-      "reveal_time": 420
-    }
-  ]
+  "color": "#650013"
 }

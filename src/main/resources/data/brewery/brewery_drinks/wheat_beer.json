@@ -16,6 +16,13 @@
       "count": 6
     }
   ],
+  "barrel_definitions": [
+    {
+      "type": "minecraft:birch",
+      "quality_value": "quality",
+      "reveal_time": 300
+    }
+  ],
   "base_quality_value": "smooth_value_days(3.0, 2.0, 4.0, age) * 10",
   "alcoholic_value": "5 * (0.75 + quality / 40)",
   "entries": [
@@ -30,12 +37,5 @@
   "name": {
     "translate": "drinktype.brewery.wheat_beer"
   },
-  "color": "#FFB84D",
-  "barrel_definitions": [
-    {
-      "type": "minecraft:birch",
-      "quality_value": "quality",
-      "reveal_time": 300
-    }
-  ]
+  "color": "#FFB84D"
 }

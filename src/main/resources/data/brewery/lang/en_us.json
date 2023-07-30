@@ -34,6 +34,7 @@
   "drinktype.brewery.chorus_brew": "Chorus Brew",
   "drinktype.brewery.tea": "Tea",
   "drinktype.brewery.green_tea": "Green Tea",
+  "drinktype.brewery.cherry_tea": "Cherry Tea",
 
   "text.brewery.quality": "Quality: %s",
   "text.brewery.cooked_for": "Cooked for: %s",
@@ -56,6 +57,7 @@
   "gamerule.brewery:show_age": "Show drinks age",
   "gamerule.brewery:show_quality": "Show drinks quality",
 
+  "polydex_category.brewery.drink": "Brewery Drinks",
   "polydex.brewery.brewing_recipe": "Brewery Recipe",
   "polydex.brewery.ingredients": "Ingredients",
   "polydex.brewery.any_barrel": "Any Barrel",

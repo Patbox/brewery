@@ -328,6 +328,24 @@ public class DefaultDefinitions {
                         DrinkInfo.defaults(5, -1, "", List.of())
                 )
         );
+
+        consumer.accept("cherry_tea", DrinkType.create(
+                        Text.translatable("drinktype.brewery.cherry_tea"),
+                        TextColor.fromRgb(0xc92a0a),
+                        List.of(),
+                        "10",
+                        "0",
+                        List.of(
+                                ConsumptionEffect.of(StatusEffects.RESISTANCE, "quality * 20", "0", false),
+                                ConsumptionEffect.of(StatusEffects.REGENERATION, "quality * 1.5", "0", false)
+                        ),
+                        ExpressionUtil.defaultBoiling(5, 1d / 2),
+                        List.of(
+                            DrinkType.BrewIngredient.of(1, Items.CHERRY_LEAVES)
+                        ),
+                        DrinkInfo.defaults(5, -1, "", List.of())
+                )
+        );
     }
 
     public static AlcoholValueEffect createEffects(MinecraftServer server) {

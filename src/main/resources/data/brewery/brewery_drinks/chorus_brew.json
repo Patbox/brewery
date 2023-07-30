@@ -16,18 +16,6 @@
       "count": 16
     }
   ],
-  "base_quality_value": "smooth_value_days(2.0, 2.0, 5.0, age) * 10",
-  "alcoholic_value": "0",
-  "entries": [
-    {
-      "type": "teleport_random",
-      "distance": "quality * 10"
-    }
-  ],
-  "name": {
-    "translate": "drinktype.brewery.chorus_brew"
-  },
-  "color": "dark_purple",
   "barrel_definitions": [
     {
       "type": "minecraft:warped",
@@ -39,5 +27,17 @@
       "quality_value": "quality * 0.4",
       "reveal_time": 300
     }
-  ]
+  ],
+  "base_quality_value": "smooth_value_days(2.0, 2.0, 5.0, age) * 10",
+  "alcoholic_value": "0",
+  "entries": [
+    {
+      "type": "teleport_random",
+      "distance": "quality * 10"
+    }
+  ],
+  "name": {
+    "translate": "drinktype.brewery.chorus_brew"
+  },
+  "color": "dark_purple"
 }

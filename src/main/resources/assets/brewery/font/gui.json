@@ -1,0 +1,14 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "brewery:gui/polydex.png",
+      "ascent": -4,
+      "height": 128,
+      "chars": [
+        "0",
+        "1"
+      ]
+    }
+  ]
+}

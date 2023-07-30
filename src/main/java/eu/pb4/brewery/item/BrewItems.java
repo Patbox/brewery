@@ -31,7 +31,7 @@ public class BrewItems {
 
     public static final ItemGroup ITEM_GROUP = ItemGroup.create(null, -1)
             .displayName(Text.literal("Brewery"))
-            .icon(() -> Items.BARREL.getDefaultStack())
+            .icon(Items.BARREL::getDefaultStack)
 
             .entries((ctx, e) -> {
                 e.add(BOOK_ITEM);

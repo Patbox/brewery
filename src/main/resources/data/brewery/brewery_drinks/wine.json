@@ -16,6 +16,13 @@
       "count": 5
     }
   ],
+  "barrel_definitions": [
+    {
+      "type": "*",
+      "quality_value": "quality",
+      "reveal_time": 300
+    }
+  ],
   "base_quality_value": "smooth_value_days(30.0, 30.0, 240.0, age) * 10",
   "alcoholic_value": "8 * (0.75 + quality / 40)",
   "entries": [
@@ -30,12 +37,5 @@
   "name": {
     "translate": "drinktype.brewery.wine"
   },
-  "color": "#722F37",
-  "barrel_definitions": [
-    {
-      "type": "*",
-      "quality_value": "quality",
-      "reveal_time": 300
-    }
-  ]
+  "color": "#722F37"
 }

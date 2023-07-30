@@ -16,6 +16,13 @@
       "count": 3
     }
   ],
+  "barrel_definitions": [
+    {
+      "type": "*",
+      "quality_value": "quality",
+      "reveal_time": 300
+    }
+  ],
   "base_quality_value": "smooth_value_days(4.0, 1.0, 6.0, age) * 10",
   "alcoholic_value": "9 * (0.75 + quality / 40)",
   "entries": [
@@ -30,12 +37,5 @@
   "name": {
     "translate": "drinktype.brewery.mead"
   },
-  "color": "#FFED91",
-  "barrel_definitions": [
-    {
-      "type": "*",
-      "quality_value": "quality",
-      "reveal_time": 300
-    }
-  ]
+  "color": "#FFED91"
 }

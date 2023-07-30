@@ -7,7 +7,7 @@ import com.mojang.serialization.JsonOps;
 import eu.pb4.brewery.block.BrewBlocks;
 import eu.pb4.brewery.block.BrewCauldronBlock;
 import eu.pb4.brewery.block.entity.BrewBlockEntities;
-import eu.pb4.brewery.compat.PolydexCompat;
+import eu.pb4.brewery.compat.PolydexCompatImpl;
 import eu.pb4.brewery.drink.AlcoholValueEffect;
 import eu.pb4.brewery.drink.DefaultDefinitions;
 import eu.pb4.brewery.drink.DrinkType;
@@ -22,13 +22,13 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.cauldron.CauldronBehavior;
-import net.minecraft.entity.damage.DamageType;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
@@ -52,7 +52,7 @@ public class BreweryInit implements ModInitializer {
 
     public static final boolean IS_DEV = FabricLoader.getInstance().isDevelopmentEnvironment();
     public static final boolean DISPLAY_DEV = IS_DEV && false;
-    public static final boolean USE_GENERATOR = IS_DEV && false;
+    public static final boolean USE_GENERATOR = IS_DEV && true;
 
     public static Identifier id(String path) {
         return new Identifier(MOD_ID, path);
@@ -69,16 +69,21 @@ public class BreweryInit implements ModInitializer {
 
         BrewNetworking.register();
 
-        ServerLifecycleEvents.SERVER_STARTED.register(BreweryInit::loadDrinks);
+        var id = id("early_reload");
+
+        ServerLifecycleEvents.SERVER_STARTED.addPhaseOrdering(id, Event.DEFAULT_PHASE);
+        ServerLifecycleEvents.SERVER_STARTED.register(id, BreweryInit::loadDrinks);
         ServerLifecycleEvents.SERVER_STARTED.register((s) -> CardboardWarning.checkAndAnnounce());
-        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((x, y, z) -> BreweryInit.loadDrinks(x));
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.addPhaseOrdering(id, Event.DEFAULT_PHASE);
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(id, (x, y, z) -> BreweryInit.loadDrinks(x));
+
 
         CommandRegistrationCallback.EVENT.register(BrewCommands::register);
 
         CauldronBehavior.WATER_CAULDRON_BEHAVIOR.put(Items.STICK, BrewCauldronBlock::tryReplaceCauldron);
 
-        if (FabricLoader.getInstance().isModLoaded("polydex")) {
-            PolydexCompat.init();
+        if (FabricLoader.getInstance().isModLoaded("polydex2")) {
+            PolydexCompatImpl.init();
         }
     }
 
@@ -173,5 +178,7 @@ public class BreweryInit implements ModInitializer {
                 server.getOverworld().getGameRules().get(BrewGameRules.BARREL_AGING_MULTIPLIER).get(),
                 server.getOverworld().getGameRules().get(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER).get()
         );
+
+        BrewItems.ITEM_GROUP.updateEntries(new ItemGroup.DisplayContext(server.getOverworld().getEnabledFeatures(), false, server.getRegistryManager()));
     }
 }

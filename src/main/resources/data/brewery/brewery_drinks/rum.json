@@ -37,6 +37,13 @@
     }
   ],
   "distillation_runs": 1,
+  "barrel_definitions": [
+    {
+      "type": "*",
+      "quality_value": "quality",
+      "reveal_time": 300
+    }
+  ],
   "base_quality_value": "smooth_value_days(16.0, 5.0, 100.0, age) * 10",
   "alcoholic_value": "30 * (0.75 + quality / 40)",
   "entries": [
@@ -62,12 +69,5 @@
   "name": {
     "translate": "drinktype.brewery.rum"
   },
-  "color": "red",
-  "barrel_definitions": [
-    {
-      "type": "*",
-      "quality_value": "quality",
-      "reveal_time": 300
-    }
-  ]
+  "color": "red"
 }
