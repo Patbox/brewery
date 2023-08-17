@@ -44,7 +44,7 @@
 
   "death.attack.brewery.alcohol_poisoning": "%s погиб от отравления алкоголем",
 
-  "text.brewery.about.version": "Версия: %s",
+  "text.brewery.about.version": "Версия: ",
   "text.brewery.about.contributors": "Авторы",
 
   "gamerule.brewery:aging_unloaded": "Лет в незагруженных чанках",

@@ -44,7 +44,7 @@
   
     "death.attack.brewery.alcohol_poisoning": "%s murió de envenenamiento etílico",
   
-    "text.brewery.about.version": "Versión: %s",
+    "text.brewery.about.version": "Versión: ",
     "text.brewery.about.contributors": "Contribuyentes",
   
     "gamerule.brewery:aging_unloaded": "Añejar en chunks no cargados",

@@ -4,11 +4,14 @@ import com.google.gson.GsonBuilder;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
+import com.mojang.brigadier.arguments.FloatArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.JsonOps;
 import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.GenericModInfo;
+import eu.pb4.brewery.block.entity.TickableContents;
 import eu.pb4.brewery.drink.AlcoholManager;
 import eu.pb4.brewery.drink.DefaultDefinitions;
 import eu.pb4.brewery.drink.DrinkType;
@@ -17,8 +20,12 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
+import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
+import net.minecraft.command.argument.TimeArgumentType;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -39,7 +46,7 @@ public class BrewCommands {
                 literal("brewery")
                         .executes(BrewCommands::about)
                         .then(literal("create")
-                                .requires(Permissions.require("brewery.create", 3))
+                                .requires(Permissions.require("brewery.create", 2))
                                 .then(argument("type", IdentifierArgumentType.identifier())
                                         .suggests((context, builder) -> {
                                             Iterable<Identifier> candidates = BreweryInit.DRINK_TYPES.keySet()::iterator;
@@ -62,18 +69,62 @@ public class BrewCommands {
                                         )
                                 )
                         )
-                        .then(literal("stats")
-                                .requires(Permissions.require("brewery.stats", 3))
-                                .executes((ctx) -> showStats(ctx, ctx.getSource().getPlayerOrThrow()))
-                                .then(argument("player", EntityArgumentType.player()).requires(Permissions.require("brewery.stats", 3))
-                                        .executes(ctx -> showStats(ctx, EntityArgumentType.getPlayer(ctx, "player"))))
+                        .then(literal("force_age")
+                                .requires(Permissions.require("brewery.force_age", 2))
+                                .then(argument("position", BlockPosArgumentType.blockPos())
+                                        .then(argument("time", TimeArgumentType.time())
+                                                .executes(BrewCommands::ageContainer)
+                                        )
+                                )
                         )
-                        .then(literal("dump_defaults")
+                        .then(literal("stats")
+                                .requires(Permissions.require("brewery.stats", 2))
+                                .executes((ctx) -> showStats(ctx, ctx.getSource().getPlayerOrThrow()))
+                                .then(argument("player", EntityArgumentType.entity()).requires(Permissions.require("brewery.stats_others", 2))
+                                        .executes(ctx -> showStats(ctx, EntityArgumentType.getEntity(ctx, "player"))))
+                        )
+                        .then(literal("set")
+                                .requires(Permissions.require("brewery.set", 2))
+                                .then(argument("target", EntityArgumentType.entities())
+                                        .then(argument("alcohol", DoubleArgumentType.doubleArg())
+                                                .then(argument("quality", FloatArgumentType.floatArg(0, 10))
+                                                        .executes(BrewCommands::setAlcoholValue)
+
+                                                )
+                                        )
+                                )
+
+
+                        ).then(literal("dump_defaults")
                                 .requires(Permissions.require("brewery.dump_defaults", 4))
                                 .executes((ctx) -> dumpDefaultDefinitions())
                         )
-
         );
+    }
+
+    private static int setAlcoholValue(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+        var alcohol = DoubleArgumentType.getDouble(ctx, "alcohol");
+        var quality = FloatArgumentType.getFloat(ctx, "quality");
+        int r = 0;
+        for (var entity : EntityArgumentType.getEntities(ctx, "target")) {
+            if (entity instanceof LivingEntity livingEntity) {
+                var m = AlcoholManager.of(livingEntity);
+                m.alcoholLevel = alcohol;
+                m.quality = quality;
+                r++;
+            }
+        }
+        return r;
+    }
+
+    private static int ageContainer(CommandContext<ServerCommandSource> ctx) {
+        var pos = BlockPosArgumentType.getBlockPos(ctx, "position");
+        var time = ctx.getArgument("time", Integer.class);
+
+        if (ctx.getSource().getWorld().getBlockEntity(pos) instanceof TickableContents tickableContents) {
+            tickableContents.tickContents(time);
+        }
+        return 0;
     }
 
     private static int dumpDefaultDefinitions() {
@@ -87,7 +138,8 @@ public class BrewCommands {
 
             DefaultDefinitions.createBrews((key, type) -> {
                 try {
-                    Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(JsonOps.INSTANCE, type).getOrThrow(false, (x) -> {})));
+                    Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(JsonOps.INSTANCE, type).getOrThrow(false, (x) -> {
+                    })));
                 } catch (Throwable e) {
                     e.printStackTrace();
                 }
@@ -99,9 +151,11 @@ public class BrewCommands {
         return 0;
     }
 
-    private static int showStats(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player) {
-        var m = AlcoholManager.of(player);
-        ctx.getSource().sendFeedback(() -> Text.translatable("text.brewery.stats", player.getDisplayName(), m.alcoholLevel, m.quality), false);
+    private static int showStats(CommandContext<ServerCommandSource> ctx, Entity player) {
+        if (player instanceof LivingEntity livingEntity) {
+            var m = AlcoholManager.of(livingEntity);
+            ctx.getSource().sendFeedback(() -> Text.translatable("text.brewery.stats", player.getDisplayName(), m.alcoholLevel, m.quality), false);
+        }
         return 0;
     }
 

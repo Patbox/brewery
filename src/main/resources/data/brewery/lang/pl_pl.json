@@ -43,7 +43,7 @@
 
   "death.attack.brewery.alcohol_poisoning": "%s został zabity przez zatrucie alkoholowe",
 
-  "text.brewery.about.version": "Wersja: %s",
+  "text.brewery.about.version": "Wersja: ",
   "text.brewery.about.contributors": "Twórcy",
 
   "gamerule.brewery:aging_unloaded": "Czas upływa na niezaładowanym terenie",

@@ -389,10 +389,12 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
                     if (value == 0) {
                         return;
                     }
-                    var vec = new Vec3d(x, y, z).normalize().multiply(value);
+                    var vec = new Vec3d(x, y, z).normalize().multiply(Math.min(value, 100));
                     user.addVelocity(vec.x, vec.y, vec.z);
                 } else {
-                    user.addVelocity(x, y, z);
+                    var vec = new Vec3d(x, y, z);
+                    vec = vec.normalize().multiply(Math.min(vec.length(), 100));
+                    user.addVelocity(vec.x, vec.y, vec.z);
                 }
 
                 if (user instanceof ServerPlayerEntity player) {
