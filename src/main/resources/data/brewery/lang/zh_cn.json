@@ -46,7 +46,7 @@
 
   "death.attack.brewery.alcohol_poisoning": "%s 的身体里被塞满了酒(酒精中毒)",
 
-  "text.brewery.about.version": "版本: %s",
+  "text.brewery.about.version": "版本: ",
   "text.brewery.about.contributors": "开发者",
 
   "gamerule.brewery:aging_unloaded": "已卸载区块的年份",
