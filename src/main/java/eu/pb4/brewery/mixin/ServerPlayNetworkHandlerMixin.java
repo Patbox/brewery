@@ -2,9 +2,12 @@ package eu.pb4.brewery.mixin;
 
 import eu.pb4.brewery.item.BookOfBreweryItem;
 import eu.pb4.brewery.item.BrewItems;
+import net.minecraft.network.ClientConnection;
 import net.minecraft.network.message.LastSeenMessageList;
 import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ConnectedClientData;
+import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
@@ -19,10 +22,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerPlayNetworkHandler.class)
-public class ServerPlayNetworkHandlerMixin {
+public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkHandler {
     @Shadow public ServerPlayerEntity player;
 
-    @Shadow @Final private MinecraftServer server;
+    public ServerPlayNetworkHandlerMixin(MinecraftServer server, ClientConnection connection, ConnectedClientData clientData) {
+        super(server, connection, clientData);
+    }
 
     @Inject(method = "handleCommandExecution", at = @At(value = "HEAD"), cancellable = true)
     private void brewery$onCommand(CommandExecutionC2SPacket packet, LastSeenMessageList lastSeenMessages, CallbackInfo ci) {

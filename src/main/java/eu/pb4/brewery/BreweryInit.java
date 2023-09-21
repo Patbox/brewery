@@ -85,7 +85,7 @@ public class BreweryInit implements ModInitializer {
 
         UseBlockCallback.EVENT.register(BrewCauldronBlock::handleUseEvent);
 
-        if (FabricLoader.getInstance().isModLoaded("polydex2")) {
+        if (FabricLoader.getInstance().isModLoaded("polydex")) {
             PolydexCompatImpl.init();
         }
     }

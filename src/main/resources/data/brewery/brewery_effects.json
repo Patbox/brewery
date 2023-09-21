@@ -79,7 +79,7 @@
     }
   ],
   "alcohol_reduction_items": {
-    "minecraft:bread": 3.0,
-    "minecraft:milk_bucket": 10.0
+    "minecraft:milk_bucket": 10.0,
+    "minecraft:bread": 3.0
   }
 }
