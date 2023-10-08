@@ -32,6 +32,7 @@
   "drinktype.brewery.chorus_brew": "Пиво из хоруса",
   "drinktype.brewery.tea": "Чай",
   "drinktype.brewery.green_tea": "Зеленый чай",
+  "drinktype.brewery.cherry_tea": "Вишнёвый чай",
 
   "text.brewery.quality": "Качество: %s",
   "text.brewery.cooked_for": "Готовилось: %s",
@@ -73,7 +74,7 @@
   "polydex.brewery.building_barrel.planks": "Доски",
 
   "polydex.brewery.cooking_cauldron": "Готовка в котле",
-  "polydex.brewery.cooking_cauldron.text": "Выкинь нужные ингридиенты в бочку и кликни палкой для старта готовки. После опредененного времени вычерпай все с помощью бутылки. Ты можешь получить Микстуру или готовый напиток.",
+  "polydex.brewery.cooking_cauldron.text": "Выкинь нужные ингридиенты в котёл и кликни палкой для старта готовки. После опредененного времени вычерпай все с помощью бутылки. Ты можешь получить Микстуру или готовый напиток.",
   "polydex.brewery.aging_with_barrel": "Выдержка в бочках",
   "polydex.brewery.aging_with_barrel.text": "Чтобы начать выдержку положи Микстуру в нужную бочку. Просто не держи его слишком долго, а то качество упадет. Информация о постройке бочек на следуюйщей странице."
 }
