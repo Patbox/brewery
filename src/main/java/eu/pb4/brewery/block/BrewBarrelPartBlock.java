@@ -31,6 +31,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
+import net.minecraft.world.WorldView;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -83,7 +84,7 @@ public final class BrewBarrelPartBlock extends Block implements PolymerBlock, Bl
     }
 
     @Override
-    public ItemStack getPickStack(BlockView world, BlockPos pos, BlockState state) {
+    public ItemStack getPickStack(WorldView world, BlockPos pos, BlockState state) {
         var target = state.get(SHAPE).state.apply(this.barrelMaterial);
         return target.getBlock().getPickStack(world, pos, target);
     }

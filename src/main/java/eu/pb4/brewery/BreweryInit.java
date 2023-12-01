@@ -16,10 +16,7 @@ import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.other.BrewCommands;
 import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.brewery.other.BrewNetworking;
-import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
-import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.*;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.Event;
@@ -45,7 +42,7 @@ import java.util.Map;
 public class BreweryInit implements ModInitializer {
     public static final String MOD_ID = "brewery";
     public static final Map<Identifier, DrinkType> DRINK_TYPES = new Object2ObjectOpenHashMap<>();
-    public static final Map<DrinkType, Identifier> DRINK_TYPE_ID = new Object2ObjectOpenCustomHashMap<>(Util.identityHashStrategy());
+    public static final Map<DrinkType, Identifier> DRINK_TYPE_ID = new Reference2ObjectOpenHashMap<>();
     public static final List<AlcoholValueEffect.Value> ALCOHOL_EFFECTS = new ArrayList<>();
     public static final Object2DoubleMap<Item> ITEM_ALCOHOL_REMOVAL_VALUES = new Object2DoubleOpenHashMap<>();
 

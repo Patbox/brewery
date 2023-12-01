@@ -1,5 +1,7 @@
 package eu.pb4.brewery.block;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.block.entity.BrewCauldronBlockEntity;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
@@ -22,13 +24,19 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldView;
 import org.jetbrains.annotations.Nullable;
 
 public class BrewCauldronBlock extends BlockWithEntity implements PolymerBlock {
     public static final TagKey<Item> START_CAULDRON_COOKING = TagKey.of(RegistryKeys.ITEM, BreweryInit.id("start_cauldron_cooking"));
-
+    private static final MapCodec<BrewCauldronBlock> CODEC = createCodec(BrewCauldronBlock::new);
     protected BrewCauldronBlock(Settings settings) {
         super(settings);
+    }
+
+    @Override
+    protected MapCodec<? extends BlockWithEntity> getCodec() {
+        return CODEC;
     }
 
     public static boolean isValid(BlockPos pos, BlockState state, World world) {
@@ -70,7 +78,7 @@ public class BrewCauldronBlock extends BlockWithEntity implements PolymerBlock {
     }
 
     @Override
-    public ItemStack getPickStack(BlockView world, BlockPos pos, BlockState state) {
+    public ItemStack getPickStack(WorldView world, BlockPos pos, BlockState state) {
         return Items.CAULDRON.getDefaultStack();
     }
 

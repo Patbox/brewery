@@ -1,5 +1,6 @@
 package eu.pb4.brewery.block;
 
+import com.mojang.serialization.MapCodec;
 import eu.pb4.brewery.block.entity.BrewBarrelSpigotBlockEntity;
 import eu.pb4.brewery.block.entity.BrewBlockEntities;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
@@ -34,9 +35,15 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
 public final class BrewSpigotBlock extends HorizontalFacingBlock implements PolymerBlock, BlockEntityProvider, BlockWithElementHolder {
+    private static final MapCodec<BrewSpigotBlock> CODEC = createCodec(BrewSpigotBlock::new);
 
     public BrewSpigotBlock(Settings settings) {
         super(settings);
+    }
+
+    @Override
+    protected MapCodec<? extends HorizontalFacingBlock> getCodec() {
+        return CODEC;
     }
 
     @Override
