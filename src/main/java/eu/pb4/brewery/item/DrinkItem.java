@@ -8,6 +8,10 @@ import eu.pb4.brewery.item.comp.BrewData;
 import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.brewery.other.BrewUtils;
 import eu.pb4.polymer.core.api.item.PolymerItem;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import it.unimi.dsi.fastutil.booleans.BooleanList;
+import it.unimi.dsi.fastutil.floats.FloatList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
@@ -36,6 +40,28 @@ import java.util.Optional;
 public class DrinkItem extends Item implements PolymerItem {
     public DrinkItem(Settings settings) {
         super(settings.maxCount(1).food(new FoodComponent.Builder().alwaysEdible().build()));
+    }
+
+    @Override
+    public int getMaxUseTime(ItemStack stack, LivingEntity user) {
+        var type = DrinkUtils.getType(stack);
+
+        if (type == null) {
+            return 32 * 3;
+        } else {
+            return (int) (type.drinkingTime(stack, user) * 20);
+        }
+    }
+
+    @Override
+    public UseAction getUseAction(ItemStack stack) {
+        var type = DrinkUtils.getType(stack);
+
+        if (type == null) {
+            return UseAction.DRINK;
+        } else {
+            return type.visuals(stack).animation();
+        }
     }
 
     public ItemStack finishUsing(ItemStack stack, World world, LivingEntity user) {
@@ -70,22 +96,24 @@ public class DrinkItem extends Item implements PolymerItem {
 
         if (playerEntity != null) {
             playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
-            if (!playerEntity.getAbilities().creativeMode) {
-                stack.decrement(1);
-            }
         }
-
-        if (playerEntity == null || !playerEntity.getAbilities().creativeMode) {
-            if (stack.isEmpty()) {
-                return new ItemStack(Items.GLASS_BOTTLE);
-            }
-
-            if (playerEntity != null) {
-                playerEntity.getInventory().insertStack(new ItemStack(Items.GLASS_BOTTLE));
-            }
-        }
-
         user.emitGameEvent(GameEvent.DRINK);
+
+        var cookingData = stack.get(BrewComponents.COOKING_DATA);
+        stack.decrementUnlessCreative(1, playerEntity);
+
+        if (playerEntity == null || !playerEntity.isCreative()) {
+            if (cookingData != null) {
+                if (stack.isEmpty()) {
+                    return cookingData.container().copy();
+                }
+
+                if (playerEntity != null) {
+                    playerEntity.getInventory().insertStack(cookingData.container().copy());
+                }
+            }
+        }
+
         return stack;
     }
 
@@ -107,9 +135,9 @@ public class DrinkItem extends Item implements PolymerItem {
 
         if (type != null) {
             if (type.isFinished(stack)) {
-                return type.name().text();
+                return type.name(stack).text();
             } else {
-                return Text.translatable("item.brewery.ingredient_mixture_specific", type.name().text());
+                return Text.translatable("item.brewery.ingredient_mixture_specific", type.name(stack).text());
             }
         } else {
             var id = DrinkUtils.getType(stack);
@@ -117,17 +145,13 @@ public class DrinkItem extends Item implements PolymerItem {
             Text text;
 
             if (id != null) {
-                text = id.name().text();
+                text = id.name(stack).text();
             } else {
                 text = Text.literal("<Unknown>");
             }
 
             return Text.translatable(this.getTranslationKey(), text);
         }
-    }
-
-    public String getTranslationKey(ItemStack stack) {
-        return this.getTranslationKey();
     }
 
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType typex) {
@@ -197,23 +221,41 @@ public class DrinkItem extends Item implements PolymerItem {
         var type = DrinkUtils.getType(itemStack);
 
         if (type != null) {
-            int color;
-            if (type.isFinished(itemStack)) {
-                color = type.color().getRgb();
-            } else {
-                color = ColorHelper.Argb.mixColor(type.color().getRgb(), 0x385dc6);
-            }
-            out.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(), Optional.of(color), List.of()));
+            int color = type.color(stack);
+            var visual = type.visuals(stack);
+            out.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(), Optional.of(color), List.of(), Optional.empty()));
 
-            if (type.visuals().components().isPresent()) {
-                out.applyComponentsFrom(type.visuals().components().get());
+            if (visual.components().isPresent()) {
+                out.applyComponentsFrom(visual.components().get());
             }
 
-            if (type.visuals().model().isPresent()) {
-                out.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(type.visuals().model().get().value()));
-            }
+            out.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(
+                    FloatList.of((float) DrinkUtils.getQuality(stack), (float) DrinkUtils.getAgeInSeconds(stack), (float) DrinkUtils.getCookingAgeInSeconds(stack), DrinkUtils.getDistillationCount(stack)),
+                    BooleanList.of(type.isFinished(stack), DrinkUtils.getDistillationStatus(stack)),
+                    List.of(DrinkUtils.getTypeId(stack).toString(), DrinkUtils.getBarrelType(stack), type.isFinished(stack) ? "finished_drink" : "unfinished_drink"),
+                    IntList.of(color, color)
+            ));
+
+            out.set(DataComponentTypes.CONSUMABLE, new ConsumableComponent((float) type.drinkingTime(stack, context.getPlayer()), visual.animation(), visual.soundEvent(), visual.particles(), List.of()));
+        } else {
+            out.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(
+                    FloatList.of((float) DrinkUtils.getQuality(stack), (float) DrinkUtils.getAgeInSeconds(stack), (float) DrinkUtils.getCookingAgeInSeconds(stack), DrinkUtils.getDistillationCount(stack)),
+                    BooleanList.of(false, DrinkUtils.getDistillationStatus(stack)),
+                    List.of("", DrinkUtils.getBarrelType(stack), "unknown_drink"),
+                    IntList.of(0x385dc6, 0x385dc6))
+            );
+        }
+    }
+
+    @Override
+    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context) {
+        var type = DrinkUtils.getType(stack);
+
+        if (type != null) {
+            var visuals = type.visuals(stack);
+            return visuals.resourcePackModel().isPresent() && PolymerResourcePackUtils.hasMainPack(context) ? visuals.resourcePackModel().get() : visuals.defaultModel();
         }
 
-        return out;
+        return Items.POTION.getComponents().get(DataComponentTypes.ITEM_MODEL);
     }
 }

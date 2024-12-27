@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 4,
   "unfinished_brew_effects": [
     {
       "type": "potion",
@@ -35,6 +35,7 @@
   ],
   "distillation_runs": 1,
   "base_quality_value": "10",
+  "drinking_time": "clamp(1.6 * (7 / (max(quality, 0.1))), 1.6, 4.8)",
   "alcoholic_value": "50",
   "entries": [
     {
@@ -53,5 +54,8 @@
   "name": {
     "translate": "drinktype.brewery.vodka"
   },
-  "color": "#EEEEFF"
+  "color": "#EEEEFF",
+  "visual": {
+    "resource_pack_model": "brewery:brewery_drink/vodka"
+  }
 }

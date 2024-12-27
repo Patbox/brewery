@@ -3,6 +3,8 @@
 Brewery allows you to create new drink types by using a simple datapack.
 It gives you as much of flexibility as possible given, including full control over values.
 
+This documentation is targets version 4 of the format. See other branches for older formats.
+
 
 ## Definitions
 To define a drink, you just need to create new json file in `(your datapack)/data/(your_id)/brewery_drinks/`.
@@ -22,29 +24,32 @@ Used types:
 - BOOLEAN - `true` or `false`
 - ID - Id of some item/etc, for example `"minecraft:apple"`, `"minecraft:resistance"`
 - BARREL TYPE - Name of barrels type or `"*"` for every single one.
+- ITEM COMPONENT DATA - Components, written as map of entries (`{"component_id": value}`). See https://minecraft.wiki/w/Data_component_format#List_of_components
+- VISUALS - Format defining item visuals (and some more). See below for more info.
+- quality-selector of X - Quality-based selector for custom which value should be used. See below for more info.
 
-
-Currently supported types of barrels: oak, spruce, birch, dark_oak, acacia, mangrove, jungle, warped, crimson
+Currently supported types of barrels: oak, spruce, birch, dark_oak, pale_oak, acacia, mangrove, jungle, warped, crimson
 
 ## Format
-Main drink format
+### Main drink format
 ```json5
 {
   // Current version of the format. It's required
-  "version": 2,
+  "version": 4,
   // Name of the drink
-  "name": {/* TEXT */},
+  "name": {/* quality-selector of TEXT */},
   // Color of the drink, 
-  "color": {/* COLOR */},
+  "color": {/* quality-selector of COLOR */},
   // Changes how item looks. Optional
-  "visual": {
-    // Changes base item
-    "item": "minecraft:potion",
-    // Additional nbt data that should be attached to item. Optional
-    "nbt": {/* ITEM NBT DATA */},
-    // Model identifier used for server resource pack. Optional
-    "model": "minecraft:item/dragon_breath"
-  },
+  "visual": {/* quality-selector of VISUALS */},
+  // Color of the unfinished drink, Optional.
+  "unfinished_color": {/* quality-selector of COLOR */},
+  // Changes how unfinished item looks. Optional
+  "unfinished_visual": {/* quality-selector of VISUALS */},
+  // Color of the failed drink. Optional
+  "failed_color": {/* COLOR */},
+  // Changes how failed drink looks. Optional
+  "failed_visual": {/* VISUALS */},
   // Value of alcohol added to player, has "quality" and "age" parameters 
   "alcoholic_value": {/* EXPRESSION */},
   // List of Ingredients used in cauldron to create it
@@ -56,12 +61,18 @@ Main drink format
       "count": {/* NUMBER */}
     }
   ],
+  // Select which containers items are allowed to hold this brew.
+  "required_container": {/* ITEM ID, LIST of ITEM IDS or TAG */},
+  // List of heat sources required for this brew to be created. Optional (allows any by default).
+  "required_heat_source": {/* LIST of BLOCK IDS */},
   // Required number of distillation runs
   "distillation_runs": {/* NUMBER */},
   // Quality multiplier added used for drink. has "age" parameter.
   "cooking_quality_multiplier": {/* EXPRESSION */},
   // Base quality function. Should have value of "10", if drink doesn't use barrel. Has "age" parameter
   "base_quality_value": {/* EXPRESSION */},
+  // Drinking time calculation. Can depend on quality, age and user alcohol level. Optional, defaulting to value from 1.6 to 3 times that depending on quality. 
+  "drinking_time": {/* EXPRESSION */},
   // List of definitions of how drink behaves in barrels. Optional
   "barrel_definitions": [ 
     {
@@ -95,6 +106,63 @@ Main drink format
 }
 ```
 
+### The VISUALS format:
+```json5
+{
+  // Model used by default by brew items. Optional (fallbacks to "minecraft:potion").
+  "model": {/* MODEL ID */},
+  // Model used if player has Polymer server resource pack enabled. Optional (fallbacks to value of "model").
+  "resource_pack_model": {/* MODEL ID */},
+  // Extra client side components added to items. Optional.
+  "components": {/* COMPONENT MAP */},
+  // Toggles consumption particles. Optional (false by default).
+  "particles": {/* BOOLEAN */},
+  // Selects consumption sound. Optional (fallbacks to "entity.generic.drink").
+  "sound_event": {/* SOUND ID OR SOUND ENTRY */},
+  // Selects which consumption animation to use. Optional (fallbacks to "drink")
+  "animation": {/* ANIMATION VALUE, see MC wiki about components! */}
+}
+```
+
+### Quality-Selector format:
+X represents value type selected, see the main format definition for more info.
+
+Single, static value of X.
+```json5
+{/* X */}
+```
+
+Automatic multi-value selection, spread between minimum and maximum. Can have any amount of entries.
+```json5
+[
+  // Entries, there is no limit on amount.
+  {/* X */},
+  {/* X */},
+  {/* X */},
+  {/* X */}
+]
+```
+
+Manual multi-value selection, spread between minimum and maximum. Can have any amount of entries.
+```json5
+[
+  {
+    // Select for which closest input value (quality) to use this.
+    "for": 0,
+    // The selected value.
+    "value": {/* X */}
+  },
+  {
+    "for": 6,
+    "value": {/* X */}
+  },
+  {
+    "for": 10,
+    "value": {/* X */}
+  }
+]
+```
+
 ## Extra expression functions
 - `smooth_value_days(<MINIMUM_TIME_FOR_BEST>, <TIME_WITHOUT_CHANGING>, <FALLOUT_TIME>, age)` - <VALUES> are in days, returns between 0 and 1, or -1 after fallout
 - `smooth_value_minutes(<MINIMUM_TIME_FOR_BEST>, <TIME_WITHOUT_CHANGING>, <FALLOUT_TIME>, age)` - <VALUES> are in minutes, returns same as above
@@ -105,25 +173,60 @@ Main drink format
 
 All expressions have access to `age` and `quality` variables
 
+### Add Alcohol Level
+Adds value to alcohol level of the player
+```json5
+{
+  "type": "add_alcohol_level",
+  // Add alcohol level of player, additionally has "current" variable.
+  "value": {/* EXPRESSION */}
+}
+```
+
+
+### Attribute
+Applies (temporary) attributes to player.
+More info about functionality here: https://minecraft.wiki/w/Attribute
+```json5
+{
+  "type": "attributes",
+  // Time of the effect, in seconds. If lower than 0, it's not applied
+  "time": {/* EXPRESSION */},
+  "entries":[
+    {
+      // Just a name for the attribute. Follow the namespace rules
+      "id": {/* unique ID */},
+      // Flat value that's used for modifying the attribute. Can be negative.
+      "amount": {/* NUMBER */},
+      // See the wiki.
+      "operation": {/* MODIFIER OPERATION */},
+      // The type of attribute you will be changing. See the wiki or "/attribute" command.
+      "type": {/* ID of attribute */}
+    }
+  ]
+}
+```
+
+### Consume Effects
+Applies vanilla item consume effects on the player.
+See `on_consume_effects` field in https://minecraft.wiki/w/Data_component_format#consumable
+```json5
+{
+  "type": "consume_effects",
+  // Effects to select from
+  "entries": [{/* VANILLA CONSUME EFFECTS */}],
+  // Used to check if it should apply. If lower than 0, it's not applied, Optional
+  "apply_check": {/* EXPRESSION */}
+}
+```
+
 ### Damage
 Applies damage to player
 ```json5
 {
-  "type": "damage", 
-  // Name of damage (uses vanilla translation system)
-  "name": {/* STRING */},
-  // Used to get damage applied to player.
-  "value": {/* EXPRESSION */},
-  // Makes it a magic attack, Optional (default true)
-  "magic": {/* BOOLEAN */},
-  // Makes it bypass armor, Optional (default true)
-  "bypass_armor": {/* BOOLEAN */},
-  // Makes it bypass protection, Optional (default true)
-  "bypass_protection": {/* BOOLEAN */},
-  // Makes it unblockable with shield, Optional (default true)
-  "unblockable": {/* BOOLEAN */},
-  // Makes it a fire damage, Optional (default false)
-  "fire": {/* BOOLEAN */}
+  "type": "damage",
+  "id": {/* ID of damage type, can be added with datapacks */},
+  "value": {/* EXPRESSION */}
 }
 ```
 
@@ -133,7 +236,7 @@ Applies effect specified time later
 {
   "type": "delayed",
   // Effects to apply
-  "effects": [{/* EFFECTS */}],
+  "entries": [{/* EFFECTS */}],
   // Expression for delay in seconds. If lower than 0, it's not applied
   "delay": {/* EXPRESSION */}
 }
@@ -182,13 +285,23 @@ Applies specified potion status effect to player
 }
 ```
 
+### Quality Select
+Selects which entry to use using quality-selection syntax.
+```json5
+{
+  "type": "quality_select",
+  // Effect given to player
+  "entries": {/* quality-selection of EFFECTS */}
+}
+```
+
 ### Random
 Applies random effect from the list
 ```json5
 {
   "type": "random",
   // Effects to select from
-  "effects": [{/* EFFECTS */}],
+  "entries": [{/* EFFECTS */}],
   // Used to check if it should apply. If lower than 0, it's not applied, Optional
   "apply_check": {/* EXPRESSION */}
 }
@@ -205,7 +318,7 @@ Teleports player randomly, like a chorus fruit
 ```
 
 ### Set Alcohol Level
-Executes command as player, ignoring the OP level
+Sets alcohol level of the player
 ```json5
 {
   "type": "set_alcohol_level",

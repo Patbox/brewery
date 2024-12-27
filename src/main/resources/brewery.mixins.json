@@ -9,7 +9,6 @@
     "LivingEntityMixin",
     "MilkBucketItemMixin",
     "ServerPlayerEntityMixin",
-    "ServerPlayNetworkHandlerMixin",
     "StatusEffectInstanceMixin",
     "datafixer.ItemStackComponentizationFixMixin",
     "datafixer.Schema1460Mixin",

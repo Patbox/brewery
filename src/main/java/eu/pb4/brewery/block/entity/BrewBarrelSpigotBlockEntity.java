@@ -136,10 +136,10 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
                     }
 
                     var ingredients = IngredientMixtureItem.getIngredients(stack);
-                    var types = DrinkUtils.findTypes(ingredients, this.material.type(), DrinkUtils.getHeatSource(stack));
+                    var types = DrinkUtils.findTypes(ingredients, this.material.type(), DrinkUtils.getHeatSource(stack), DrinkUtils.getContainer(stack));
 
                     if (types.isEmpty() && oldType == null) {
-                        this.setStack(i, new ItemStack(BrewItems.FAILED_DRINK_ITEM));
+                        this.setStack(i, stack.copyComponentsToNewStack(BrewItems.FAILED_DRINK_ITEM, stack.getCount()));
                     } else {
                         double quality = -1;
                         DrinkType match = null;
@@ -169,7 +169,7 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
                         if (match == null) {
                             stack.apply(BrewComponents.BREW_DATA, BrewData.DEFAULT, x -> x.withAge(age));
                         } else if (quality < 0) {
-                            this.setStack(i, new ItemStack(BrewItems.FAILED_DRINK_ITEM));
+                            this.setStack(i, stack.copyComponentsToNewStack(BrewItems.FAILED_DRINK_ITEM, stack.getCount()));
                         } else {
                             if (stack.isOf(BrewItems.INGREDIENT_MIXTURE)) {
                                 var nStack = new ItemStack(BrewItems.DRINK_ITEM);
@@ -185,7 +185,7 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
                                 if (quality * mult >= 0) {
                                     stack.set(BrewComponents.BREW_DATA, new BrewData(Optional.of(BreweryInit.DRINK_TYPE_ID.get(match)), Math.min(quality * mult, 10), this.material.type().toString(), 0, age));
                                 } else {
-                                    this.setStack(i, new ItemStack(BrewItems.FAILED_DRINK_ITEM));
+                                    this.setStack(i, stack.copyComponentsToNewStack(BrewItems.FAILED_DRINK_ITEM, stack.getCount()));
                                 }
                             }
                         }

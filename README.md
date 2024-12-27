@@ -25,7 +25,7 @@ just click it with empty glass bottle to get mixture or finished drink.
 
 ### Creating barrel
 Brewery barrels are built in world. To make one you need 1 spigot (crafted from stone, 
-tick and any plank), 4 fences, 16 wooden stairs and 20 wooden planks. They all need to be of 
+stick and any plank), 4 fences, 16 wooden stairs and 20 wooden planks. They all need to be of 
 the same type. Then just place them in shape showcased below. Stairs rotation doesn't matter, just keep in mind to place spigot last.
 
 ![](https://imgur.com/dbrVLIS.png)
@@ -41,3 +41,8 @@ there. They will automatically start to age. When they have good enough quality 
 - Modrinth: https://modrinth.com/mod/brewery
 - CurseForge: https://www.curseforge.com/minecraft/mc-mods/patboxs-brewery
 - Github Releases: https://github.com/Patbox/brewery/releases
+
+### Datapacks adding new brews you might want to check.
+- Cabbage Substances: https://modrinth.com/datapack/cabbage-substances
+- Mainstay Recipe Book: https://modrinth.com/datapack/mainstay-recipe-book
+- To the Baikal: https://modrinth.com/datapack/to-the-baikal

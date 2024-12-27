@@ -13,7 +13,6 @@ import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 
 import static eu.pb4.brewery.BreweryInit.id;
 

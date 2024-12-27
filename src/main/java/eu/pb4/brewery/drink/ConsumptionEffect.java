@@ -4,7 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.brewery.duck.StatusEffectInstanceExt;
-import eu.pb4.brewery.other.TypeMapCodec;
+import eu.pb4.brewery.other.FloatSelector;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -39,19 +39,22 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
     static void register(Identifier identifier, MapCodec<ConsumptionEffect> codec) {
         ((TypeMapCodec) CODEC).register(identifier.toString(), codec);
     }
-
-    MapCodec<ConsumptionEffect> MAP_CODEC = new TypeMapCodec<>((self) -> {
-        self.register("potion", (MapCodec<ConsumptionEffect>) (Object) Potion.CODEC);
-        self.register("teleport_random", (MapCodec<ConsumptionEffect>) (Object) TeleportRandom.CODEC);
-        self.register("execute_command", (MapCodec<ConsumptionEffect>) (Object) ExecuteCommand.CODEC);
-        self.register("random", (MapCodec<ConsumptionEffect>) (Object) Random.CODEC);
-        self.register("set_on_fire", (MapCodec<ConsumptionEffect>) (Object) SetOnFire.CODEC);
-        self.register("freeze", (MapCodec<ConsumptionEffect>) (Object) Freeze.CODEC);
-        self.register("set_alcohol_level", (MapCodec<ConsumptionEffect>) (Object) SetAlcoholLevel.CODEC);
-        self.register("delayed", (MapCodec<ConsumptionEffect>) (Object) Delayed.CODEC);
-        self.register("attributes", (MapCodec<ConsumptionEffect>) (Object) Attributes.CODEC);
-        self.register("velocity", (MapCodec<ConsumptionEffect>) (Object) Velocity.CODEC);
-        self.register("damage", (MapCodec<ConsumptionEffect>) (Object) Damage.CODEC);
+    Codec<ConsumptionEffect> CODEC = Codec.lazyInitialized(() -> ConsumptionEffect.EFFECTS.getCodec(Codec.STRING).dispatch(ConsumptionEffect::codec, Function.identity()));
+    Codecs.IdMapper<String, MapCodec<? extends ConsumptionEffect>> EFFECTS = Util.make(new Codecs.IdMapper<>(), self -> {
+        self.put("potion", Potion.CODEC);
+        self.put("teleport_random", TeleportRandom.CODEC);
+        self.put("execute_command", ExecuteCommand.CODEC);
+        self.put("random", Random.CODEC);
+        self.put("set_on_fire", SetOnFire.CODEC);
+        self.put("freeze", Freeze.CODEC);
+        self.put("set_alcohol_level", SetAlcoholLevel.CODEC);
+        self.put("add_alcohol_level", AddAlcoholLevel.CODEC);
+        self.put("delayed", Delayed.CODEC);
+        self.put("attributes", Attributes.CODEC);
+        self.put("consume_effects", ConsumeEffects.CODEC);
+        self.put("velocity", Velocity.CODEC);
+        self.put("damage", Damage.CODEC);
+        self.put("quality_select", QualitySelect.CODEC);
     });
 
     Codec<ConsumptionEffect> CODEC = new MapCodec.MapCodecCodec<>(MAP_CODEC);
@@ -256,8 +259,51 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
         }
 
         @Override
-        public MapCodec<ConsumptionEffect> codec() {
-            return (MapCodec<ConsumptionEffect>) (Object) CODEC;
+        public MapCodec<? extends ConsumptionEffect> codec() {
+            return CODEC;
+        }
+    }
+
+    record AddAlcoholLevel(WrappedExpression value) implements ConsumptionEffect {
+        public static MapCodec<AddAlcoholLevel> CODEC = RecordCodecBuilder.mapCodec(instance ->
+                instance.group(
+                        ExpressionUtil.createCodec(ExpressionUtil.AGE_KEY, ExpressionUtil.QUALITY_KEY, ExpressionUtil.USER_ALCOHOL_LEVEL_KEY, "current").fieldOf("value").forGetter(AddAlcoholLevel::value)
+                ).apply(instance, AddAlcoholLevel::new));
+
+        public static ConsumptionEffect of(String value) {
+            return new AddAlcoholLevel(WrappedExpression.create(value, ExpressionUtil.AGE_KEY, ExpressionUtil.QUALITY_KEY, "current"));
+        }
+
+        public void apply(LivingEntity user, double age, double quality) {
+            var value = this.value.expression()
+                    .setVariable(ExpressionUtil.AGE_KEY, age)
+                    .setVariable(ExpressionUtil.QUALITY_KEY, quality)
+                    .setVariable(ExpressionUtil.USER_ALCOHOL_LEVEL_KEY, AlcoholManager.of(user).getModifiedAlcoholLevel())
+                    .setVariable("current", AlcoholManager.of(user).alcoholLevel)
+                    .evaluate();
+
+            AlcoholManager.of(user).alcoholLevel = Math.max(AlcoholManager.of(user).alcoholLevel + value, 0);
+        }
+
+        @Override
+        public MapCodec<? extends ConsumptionEffect> codec() {
+            return CODEC;
+        }
+    }
+
+    record QualitySelect(FloatSelector<ConsumptionEffect> effects) implements ConsumptionEffect {
+        public static MapCodec<QualitySelect> CODEC = RecordCodecBuilder.mapCodec(instance ->
+                instance.group(
+                        FloatSelector.createQualityCodec(ConsumptionEffect.CODEC, null).fieldOf("entries").forGetter(QualitySelect::effects)
+                ).apply(instance, QualitySelect::new));
+
+        public void apply(LivingEntity user, double age, double quality) {
+            this.effects.select((float) quality).apply(user, age, quality);
+        }
+
+        @Override
+        public MapCodec<? extends ConsumptionEffect> codec() {
+            return CODEC;
         }
     }
 

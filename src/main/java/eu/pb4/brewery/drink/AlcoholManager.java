@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class AlcoholManager {
+    public static final AlcoholManager FALLBACK = new AlcoholManager(null);
+    @Nullable
     private final LivingEntity entity;
     public double alcoholLevel = 0;
     public double quality = -1;
@@ -29,18 +31,23 @@ public final class AlcoholManager {
     private final List<DelayedEffect> delayedEffects = new ArrayList<>();
     private final List<TimedAttributes> timedAttributes = new ArrayList<>();
 
-    public AlcoholManager(LivingEntity entity) {
+    public AlcoholManager(@Nullable LivingEntity entity) {
         this.entity = entity;
     }
 
     public void drink(DrinkType type, double quality, double alcoholicValue) {
-        var multiplier = this.entity.getWorld().getGameRules().get(BrewGameRules.ALCOHOL_MULTIPLIER).get();
+        if (this.entity == null) {
+            return;
+        }
+        if (this.entity.getWorld() instanceof ServerWorld world) {
+            var multiplier = world.getGameRules().get(BrewGameRules.ALCOHOL_MULTIPLIER).get();
 
-        this.alcoholLevel = Math.max(this.alcoholLevel + alcoholicValue * multiplier, alcoholicValue * multiplier);
-        if (this.quality == -1) {
-            this.quality = quality;
-        } else {
-            this.quality = (this.quality + quality) / 2;
+            this.alcoholLevel = Math.max(this.alcoholLevel + alcoholicValue * multiplier, alcoholicValue * multiplier);
+            if (this.quality == -1) {
+                this.quality = quality;
+            } else {
+                this.quality = (this.quality + quality) / 2;
+            }
         }
     }
 
@@ -51,7 +58,7 @@ public final class AlcoholManager {
     }
 
     public static AlcoholManager of(LivingEntity entity) {
-        return ((LivingEntityExt) entity).brewery$getAlcoholManager();
+        return entity != null ? ((LivingEntityExt) entity).brewery$getAlcoholManager() : FALLBACK;
     }
 
     public void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
@@ -85,6 +92,9 @@ public final class AlcoholManager {
     }
     
     public void tick() {
+        if (this.entity == null) {
+            return;
+        }
         this.delayedEffects.removeIf(this::applyDelayedEffects);
         this.timedAttributes.removeIf(this::applyTimedAttributes);
 
@@ -104,6 +114,9 @@ public final class AlcoholManager {
     }
 
     private boolean applyTimedAttributes(TimedAttributes timedAttributes) {
+        if (this.entity == null) {
+            return false;
+        }
         if (--timedAttributes.ticksLeft > 0) {
             for (var effect : timedAttributes.attributes) {
                 var x = this.entity.getAttributeInstance(effect.getFirst());
@@ -125,6 +138,9 @@ public final class AlcoholManager {
     }
 
     private boolean applyDelayedEffects(DelayedEffect delayedEffect) {
+        if (this.entity == null) {
+            return false;
+        }
         if ((--delayedEffect.ticksLeft) <= 0) {
             for (var effect : delayedEffect.effects) {
                 effect.apply(this.entity, delayedEffect.age, delayedEffect.quality);
