@@ -6,11 +6,9 @@ import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.item.comp.BrewData;
 import eu.pb4.brewery.item.comp.CookingData;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -78,13 +76,21 @@ public class DrinkUtils {
         return 0;
     }
 
-    @Nullable
     public static Block getHeatSource(ItemStack stack) {
         if (stack.contains(BrewComponents.COOKING_DATA)) {
             return Objects.requireNonNull(stack.get(BrewComponents.COOKING_DATA)).heatSource();
         }
 
         return Blocks.FIRE;
+    }
+
+
+    public static ItemStack getContainer(ItemStack stack) {
+        if (stack.contains(BrewComponents.COOKING_DATA)) {
+            return Objects.requireNonNull(stack.get(BrewComponents.COOKING_DATA)).container();
+        }
+
+        return new ItemStack(Items.GLASS_BOTTLE);
     }
 
     public static boolean canBeDistillated(ItemStack stack) {
@@ -126,15 +132,17 @@ public class DrinkUtils {
     }
 
     public static ItemStack createDrink(Identifier type, int age, double quality, int distillated, Block heatingSource) {
+        return createDrink(type, age, quality, distillated, new CookingData(0, List.of(), heatingSource, ItemStack.EMPTY));
+    }
+    public static ItemStack createDrink(Identifier type, int age, double quality, int distillated, CookingData cookingData) {
         var stack = new ItemStack(BrewItems.DRINK_ITEM);
 
         stack.set(BrewComponents.BREW_DATA, new BrewData(Optional.of(type), quality, "", distillated, age));
-        stack.set(BrewComponents.COOKING_DATA, new CookingData(0, List.of(), heatingSource));
-
+        stack.set(BrewComponents.COOKING_DATA, cookingData);
         return stack;
     }
 
-    public static List<DrinkType> findTypes(List<ItemStack> ingredients, Identifier barrelType, Block heatSource) {
+    public static List<DrinkType> findTypes(List<ItemStack> ingredients, Identifier barrelType, Block heatSource, ItemStack container) {
         if (ingredients.isEmpty()) {
             return List.of();
         }

@@ -80,6 +80,8 @@ public class ExpressionUtil {
         };
     }
 
+    public static final WrappedExpression DEFAULT_DRINKING_TIME = WrappedExpression.createDefault("clamp(1.6 * (7 / (max(quality, 0.1))), 1.6, 4.8)");
+    public static final WrappedExpression LEGACY_DRINKING_TIME = WrappedExpression.createDefault("1.6");
 
     public static String defaultQuality(double mcDaysIdeal, double lockedTime, double qualityFalloff) {
         return "smooth_value_days(" + mcDaysIdeal + ", " + lockedTime + ", " + qualityFalloff + ", age) * 10";

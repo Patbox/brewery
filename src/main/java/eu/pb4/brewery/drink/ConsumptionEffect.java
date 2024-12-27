@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.brewery.duck.StatusEffectInstanceExt;
+import eu.pb4.brewery.other.FloatSelector;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -59,6 +60,7 @@ public interface ConsumptionEffect {
         self.put("consume_effects", ConsumeEffects.CODEC);
         self.put("velocity", Velocity.CODEC);
         self.put("damage", Damage.CODEC);
+        self.put("quality_select", QualitySelect.CODEC);
     });
 
     static ConsumptionEffect of(RegistryEntry<StatusEffect> effect, String time, String value, boolean locked) {
@@ -320,6 +322,22 @@ public interface ConsumptionEffect {
                     .evaluate();
 
             AlcoholManager.of(user).alcoholLevel = Math.max(AlcoholManager.of(user).alcoholLevel + value, 0);
+        }
+
+        @Override
+        public MapCodec<? extends ConsumptionEffect> codec() {
+            return CODEC;
+        }
+    }
+
+    record QualitySelect(FloatSelector<ConsumptionEffect> effects) implements ConsumptionEffect {
+        public static MapCodec<QualitySelect> CODEC = RecordCodecBuilder.mapCodec(instance ->
+                instance.group(
+                        FloatSelector.createQualityCodec(ConsumptionEffect.CODEC, null).fieldOf("entries").forGetter(QualitySelect::effects)
+                ).apply(instance, QualitySelect::new));
+
+        public void apply(LivingEntity user, double age, double quality) {
+            this.effects.select((float) quality).apply(user, age, quality);
         }
 
         @Override

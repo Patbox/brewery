@@ -7,7 +7,6 @@ import eu.pb4.brewery.drink.DrinkUtils;
 import eu.pb4.brewery.drink.ExpressionUtil;
 import eu.pb4.brewery.item.BrewComponents;
 import eu.pb4.brewery.item.BrewItems;
-import eu.pb4.brewery.item.comp.BrewData;
 import eu.pb4.brewery.item.comp.CookingData;
 import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
@@ -20,16 +19,13 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -159,7 +155,8 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
     public boolean onUse(PlayerEntity player) {
         var stack = player.getMainHandStack();
 
-        if (!stack.isEmpty() && stack.isOf(Items.GLASS_BOTTLE)) {
+        if (!stack.isEmpty() && BreweryInit.containerIngredient.test(stack)) {
+            var container = stack.copyWithCount(1);
             stack.decrement(1);
             var agingMultiplier = ((ServerWorld) this.world).getGameRules().get(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER).get();
 
@@ -169,7 +166,7 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
                 ingredients.add(nbt.copy());
             }
             var heatSource = this.getWorld().getBlockState(this.pos.down()).getBlock();
-            var types = DrinkUtils.findTypes(ingredients, null, heatSource);
+            var types = DrinkUtils.findTypes(ingredients, null, heatSource, container);
 
             var age = this.timeCooking * agingMultiplier;
 
@@ -190,17 +187,18 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
                     }
                 }
 
+                var stacks = new ArrayList<ItemStack>();
+                for (var st : this.inventory) {
+                    stacks.add(st.copy());
+                }
+
+                var cookingData = new CookingData(age, stacks, heatSource, container);
                 if (match == null || quality < 0) {
                     var out = new ItemStack(BrewItems.INGREDIENT_MIXTURE);
-                    var stacks = new ArrayList<ItemStack>();
-                    for (var st : this.inventory) {
-                        stacks.add(st.copy());
-                    }
-
-                    out.set(BrewComponents.COOKING_DATA, new CookingData(age, stacks, heatSource));
+                    out.set(BrewComponents.COOKING_DATA, cookingData);
                     player.giveItemStack(out);
                 } else {
-                    player.giveItemStack(DrinkUtils.createDrink(BreweryInit.DRINK_TYPE_ID.get(match), 0, quality * 10, 0, heatSource));
+                    player.giveItemStack(DrinkUtils.createDrink(BreweryInit.DRINK_TYPE_ID.get(match), 0, quality * 10, 0, cookingData));
                 }
             }
 

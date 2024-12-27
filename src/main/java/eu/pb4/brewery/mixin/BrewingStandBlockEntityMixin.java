@@ -46,10 +46,10 @@ public abstract class BrewingStandBlockEntityMixin implements Inventory {
                 if (DrinkUtils.canBeDistillated(stack)) {
                     if (stack.isOf(BrewItems.INGREDIENT_MIXTURE)) {
                         var ingredients = IngredientMixtureItem.getIngredients(stack);
-                        var types = DrinkUtils.findTypes(ingredients, null, DrinkUtils.getHeatSource(stack));
+                        var types = DrinkUtils.findTypes(ingredients, null, DrinkUtils.getHeatSource(stack), DrinkUtils.getContainer(stack));
 
                         if (types.isEmpty()) {
-                            slots.set(i, new ItemStack(BrewItems.FAILED_DRINK_ITEM));
+                            slots.set(i, stack.copyComponentsToNewStack(BrewItems.FAILED_DRINK_ITEM, stack.getCount()));
                         } else {
                             double quality = Double.MIN_VALUE;
                             DrinkType match = null;
@@ -68,7 +68,7 @@ public abstract class BrewingStandBlockEntityMixin implements Inventory {
                             }
 
                             if (match == null || quality < 0) {
-                                slots.set(i, new ItemStack(BrewItems.FAILED_DRINK_ITEM));
+                                slots.set(i, stack.copyComponentsToNewStack(BrewItems.FAILED_DRINK_ITEM, stack.getCount()));
                             } else {
                                 var drink = new ItemStack(BrewItems.DRINK_ITEM);
                                 drink.set(BrewComponents.COOKING_DATA, stack.get(BrewComponents.COOKING_DATA));

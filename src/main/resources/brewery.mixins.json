@@ -10,7 +10,6 @@
     "LivingEntityMixin",
     "ClearAllEffectsConsumeEffectItemMixin",
     "ServerPlayerEntityMixin",
-    "ServerPlayNetworkHandlerMixin",
     "StatusEffectInstanceMixin",
     "datafixer.ItemStackComponentizationFixMixin",
     "datafixer.Schema1460Mixin",

@@ -17,6 +17,8 @@ import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.other.BrewCommands;
 import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.brewery.other.BrewNetworking;
+import eu.pb4.polymer.common.api.PolymerCommonUtils;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import it.unimi.dsi.fastutil.objects.*;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -24,22 +26,21 @@ import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Items;
+import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.RegistryOps;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,6 +50,8 @@ public class BreweryInit implements ModInitializer {
     public static final Map<DrinkType, Identifier> DRINK_TYPE_ID = new Reference2ObjectOpenHashMap<>();
     public static final List<AlcoholValueEffect.Value> ALCOHOL_EFFECTS = new ArrayList<>();
     public static final Object2DoubleMap<Item> ITEM_ALCOHOL_REMOVAL_VALUES = new Object2DoubleOpenHashMap<>();
+    public static final Map<Item, Identifier> CONTAINER_TO_INGMIX_MODEL = new IdentityHashMap<>();
+    public static Ingredient containerIngredient = Ingredient.ofItems(Items.GLASS_BOTTLE);
 
     public static final Logger LOGGER = LogUtils.getLogger();
 
@@ -70,6 +73,7 @@ public class BreweryInit implements ModInitializer {
     @Override
     public void onInitialize() {
         GenericModInfo.build(FabricLoader.getInstance().getModContainer(MOD_ID).get());
+        PolymerResourcePackUtils.addModAssets(BreweryInit.MOD_ID);
 
         BrewBlocks.register();
         BrewComponents.register();
@@ -88,7 +92,14 @@ public class BreweryInit implements ModInitializer {
             overworld = null;
         });
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.addPhaseOrdering(id, Event.DEFAULT_PHASE);
-        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(id, (x, y, z) -> BreweryInit.loadDrinks(x));
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(id, (x, y, z) -> {
+            BreweryInit.loadDrinks(x);
+            BookOfBreweryItem.build(
+                    DRINK_TYPES.entrySet(),
+                    x.getOverworld().getGameRules().get(BrewGameRules.BARREL_AGING_MULTIPLIER).get(),
+                    x.getOverworld().getGameRules().get(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER).get()
+            );
+        });
 
 
         CommandRegistrationCallback.EVENT.register(BrewCommands::register);
@@ -107,6 +118,8 @@ public class BreweryInit implements ModInitializer {
         DRINK_TYPE_ID.clear();
         ITEM_ALCOHOL_REMOVAL_VALUES.clear();
         ALCOHOL_EFFECTS.clear();
+        CONTAINER_TO_INGMIX_MODEL.clear();
+        containerIngredient = Ingredient.ofItems(Items.GLASS_BOTTLE);
     }
 
     public static void addDrink(Identifier identifier, DrinkType type) {
@@ -139,8 +152,9 @@ public class BreweryInit implements ModInitializer {
                 if (effects.replace()) {
                     ALCOHOL_EFFECTS.clear();
                     ITEM_ALCOHOL_REMOVAL_VALUES.clear();
+                    CONTAINER_TO_INGMIX_MODEL.clear();
                 }
-
+                CONTAINER_TO_INGMIX_MODEL.putAll(effects.ingredientMixModels());
                 ALCOHOL_EFFECTS.addAll(effects.entries());
                 ITEM_ALCOHOL_REMOVAL_VALUES.putAll(effects.itemReduction());
             } catch (Throwable e) {
@@ -151,18 +165,29 @@ public class BreweryInit implements ModInitializer {
 
 
         if (USE_GENERATOR) {
-            var gson = new GsonBuilder().setPrettyPrinting().create();
+            var gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+            String potionModelJson = "";
+            try {
+                potionModelJson = Files.readString(PolymerCommonUtils.getClientJarRoot().resolve("assets/minecraft/items/potion.json"));
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
 
             {
                 var dir = FabricLoader.getInstance().getGameDir().resolve("../src/main/resources/data/brewery/brewery_drinks/");
-
-
+                var dirModel = FabricLoader.getInstance().getGameDir().resolve("../src/main/resources/assets/brewery/items/");
+                String finalPotionModelJson = potionModelJson;
                 DefaultDefinitions.createBrews((key, drinkType) -> {
                     var id = Identifier.of("brewery", key);
-                    addDrink(id, drinkType);
+                    addDrink(id, drinkType.apply(id));
+
+                    if (id.getPath().equals("the_testificate")) {
+                        return;
+                    }
 
                     try {
-                        Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(ops, drinkType).getOrThrow()));
+                        Files.writeString(dirModel.resolve( "brewery_drink/" +key + ".json"), finalPotionModelJson);
+                        Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(ops, drinkType.apply(id)).getOrThrow()));
                     } catch (Throwable e) {
                         e.printStackTrace();
                     }
@@ -186,6 +211,14 @@ public class BreweryInit implements ModInitializer {
                 }
             }
         }
+        var list = new ArrayList<Item>();
+
+        for (var drink : DRINK_TYPES.values()) {
+            //noinspection deprecation
+            drink.requiredContainer().getMatchingItems().map(RegistryEntry::value).forEach(list::add);
+        }
+
+        containerIngredient = Ingredient.ofItems(list.stream());
     }
 
     private static void onServerStarted(MinecraftServer server) {

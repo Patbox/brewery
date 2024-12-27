@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 4,
   "book_information": {
     "best_cooking_time": 180.0,
     "best_barrel_age": 4800.0,
@@ -21,14 +21,8 @@
       ]
     }
   ],
-  "barrel_definitions": [
-    {
-      "type": "*",
-      "quality_value": "quality",
-      "reveal_time": 300
-    }
-  ],
   "base_quality_value": "smooth_value_days(4.0, 2.0, 8.0, age) * 10",
+  "drinking_time": "clamp(1.6 * (7 / (max(quality, 0.1))), 1.6, 4.8)",
   "alcoholic_value": "11 * (0.75 + quality / 40)",
   "effects": [
     {
@@ -42,5 +36,15 @@
   "name": {
     "translate": "drinktype.brewery.apple_mead"
   },
-  "color": "#FFDC91"
+  "color": "#FFDC91",
+  "visual": {
+    "resource_pack_model": "brewery:brewery_drink/apple_mead"
+  },
+  "barrel_definitions": [
+    {
+      "type": "*",
+      "quality_value": "quality",
+      "reveal_time": 300
+    }
+  ]
 }

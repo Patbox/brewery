@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 4,
   "book_information": {
     "best_cooking_time": 480.0,
     "best_barrel_age": 4200.0,
@@ -16,14 +16,8 @@
       "count": 6
     }
   ],
-  "barrel_definitions": [
-    {
-      "type": "minecraft:birch",
-      "quality_value": "quality",
-      "reveal_time": 300
-    }
-  ],
   "base_quality_value": "smooth_value_days(3.0, 2.0, 4.0, age) * 10",
+  "drinking_time": "clamp(1.6 * (7 / (max(quality, 0.1))), 1.6, 4.8)",
   "alcoholic_value": "5 * (0.75 + quality / 40)",
   "effects": [
     {
@@ -37,5 +31,15 @@
   "name": {
     "translate": "drinktype.brewery.wheat_beer"
   },
-  "color": "#FFB84D"
+  "color": "#FFB84D",
+  "visual": {
+    "resource_pack_model": "brewery:brewery_drink/wheat_beer"
+  },
+  "barrel_definitions": [
+    {
+      "type": "minecraft:birch",
+      "quality_value": "quality",
+      "reveal_time": 300
+    }
+  ]
 }

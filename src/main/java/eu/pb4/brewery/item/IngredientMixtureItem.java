@@ -67,6 +67,11 @@ public class IngredientMixtureItem extends Item implements PolymerItem {
 
     @Override
     public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context) {
+        var model = BreweryInit.CONTAINER_TO_INGMIX_MODEL.get(DrinkUtils.getContainer(stack).getItem());
+        if (model != null) {
+            return model;
+        }
+
         return Items.POTION.getComponents().get(DataComponentTypes.ITEM_MODEL);
     }
 

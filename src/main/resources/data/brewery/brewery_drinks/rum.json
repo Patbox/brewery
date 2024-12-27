@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 4,
   "unfinished_brew_effects": [
     {
       "effect": "minecraft:poison",
@@ -37,14 +37,8 @@
     }
   ],
   "distillation_runs": 1,
-  "barrel_definitions": [
-    {
-      "type": "*",
-      "quality_value": "quality",
-      "reveal_time": 300
-    }
-  ],
   "base_quality_value": "smooth_value_days(16.0, 5.0, 100.0, age) * 10",
+  "drinking_time": "clamp(1.6 * (7 / (max(quality, 0.1))), 1.6, 4.8)",
   "alcoholic_value": "30 * (0.75 + quality / 40)",
   "effects": [
     {
@@ -69,5 +63,15 @@
   "name": {
     "translate": "drinktype.brewery.rum"
   },
-  "color": "red"
+  "color": "red",
+  "visual": {
+    "resource_pack_model": "brewery:brewery_drink/rum"
+  },
+  "barrel_definitions": [
+    {
+      "type": "*",
+      "quality_value": "quality",
+      "reveal_time": 300
+    }
+  ]
 }

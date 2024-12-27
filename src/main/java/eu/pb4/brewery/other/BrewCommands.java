@@ -5,7 +5,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.JsonOps;
@@ -37,6 +36,7 @@ import java.nio.file.Files;
 import java.util.Locale;
 import java.util.function.Function;
 
+import static eu.pb4.brewery.BreweryInit.id;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -54,7 +54,7 @@ public class BrewCommands {
                                             var remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
 
                                             CommandSource.forEachMatching(candidates, remaining, Function.identity(), id -> {
-                                                builder.suggest(id.toString(), BreweryInit.DRINK_TYPES.get(id).name().text());
+                                                builder.suggest(id.toString(), BreweryInit.DRINK_TYPES.get(id).looks().nameSelector().select(7).text());
                                             });
                                             return builder.buildFuture();
                                         })
@@ -139,7 +139,7 @@ public class BrewCommands {
 
             DefaultDefinitions.createBrews((key, type) -> {
                 try {
-                    Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(JsonOps.INSTANCE, type).getOrThrow()));
+                    Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(JsonOps.INSTANCE, type.apply(id(key))).getOrThrow()));
                 } catch (Throwable e) {
                     e.printStackTrace();
                 }
@@ -165,6 +165,7 @@ public class BrewCommands {
 
         if (type == null) {
             context.getSource().sendError(Text.literal("Invalid type!"));
+            return -1;
         }
 
         double quality;
@@ -188,7 +189,7 @@ public class BrewCommands {
         try {
             distillated = BoolArgumentType.getBool(context, "distillated") ? type.distillationRuns() : 0;
         } catch (Throwable e) {
-            distillated = 0;
+            distillated = type.distillationRuns();
         }
 
         context.getSource().getPlayerOrThrow().giveItemStack(DrinkUtils.createDrink(id, age, quality, distillated, Blocks.AIR));

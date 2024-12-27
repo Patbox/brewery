@@ -33,9 +33,12 @@
   ],
 
   "depends": {
-    "fabricloader": ">=0.14.6",
-    "fabric": "*",
-    "minecraft": ">=1.20-",
-    "java": ">=17"
+    "fabricloader": ">=0.16.6",
+    "fabric-api": "*",
+    "polymer-core": "*",
+    "polymer-resource-pack": "*",
+    "polymer-virtual-entity": "*",
+    "minecraft": ">=1.21.4-",
+    "java": ">=21"
   }
 }

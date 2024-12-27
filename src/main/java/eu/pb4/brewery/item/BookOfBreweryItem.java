@@ -1,7 +1,6 @@
 package eu.pb4.brewery.item;
 
 import eu.pb4.brewery.BreweryInit;
-import eu.pb4.brewery.GenericModInfo;
 import eu.pb4.brewery.drink.DrinkType;
 import eu.pb4.brewery.other.BrewUtils;
 import eu.pb4.polymer.core.api.item.PolymerItem;
@@ -13,7 +12,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -37,8 +35,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
     @Override
     public ActionResult use(World world, PlayerEntity user, Hand hand) {
         if (user instanceof ServerPlayerEntity player) {
-            new IndexGui(player, hand).open();
-            new IndexGui(player, hand).open();
+            new Gui(player, hand).open();
             return ActionResult.SUCCESS_SERVER;
         }
 
@@ -57,8 +54,8 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
 
     public static void build(Collection<Map.Entry<Identifier, DrinkType>> input, double barrelAgingMultiplier, double cookingTimeMultiplier) {
         var builder = new BookElementBuilder();
-        BrewGui.BOOKS.clear();
-        var types = input.stream().filter(x -> x.getValue().info().isPresent()).sorted(Comparator.comparing(x -> x.getValue().name().text().getString())).toList();
+        Gui.BOOKS.clear();
+        var types = input.stream().filter(x -> x.getValue().info().isPresent()).sorted(Comparator.comparing(x -> x.getValue().looks().nameSelector().select(7).text().getString())).toList();
 
         var container = FabricLoader.getInstance().getModContainer(BreweryInit.MOD_ID).get();
 
@@ -124,17 +121,21 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
 
         for (var e : types) {
             var type = e.getValue();
-            indexEntries.add(type.name().text().copy().styled(x -> x.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/brewery$gui " + e.getKey())).withUnderline(true)));
-
+            int index = -1;
             try {
-                buildInfo(e.getKey(), e.getValue(), barrelAgingMultiplier, cookingTimeMultiplier);
+                index = buildInfo(e.getKey(), e.getValue(), barrelAgingMultiplier, cookingTimeMultiplier);
             } catch (Throwable e2) {
                 e2.printStackTrace();
             }
+            if (index != -1) {
+                int finalIndex = index;
+                indexEntries.add(type.looks().nameSelector().select(7).text().copy()
+                        .styled(x -> x.withClickEvent(new ClickEvent(ClickEvent.Action.CHANGE_PAGE, Integer.toString(1001 + finalIndex))).withUnderline(true)));
 
-            if (indexEntries.size() == 12) {
-                builder.addPage(indexEntries.toArray(new Text[0]));
-                indexEntries.clear();
+                if (indexEntries.size() == 12) {
+                    builder.addPage(indexEntries.toArray(new Text[0]));
+                    indexEntries.clear();
+                }
             }
         }
 
@@ -143,15 +144,15 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
         }
         builder.setComponent(DataComponentTypes.WRITTEN_BOOK_CONTENT, builder.getComponent(DataComponentTypes.WRITTEN_BOOK_CONTENT).asResolved());
 
-        IndexGui.book = builder.asStack();
+        Gui.indexBook = builder.asStack();
     }
 
-    private static void buildInfo(Identifier id, DrinkType type, double barrelAgingMultiplier, double cookingTimeMultiplier) {
+    private static int buildInfo(Identifier id, DrinkType type, double barrelAgingMultiplier, double cookingTimeMultiplier) {
         var builder = new BookElementBuilder();
 
         var list = new ArrayList<Text>();
 
-        list.add(Text.empty().append(Text.literal("\uD83E\uDDEA ").styled(x -> x.withColor(type.color()))).append(type.name().text().copy().styled(x -> x.withBold(true).withUnderline(true))));
+        list.add(Text.empty().append(Text.literal("\uD83E\uDDEA ").styled(x -> x.withColor(type.looks().colorSelector().select(7)))).append(type.looks().nameSelector().select(7).text().copy().styled(x -> x.withBold(true).withUnderline(true))));
         list.add(Text.empty());
         var info = type.info().get();
 
@@ -229,104 +230,51 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
         builder.setTitle(id.toString());
         builder.setAuthor("Brewery");
 
-        BrewGui.BOOKS.put(id, builder.asStack());
+        Gui.BOOKS.add(builder.asStack());
+        return Gui.BOOKS.size() - 1;
     }
 
-    public static void openEntry(ServerPlayerEntity player, Identifier identifier, Runnable runnable) {
-        new BrewGui(player, identifier, false, runnable).open();
-    }
+    public static final class Gui extends BookGui {
+        public static final List<ItemStack> BOOKS = new ArrayList<>();
 
-    public static final class IndexGui extends BookGui {
-        public static ItemStack book;
+        public static ItemStack indexBook;
         private final ItemStack stack;
         private final Hand hand;
 
-        public IndexGui(ServerPlayerEntity player, Hand hand) {
-            super(player, book);
+        public Gui(ServerPlayerEntity player, Hand hand) {
+            super(player, indexBook);
             this.stack = player.getStackInHand(hand);
             this.hand = hand;
             this.setPage(Math.min(stack.getOrDefault(BrewComponents.BOOK_PAGE, 0),
-                    book.get(DataComponentTypes.WRITTEN_BOOK_CONTENT).getPages(false).size()));
-        }
-
-        @Override
-        public void onOpen() {
-            super.onOpen();
-        }
-
-        @Override
-        public void onClose() {
-            super.onClose();
-        }
-
-        @Override
-        public boolean onCommand(String command) {
-            try {
-                if (command.startsWith("/brewery$gui ")) {
-                    var id = Identifier.tryParse(command.substring("/brewery$gui ".length()));
-
-                    if (id != null) {
-                        this.player.server.execute(() -> {
-                            this.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
-                            new BrewGui(player, id, true, this::open).open();
-                        });
-                    }
-                }
-                return true;
-            } catch (Throwable e) {
-
-            }
-
-            return super.onCommand(command);
+                    indexBook.get(DataComponentTypes.WRITTEN_BOOK_CONTENT).getPages(false).size()));
         }
 
         @Override
         public void onTakeBookButton() {
-            this.close();
-        }
-
-        @Override
-        public void setPage(int page) {
-            super.setPage(page);
-            this.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
-
-            if (this.stack == this.player.getStackInHand(hand)) {
-                this.stack.set(BrewComponents.BOOK_PAGE, page);
-            }
-        }
-    }
-
-    public static final class BrewGui extends BookGui {
-        public static final Map<Identifier, ItemStack> BOOKS = new HashMap<>();
-        private final Runnable runnable;
-        private boolean forceReopen;
-
-        public BrewGui(ServerPlayerEntity player, Identifier identifier, boolean forceReopen, Runnable runnable) {
-            super(player, BOOKS.get(identifier));
-            this.runnable = runnable;
-            this.forceReopen = forceReopen;
-        }
-
-        @Override
-        public void setPage(int page) {
-            super.setPage(page);
-            this.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
-        }
-
-        @Override
-        public void onTakeBookButton() {
-            super.onTakeBookButton();
-            this.close();
-        }
-
-        @Override
-        public void onClose() {
-            if (this.forceReopen) {
-                this.open();
-                this.forceReopen = false;
+            if (this.book != indexBook) {
+                this.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
+                var page = this.stack.getOrDefault(BrewComponents.BOOK_PAGE, 0);
+                this.book = indexBook;
+                this.screenHandler.sendContentUpdates();
+                this.setPage(page);
             } else {
-                super.onClose();
-                runnable.run();
+                this.close();
+            }
+        }
+
+        @Override
+        public void setPage(int page) {
+            this.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
+            if (page >= 1000 && BOOKS.size() > page - 1000) {
+                this.book = BOOKS.get(page - 1000);
+                this.screenHandler.sendContentUpdates();
+                super.setPage(0);
+                return;
+            }
+
+            super.setPage(page);
+            if (this.book == indexBook && this.stack == this.player.getStackInHand(hand)) {
+                this.stack.set(BrewComponents.BOOK_PAGE, page);
             }
         }
     }
