@@ -83,7 +83,7 @@
     "minecraft:milk_bucket": 10.0
   },
   "container_to_ingredient_mix_models": {
-    "minecraft:bowl": "minecraft:suspicious_soup",
+    "minecraft:bowl": "minecraft:suspicious_stew",
     "minecraft:bucket": "minecraft:water_bucket",
     "minecraft:glass_bottle": "minecraft:potion"
   }

@@ -417,7 +417,7 @@ public class DefaultDefinitions {
         ), Map.of(Items.BREAD, 3d, Items.MILK_BUCKET, 10d),
                 Map.of(
                         Items.GLASS_BOTTLE, Identifier.ofVanilla("potion"),
-                        Items.BOWL, Identifier.ofVanilla("suspicious_soup"),
+                        Items.BOWL, Identifier.ofVanilla("suspicious_stew"),
                         Items.BUCKET, Identifier.ofVanilla("water_bucket")
                 ));
     }
