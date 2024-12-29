@@ -16,13 +16,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 import org.jetbrains.annotations.Nullable;
@@ -117,6 +117,9 @@ public class BrewCauldronBlock extends BlockWithEntity implements PolymerBlock {
     }
 
     public static ActionResult handleUseEvent(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult blockHitResult) {
-        return tryReplaceCauldron(world.getBlockState(blockHitResult.getBlockPos()), world, blockHitResult.getBlockPos(), playerEntity, hand, playerEntity.getStackInHand(hand));
+        if (world instanceof ServerWorld) {
+            return tryReplaceCauldron(world.getBlockState(blockHitResult.getBlockPos()), world, blockHitResult.getBlockPos(), playerEntity, hand, playerEntity.getStackInHand(hand));
+        }
+        return ActionResult.PASS;
     }
 }
