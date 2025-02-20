@@ -1,14 +1,16 @@
 {
-  "container.brewery.oak_barrel": "Dębowa Beczka",
-  "container.brewery.birch_barrel": "Brzozowa Beczka",
-  "container.brewery.spruce_barrel": "Świerkowa Beczka",
-  "container.brewery.jungle_barrel": "Dżunglowa Beczka",
-  "container.brewery.acacia_barrel": "Akacjowa Beczka",
-  "container.brewery.dark_oak_barrel": "Ciemno Dębowa Beczka",
-  "container.brewery.mangrove_barrel": "Namorzynowa Beczka",
-  "container.brewery.crimson_barrel": "Szkarłatna Beczka",
-  "container.brewery.warped_barrel": "Spaczona Beczka",
-
+  "container.brewery.oak_barrel": "Dębowa beczka",
+  "container.brewery.birch_barrel": "Brzozowa beczka",
+  "container.brewery.spruce_barrel": "Świerkowa beczka",
+  "container.brewery.jungle_barrel": "Dżunglowa beczka",
+  "container.brewery.acacia_barrel": "Akacjowa beczka",
+  "container.brewery.dark_oak_barrel": "Ciemnodębowa beczka",
+  "container.brewery.mangrove_barrel": "Namorzynowa beczka",
+  "container.brewery.crimson_barrel": "Szkarłatna beczka",
+  "container.brewery.warped_barrel": "Spaczona beczka",
+  "container.brewery.cherry_barrel": "Wiśniowa beczka",
+  "container.brewery.bamboo_barrel": "Bambusowa beczka",
+  "container.brewery.pale_oak_barrel": "Bladodębowa beczka",
   "block.brewery.barrel_spigot": "Kran",
   "block.brewery.cauldron": "Kocioł do parzenia",
   "item.brewery.ingredient_mixture_specific": "Mieszanka składników (%s?)",
@@ -16,7 +18,6 @@
   "item.brewery.drink_bottle": "Niezdefiniowana Butelka Napoju (%s)",
   "item.brewery.failed_drink_bottle": "Nieudany Napój",
   "item.brewery.book_of_brewery": "Książka Browarnictwa",
-
   "drinktype.brewery.beer": "Piwo",
   "drinktype.brewery.dark_beer": "Ciemne Piwo",
   "drinktype.brewery.wheat_beer": "Pszenne Piwo",
@@ -32,27 +33,25 @@
   "drinktype.brewery.chorus_brew": "Napar z Refrenusu",
   "drinktype.brewery.tea": "Herbata",
   "drinktype.brewery.green_tea": "Zielona Herbata",
-
+  "drinktype.brewery.cherry_tea": "Herbata wiśniowa",
   "text.brewery.quality": "Jakość: %s",
   "text.brewery.cooked_for": "Gotowane przez: %s",
   "text.brewery.seconds": "%s sekund(y)",
   "text.brewery.minutes": "%s minuty(y)",
   "text.brewery.mc_days": "%s dni MC",
+  "text.brewery.and": "oraz",
   "text.brewery.age": "Wiek: %s",
   "text.brewery.stats": "Statystyki %s: Alkohol: %s, Jakość: %s",
-
   "death.attack.brewery.alcohol_poisoning": "%s został zabity przez zatrucie alkoholowe",
-
   "text.brewery.about.version": "Wersja: ",
   "text.brewery.about.contributors": "Twórcy",
-
   "gamerule.brewery:aging_unloaded": "Czas upływa na niezaładowanym terenie",
   "gamerule.brewery:alcohol_value_multiplier": "Mnożnik wartości alkoholu",
   "gamerule.brewery:barrel_aging_multiplier": "Mnożnik starzenia w beczce",
   "gamerule.brewery:cauldron_cooking_time_multiplier": "Mnożnik czasu gotowania",
   "gamerule.brewery:show_age": "Pokaż wiek trunku",
   "gamerule.brewery:show_quality": "Pokaż jakość trunku",
-
+  "polydex_category.brewery.drink": "Napoje Brewery",
   "polydex.brewery.brewing_recipe": "Receptura Brewery",
   "polydex.brewery.ingredients": "Składniki",
   "polydex.brewery.any_barrel": "Każda beczka",
@@ -70,9 +69,10 @@
   "polydex.brewery.building_barrel.fence": "Bloki płotu",
   "polydex.brewery.building_barrel.stair": "Bloki schodów",
   "polydex.brewery.building_barrel.planks": "Bloki desek",
-
   "polydex.brewery.cooking_cauldron": "Gotowanie w kotle",
   "polydex.brewery.cooking_cauldron.text": "Wrzuć składniki do kotła z wodą i kliknij na niego trzymając patyk, aby rozpocząć gotowanie. Po upływie wymaganego czasu, użyj butelki, aby wziąć ostateczny napój lub miksturę wymagającą dodatkowego oprocesowania.",
   "polydex.brewery.aging_with_barrel": "Starzenie w beczkach",
-  "polydex.brewery.aging_with_barrel.text": "Aby rozpocząć starzenie, włóż Mieszaninę Składników do właściwej beczki i czekaj aż osiągnie właściwy wiek. Tylko mie trzymaj tam tego napoju dłużej niż trzeba, poniważ jakość może stać się gorsza."
+  "polydex.brewery.aging_with_barrel.text": "Aby rozpocząć starzenie, włóż Mieszaninę Składników do właściwej beczki i czekaj aż osiągnie właściwy wiek. Tylko mie trzymaj tam tego napoju dłużej niż trzeba, poniważ jakość może stać się gorsza.",
+  "polydex.brewery.distillation": "Destylacja ze statywem alchemicznym",
+  "polydex.brewery.distillation.text": "Niektóre napoje wymagają destylacji, zanim staną się pijalne. Aby to zrobić, użyj statywu alchemicznego, zasilonego płomiennym prochem. Napoje włóż do slotów dla mikstur, a następnie poczekaj."
 }

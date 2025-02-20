@@ -55,8 +55,8 @@ public class BrewBlocks {
         registerBarrel(Identifier.of(identifier), Text.translatable("container.brewery." + identifier + "_barrel"), planks, stairsBlock, fenceBlock);
     }
 
-    public static final Block BARREL_SPIGOT = register("barrel_spigot", new BrewSpigotBlock(AbstractBlock.Settings.create()));
-    public static final Block CAULDRON = register("cauldron", new BrewCauldronBlock(AbstractBlock.Settings.copy(Blocks.CAULDRON).dropsLike(Blocks.CAULDRON)));
+    public static final Block BARREL_SPIGOT = register("barrel_spigot", AbstractBlock.Settings.create().breakInstantly().noCollision().solidBlock(Blocks::never), BrewSpigotBlock::new);
+    public static final Block CAULDRON = register("cauldron", AbstractBlock.Settings.copy(Blocks.CAULDRON).lootTable(Blocks.CAULDRON.getLootTableKey()), BrewCauldronBlock::new);
 
     public static void register() {
         registerBarrel("oak", Blocks.OAK_PLANKS, Blocks.OAK_STAIRS, Blocks.OAK_FENCE);

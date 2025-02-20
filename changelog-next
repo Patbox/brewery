@@ -1,20 +1,6 @@
-- Improvements to the drink format (version 4):
-  - Drink name, color and visuals can now be selected depending on quality.
-  - The related fields now support direct static value or list of {"for": quality, "value": data}. See datapack definition for more info.
-  - Changed format of visual definition:
-    - Item field was removed (as it didn't work anyway), with model being used instead (defaults to potion like before).
-    - Added "resource_pack_model" to visuals - Item model id only applied when player has server resource pack.
-    - Added "particles" to visuals - Allows to toggle eating particles, false by default.
-    - Added "sound_event" to visuals - Allows to change drinking sound.
-    - Added "animation" to visuals - Allows to change drinking animation.
-  - Added optional "failed_color" and "failed_visual" (direct values) - they will be used for failed drink instead of the defaults! If not set it fallbacks to hardcoded color and 0 - quality model.
-  - Added optional "unfinished_color" and "unfinished_visual" (quality selected) - they will be used for unfinished drink instead of the defaults! If not set it fallbacks to old behaviour.
-  - Added optional "drinking_time" definition - allows to calculate how long it takes to drink the brew. Uses expression.
-  - Added optional "required_container" definition - an (recipe) ingredient definition that defines which items can be used to collect this brew from cauldron. Defaults to "glass_bottle".
-  - Added `quality_select` consumption effect - adds simple quality-selection syntax.
-- All builtin drinks now change their drinking speed based on quality (lower quality - longer drinking).
-- All builtin drinks now define resource pack item models. By default they should look like potions.
-- Improved the reliability of Book of Brewery.
-- Fixed command not creating valid distilled brews by default.
-- Failed drinks now require 3 times more time to drink (they are disgusting after all).
-- Fixed builtin drinks not having effects at all.
+- Tweaked text styling of Book of Brewery.
+- Added info about distillation to Book of Brewery.
+- Quality Select brew effect now supports both list and single entries for selection.
+- Fixed nested delayed effects crashing the game.
+- Fixed simple quality selectors not using correct values.
+- Fixed brews not validating their container.

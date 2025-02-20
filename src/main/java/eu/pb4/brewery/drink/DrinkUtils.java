@@ -122,8 +122,8 @@ public class DrinkUtils {
         var list = new ArrayList<DrinkType>();
         base:
         for (var type : BreweryInit.DRINK_TYPES.values()) {
-            if (((barrelType == null && type.barrelInfo().isEmpty()) || (barrelType != null && type.getBarrelInfo(barrelType) != null))
-                    && !type.ingredients().isEmpty() && (type.heatSource().isEmpty() || type.heatSource().get().contains(Registries.BLOCK.getEntry(heatSource)))) {
+            if ((((barrelType == null && type.barrelInfo().isEmpty()) || (barrelType != null && type.getBarrelInfo(barrelType) != null))
+                    && !type.ingredients().isEmpty() && (type.heatSource().isEmpty() || type.heatSource().get().contains(Registries.BLOCK.getEntry(heatSource)))) && type.requiredContainer().test(container)) {
                 var ing = new ArrayList<ItemStack>(ingredients.size());
                 for (var i : ingredients) {
                     ing.add(new ItemStack(i.getItem(), i.getCount()));

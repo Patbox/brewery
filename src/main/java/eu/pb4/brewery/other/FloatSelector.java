@@ -90,12 +90,13 @@ public record FloatSelector<T>(List<Entry<T>> entries) {
                                         nextPos = b;
                                     }
                                 }
-                                float val = (nextValue - previous) / (nextPos - i + 0.5f);
+                                float val = (nextValue - previous) / (nextPos - i + 1);
                                 for (; i < nextPos; i++) {
                                     var next = list.get(i);
                                     //noinspection OptionalGetWithoutIsPresent
-                                    out.add(new Entry<>(previous + val * (nextPos - (nextPos - i)), next.right().get()));
+                                    out.add(new Entry<>(previous + val * i, next.right().get()));
                                 }
+                                i--;
                             }
                         }
                     }
@@ -120,8 +121,5 @@ public record FloatSelector<T>(List<Entry<T>> entries) {
         public static <T> Entry<T> of(T result) {
             return new Entry<>(Float.NEGATIVE_INFINITY, result);
         }
-        /*public static <T> Codec<Entry<T>> createCodec(Codec<T> codec) {
-
-        }*/
     };
 }

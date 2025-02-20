@@ -132,7 +132,42 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
                     .evaluate();
 
             if (value >= 0) {
-                user.getServer().getCommandManager().executeWithPrefix(user.getCommandSource().withLevel(4).withOutput(CommandOutput.DUMMY), this.command);
+                user.getServer().getCommandManager().executeWithPrefix(user.getCommandSource((ServerWorld) user.getWorld()).withLevel(4).withOutput(CommandOutput.DUMMY), this.command);
+            }
+        }
+
+        @Override
+        public MapCodec<? extends ConsumptionEffect> codec() {
+            return CODEC;
+        }
+    }
+
+    record ConsumeEffects(List<ConsumeEffect> effects, WrappedExpression apply) implements ConsumptionEffect {
+        public static MapCodec<ConsumeEffects> CODEC = RecordCodecBuilder.mapCodec(instance ->
+                instance.group(
+                        Codecs.listOrSingle(ConsumeEffect.CODEC).fieldOf("entries").forGetter(ConsumeEffects::effects),
+                        ExpressionUtil.COMMON_CE_EXPRESSION.optionalFieldOf("apply_check", WrappedExpression.createDefaultCE("1")).forGetter(ConsumeEffects::apply)
+                ).apply(instance, ConsumeEffects::new));
+
+        public static ConsumptionEffect of(List<ConsumeEffect> effects, String applyCheck) {
+            return new ConsumeEffects(effects, WrappedExpression.createDefaultCE(applyCheck));
+        }
+
+        public static ConsumptionEffect of(List<ConsumeEffect> effects) {
+            return of(effects, "1");
+        }
+
+        public void apply(LivingEntity user, double age, double quality) {
+            var value = this.apply.expression()
+                    .setVariable(ExpressionUtil.AGE_KEY, age)
+                    .setVariable(ExpressionUtil.QUALITY_KEY, quality)
+                    .setVariable(ExpressionUtil.USER_ALCOHOL_LEVEL_KEY, AlcoholManager.of(user).getModifiedAlcoholLevel())
+                    .evaluate();
+
+            if (value >= 0) {
+                for (var effect : this.effects) {
+                    effect.onConsume(user.getWorld(), ItemStack.EMPTY, user);
+                }
             }
         }
 
@@ -145,7 +180,7 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
     record Random(List<ConsumptionEffect> effects, WrappedExpression apply) implements ConsumptionEffect {
         public static MapCodec<Random> CODEC = RecordCodecBuilder.mapCodec(instance ->
                 instance.group(
-                        Codec.list(ConsumptionEffect.CODEC).fieldOf("entries").forGetter(Random::effects),
+                        Codecs.listOrSingle(ConsumptionEffect.CODEC).fieldOf("entries").forGetter(Random::effects),
                         ExpressionUtil.COMMON_CE_EXPRESSION.optionalFieldOf("apply_check", WrappedExpression.createDefaultCE("1")).forGetter(Random::apply)
                 ).apply(instance, Random::new));
 
@@ -291,14 +326,16 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
         }
     }
 
-    record QualitySelect(FloatSelector<ConsumptionEffect> effects) implements ConsumptionEffect {
+    record QualitySelect(FloatSelector<List<ConsumptionEffect>> effects) implements ConsumptionEffect {
         public static MapCodec<QualitySelect> CODEC = RecordCodecBuilder.mapCodec(instance ->
                 instance.group(
-                        FloatSelector.createQualityCodec(ConsumptionEffect.CODEC, null).fieldOf("entries").forGetter(QualitySelect::effects)
+                        FloatSelector.createQualityCodec(Codecs.listOrSingle(ConsumptionEffect.CODEC), null).fieldOf("entries").forGetter(QualitySelect::effects)
                 ).apply(instance, QualitySelect::new));
 
         public void apply(LivingEntity user, double age, double quality) {
-            this.effects.select((float) quality).apply(user, age, quality);
+            for (var effect : this.effects.select((float) quality)) {
+                effect.apply(user, age, quality);
+            }
         }
 
         @Override
@@ -311,7 +348,7 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
         public static MapCodec<Delayed> CODEC = RecordCodecBuilder.mapCodec(instance ->
                 instance.group(
                         ExpressionUtil.COMMON_CE_EXPRESSION.fieldOf("delay").forGetter(Delayed::time),
-                        Codec.list(ConsumptionEffect.CODEC).fieldOf("entries").forGetter(Delayed::effects)
+                        Codecs.listOrSingle(ConsumptionEffect.CODEC).fieldOf("entries").forGetter(Delayed::effects)
                 ).apply(instance, Delayed::new));
 
         public static ConsumptionEffect of(List<ConsumptionEffect> effects, String time) {
