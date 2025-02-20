@@ -47,9 +47,9 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	modImplementation include('xyz.nucleoid:server-translations-api:2.4.0+1.21.2-rc1')
-	modImplementation include('eu.pb4:polymer-core:0.11.3+1.21.4')
-	modImplementation include('eu.pb4:polymer-resource-pack:0.11.3+1.21.4')
-	modImplementation include('eu.pb4:polymer-virtual-entity:0.11.3+1.21.4')
+	modImplementation include('eu.pb4:polymer-core:0.11.7+1.21.4')
+	modImplementation include('eu.pb4:polymer-resource-pack:0.11.7+1.21.4')
+	modImplementation include('eu.pb4:polymer-virtual-entity:0.11.7+1.21.4')
 	modImplementation include("eu.pb4:sgui:1.8.1+1.21.4")
 	modImplementation include("eu.pb4:placeholder-api:2.5.1+1.21.3")
 	modImplementation include("me.lucko:fabric-permissions-api:0.3.3")

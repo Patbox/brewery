@@ -30,7 +30,9 @@ public final class AlcoholManager {
     public double quality = -1;
 
     private final List<DelayedEffect> delayedEffects = new ArrayList<>();
+    private final List<DelayedEffect> delayedEffectsNext = new ArrayList<>();
     private final List<TimedAttributes> timedAttributes = new ArrayList<>();
+
 
     public AlcoholManager(@Nullable LivingEntity entity) {
         this.entity = entity;
@@ -96,8 +98,18 @@ public final class AlcoholManager {
         if (this.entity == null) {
             return;
         }
+        if (!this.delayedEffectsNext.isEmpty()) {
+            this.delayedEffects.addAll(this.delayedEffectsNext);
+            this.delayedEffectsNext.clear();
+        }
+
         this.delayedEffects.removeIf(this::applyDelayedEffects);
         this.timedAttributes.removeIf(this::applyTimedAttributes);
+
+        if (!this.delayedEffectsNext.isEmpty()) {
+            this.delayedEffects.addAll(this.delayedEffectsNext);
+            this.delayedEffectsNext.clear();
+        }
 
         if (this.alcoholLevel > 0) {
             this.alcoholLevel -= 0.0012 * this.quality;
@@ -153,7 +165,7 @@ public final class AlcoholManager {
     }
 
     public void addDelayedEffect(int ticks, double drinkAge, double drinkQuality, List<ConsumptionEffect> effects) {
-        this.delayedEffects.add(new DelayedEffect(ticks, drinkQuality, drinkAge, List.copyOf(effects)));
+        this.delayedEffectsNext.add(new DelayedEffect(ticks, drinkQuality, drinkAge, List.copyOf(effects)));
     }
 
     public void addTimedAttributes(int ticks, double drinkAge, double drinkQuality, List<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>> effects) {

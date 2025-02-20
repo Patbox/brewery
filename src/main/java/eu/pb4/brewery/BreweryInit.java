@@ -3,6 +3,8 @@ package eu.pb4.brewery;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import eu.pb4.brewery.block.BrewBlocks;
 import eu.pb4.brewery.block.BrewCauldronBlock;
@@ -17,6 +19,7 @@ import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.other.BrewCommands;
 import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.brewery.other.BrewNetworking;
+import eu.pb4.brewery.other.FloatSelector;
 import eu.pb4.polymer.common.api.PolymerCommonUtils;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import it.unimi.dsi.fastutil.objects.*;
@@ -72,6 +75,11 @@ public class BreweryInit implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        /*FloatSelector.createQualityCodec(Codec.STRING, "").decode(JsonOps.INSTANCE,
+                JsonParser.parseString("""
+                        [ "red", "yellow", "green", "blue"]
+                        """)).result().get().getFirst().entries().forEach(x -> System.out.println(x.valueForPass() + ": " + x.result()));*/
+
         GenericModInfo.build(FabricLoader.getInstance().getModContainer(MOD_ID).get());
         PolymerResourcePackUtils.addModAssets(BreweryInit.MOD_ID);
 

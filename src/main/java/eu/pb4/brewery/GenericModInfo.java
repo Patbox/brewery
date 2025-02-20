@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 public class GenericModInfo {
     private static Text[] icon = new Text[0];
+    private static Text[] iconBook = new Text[0];
     private static Text[] about = new Text[0];
     private static Text[] consoleAbout = new Text[0];
 
@@ -20,27 +21,53 @@ public class GenericModInfo {
         {
             final String chr = "█";
             var icon = new ArrayList<MutableText>();
+            var iconBook = new ArrayList<MutableText>();
             try {
-                var source = ImageIO.read(Files.newInputStream(container.getPath(container.getMetadata().getIconPath(16).get())));
+                {
+                    var source = ImageIO.read(Files.newInputStream(container.getPath(container.getMetadata().getIconPath(16).get())));
 
-                for (int y = 0; y < source.getHeight(); y++) {
-                    var base = Text.literal("");
-                    int line = 0;
-                    int color = source.getRGB(0, y) & 0xFFFFFF;
-                    for (int x = 0; x < source.getWidth(); x++) {
-                        int colorPixel = source.getRGB(x, y) & 0xFFFFFF;
+                    for (int y = 0; y < source.getHeight(); y++) {
+                        var base = Text.literal("");
+                        int line = 0;
+                        int color = source.getRGB(0, y) & 0xFFFFFF;
+                        for (int x = 0; x < source.getWidth(); x++) {
+                            int colorPixel = source.getRGB(x, y) & 0xFFFFFF;
 
-                        if (color == colorPixel) {
-                            line++;
-                        } else {
-                            base.append(Text.literal(chr.repeat(line)).setStyle(Style.EMPTY.withColor(color)));
-                            color = colorPixel;
-                            line = 1;
+                            if (color == colorPixel) {
+                                line++;
+                            } else {
+                                base.append(Text.literal(chr.repeat(line)).setStyle(Style.EMPTY.withColor(color).withShadowColor(color | 0xFF000000)));
+                                color = colorPixel;
+                                line = 1;
+                            }
                         }
-                    }
 
-                    base.append(Text.literal(chr.repeat(line)).setStyle(Style.EMPTY.withColor(color)));
-                    icon.add(base);
+                        base.append(Text.literal(chr.repeat(line)).setStyle(Style.EMPTY.withColor(color).withShadowColor(color | 0xFF000000)));
+                        icon.add(base);
+                    }
+                }
+                {
+                    var source = ImageIO.read(Files.newInputStream(container.getPath("assets/brewery/icon_book.png")));
+
+                    for (int y = 0; y < source.getHeight(); y++) {
+                        var base = Text.literal("");
+                        int line = 0;
+                        int color = source.getRGB(0, y) & 0xFFFFFF;
+                        for (int x = 0; x < source.getWidth(); x++) {
+                            int colorPixel = source.getRGB(x, y) & 0xFFFFFF;
+
+                            if (color == colorPixel) {
+                                line++;
+                            } else {
+                                base.append(Text.literal(chr.repeat(line)).setStyle(Style.EMPTY.withColor(color).withShadowColor(color | 0xFF000000)));
+                                color = colorPixel;
+                                line = 1;
+                            }
+                        }
+
+                        base.append(Text.literal(chr.repeat(line)).setStyle(Style.EMPTY.withColor(color).withShadowColor(color | 0xFF000000)));
+                        iconBook.add(base);
+                    }
                 }
             } catch (Throwable e) {
                 e.printStackTrace();
@@ -50,6 +77,7 @@ public class GenericModInfo {
             }
 
             GenericModInfo.icon = icon.toArray(new Text[0]);
+            GenericModInfo.iconBook = iconBook.toArray(new Text[0]);
         }
 
         {
@@ -128,6 +156,10 @@ public class GenericModInfo {
 
     public static Text[] getIcon() {
         return icon;
+    }
+
+    public static Text[] getIconBook() {
+        return iconBook;
     }
 
     public static Text[] getAboutFull() {

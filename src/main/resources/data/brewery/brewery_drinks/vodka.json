@@ -40,14 +40,12 @@
   "effects": [
     {
       "delay": "60 * quality",
-      "entries": [
-        {
-          "effect": "minecraft:blindness",
-          "time": "10",
-          "value": "0",
-          "type": "potion"
-        }
-      ],
+      "entries": {
+        "effect": "minecraft:blindness",
+        "time": "10",
+        "value": "0",
+        "type": "potion"
+      },
       "type": "delayed"
     }
   ],

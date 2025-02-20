@@ -149,7 +149,7 @@ public interface ConsumptionEffect {
     record ConsumeEffects(List<ConsumeEffect> effects, WrappedExpression apply) implements ConsumptionEffect {
         public static MapCodec<ConsumeEffects> CODEC = RecordCodecBuilder.mapCodec(instance ->
                 instance.group(
-                        ConsumeEffect.CODEC.listOf().fieldOf("entries").forGetter(ConsumeEffects::effects),
+                        Codecs.listOrSingle(ConsumeEffect.CODEC).fieldOf("entries").forGetter(ConsumeEffects::effects),
                         ExpressionUtil.COMMON_CE_EXPRESSION.optionalFieldOf("apply_check", WrappedExpression.createDefaultCE("1")).forGetter(ConsumeEffects::apply)
                 ).apply(instance, ConsumeEffects::new));
 
@@ -184,7 +184,7 @@ public interface ConsumptionEffect {
     record Random(List<ConsumptionEffect> effects, WrappedExpression apply) implements ConsumptionEffect {
         public static MapCodec<Random> CODEC = RecordCodecBuilder.mapCodec(instance ->
                 instance.group(
-                        Codec.list(ConsumptionEffect.CODEC).fieldOf("entries").forGetter(Random::effects),
+                        Codecs.listOrSingle(ConsumptionEffect.CODEC).fieldOf("entries").forGetter(Random::effects),
                         ExpressionUtil.COMMON_CE_EXPRESSION.optionalFieldOf("apply_check", WrappedExpression.createDefaultCE("1")).forGetter(Random::apply)
                 ).apply(instance, Random::new));
 
@@ -330,14 +330,16 @@ public interface ConsumptionEffect {
         }
     }
 
-    record QualitySelect(FloatSelector<ConsumptionEffect> effects) implements ConsumptionEffect {
+    record QualitySelect(FloatSelector<List<ConsumptionEffect>> effects) implements ConsumptionEffect {
         public static MapCodec<QualitySelect> CODEC = RecordCodecBuilder.mapCodec(instance ->
                 instance.group(
-                        FloatSelector.createQualityCodec(ConsumptionEffect.CODEC, null).fieldOf("entries").forGetter(QualitySelect::effects)
+                        FloatSelector.createQualityCodec(Codecs.listOrSingle(ConsumptionEffect.CODEC), null).fieldOf("entries").forGetter(QualitySelect::effects)
                 ).apply(instance, QualitySelect::new));
 
         public void apply(LivingEntity user, double age, double quality) {
-            this.effects.select((float) quality).apply(user, age, quality);
+            for (var effect : this.effects.select((float) quality)) {
+                effect.apply(user, age, quality);
+            }
         }
 
         @Override
@@ -350,7 +352,7 @@ public interface ConsumptionEffect {
         public static MapCodec<Delayed> CODEC = RecordCodecBuilder.mapCodec(instance ->
                 instance.group(
                         ExpressionUtil.COMMON_CE_EXPRESSION.fieldOf("delay").forGetter(Delayed::time),
-                        Codec.list(ConsumptionEffect.CODEC).fieldOf("entries").forGetter(Delayed::effects)
+                        Codecs.listOrSingle(ConsumptionEffect.CODEC).fieldOf("entries").forGetter(Delayed::effects)
                 ).apply(instance, Delayed::new));
 
         public static ConsumptionEffect of(List<ConsumptionEffect> effects, String time) {

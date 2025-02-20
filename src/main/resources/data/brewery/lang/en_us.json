@@ -80,5 +80,8 @@
   "polydex.brewery.cooking_cauldron": "Cooking in cauldron",
   "polydex.brewery.cooking_cauldron.text": "Drop required ingredients to cauldron with water and use/click it with stick to start cooking. Then after specified time take it out by using a bottle. You can get either final drink or a mixture requiring more work.",
   "polydex.brewery.aging_with_barrel": "Aging with Barrels",
-  "polydex.brewery.aging_with_barrel.text": "To start aging, put prepared mixture into correct type of barrel and wait for it to age (which can take a while). Just don't keep it for too long as quality might fall. Info about creation of barrel on next page."
+  "polydex.brewery.aging_with_barrel.text": "To start aging, put prepared mixture into correct type of barrel and wait for it to age (which can take a while). Just don't keep it for too long as quality might fall. Info about creation of barrel on next page.",
+  "polydex.brewery.distillation": "Distillation with Brewing Stand",
+  "polydex.brewery.distillation.text": "Some brews might require to be distilled before being drinkable. To do so, you can use Brewing Stand powered by Blaze Powder, but without ingredient item. You put the brews in the potion slots and wait."
+
 }

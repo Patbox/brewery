@@ -1,12 +1,14 @@
 package eu.pb4.brewery.item;
 
 import eu.pb4.brewery.BreweryInit;
+import eu.pb4.brewery.GenericModInfo;
 import eu.pb4.brewery.drink.DrinkType;
 import eu.pb4.brewery.other.BrewUtils;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.gui.BookGui;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.metadata.Person;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -15,16 +17,15 @@ import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
+import net.minecraft.text.*;
 import net.minecraft.util.*;
+import net.minecraft.util.math.ColorHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class BookOfBreweryItem extends Item implements PolymerItem {
@@ -61,12 +62,17 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
 
         {
             var contributors = new ArrayList<String>();
-            contributors.addAll(container.getMetadata().getAuthors().stream().map((p) -> p.getName()).collect(Collectors.toList()));
-            contributors.addAll(container.getMetadata().getContributors().stream().map((p) -> p.getName()).collect(Collectors.toList()));
+            contributors.addAll(container.getMetadata().getAuthors().stream().map(Person::getName).toList());
+            contributors.addAll(container.getMetadata().getContributors().stream().map(Person::getName).toList());
 
+            //noinspection DataFlowIssue
             builder.addPage(
+                    Texts.join(List.of(GenericModInfo.getIconBook()), Text.literal("\n")),
                     Text.empty(),
-                    Text.empty().append(Text.translatable("item.brewery.book_of_brewery").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.DARK_BLUE))
+                    Text.empty().append(Text.translatable("item.brewery.book_of_brewery")
+                                    .setStyle(Style.EMPTY.withShadowColor(ColorHelper.scaleRgb(Formatting.DARK_BLUE.getColorValue(), 0.6f) | 0xFF000000))
+                                    .formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.BLUE))
+
                             .append(Text.literal(" \uD83E\uDDEA").formatted(Formatting.DARK_RED)),
                     Text.empty(),
                     Text.translatable("text.brewery.about.version").formatted(Formatting.DARK_GREEN)
@@ -112,6 +118,12 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
                 Text.empty().append(Text.literal("§b⏹")).append(" - ").append(Text.translatable("polydex.brewery.building_barrel.stair")),
                 Text.empty().append(Text.literal("§c⏹")).append(" - ").append(Text.translatable("polydex.brewery.building_barrel.planks")),
                 Text.empty().append(Text.literal("§d⏹")).append(" - ").append(Text.translatable("block.brewery.barrel_spigot"))
+        );
+
+        builder.addPage(
+                Text.translatable("polydex.brewery.distillation").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.DARK_GREEN),
+                Text.empty(),
+                Text.translatable("polydex.brewery.distillation.text")
         );
 
 
