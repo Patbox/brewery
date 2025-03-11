@@ -32,6 +32,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Locale;
 import java.util.function.Function;
@@ -99,8 +100,30 @@ public class BrewCommands {
                         ).then(literal("dump_defaults")
                                 .requires(Permissions.require("brewery.dump_defaults", 4))
                                 .executes((ctx) -> dumpDefaultDefinitions())
+                        ).then(literal("generate_request_resource_pack_config")
+                                .requires(Permissions.require("brewery.generate_request_resource_pack_config", 4))
+                                .executes(BrewCommands::createResourcePackRequest)
                         )
         );
+    }
+
+    private static int createResourcePackRequest(CommandContext<ServerCommandSource> ctx) {
+        var path = FabricLoader.getInstance().getConfigDir().resolve("brewery_resources.json");
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        ResourcePackRequestFile.CODEC.encodeStart(JsonOps.INSTANCE, ResourcePackRequestFile.create(BreweryInit.DRINK_TYPES.values())).result()
+                .ifPresent(x -> {
+                    try {
+                        Files.writeString(path, x.toString());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+        return 0;
     }
 
     private static int setAlcoholValue(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {

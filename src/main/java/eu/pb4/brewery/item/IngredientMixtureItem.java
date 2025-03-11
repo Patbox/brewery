@@ -11,6 +11,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -54,22 +55,18 @@ public class IngredientMixtureItem extends Item implements PolymerItem {
     }
 
     @Override
-    public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
+    public Item getPolymerItem(ItemStack stack, @Nullable ServerPlayerEntity player) {
+        var model = BreweryInit.CONTAINER_TO_INGMIX_MODEL.get(DrinkUtils.getContainer(stack).getItem());
+        if (model != null && Registries.ITEM.containsId(model)) {
+            return Registries.ITEM.get(model);
+        }
+
         return Items.POTION;
     }
 
     @Override
-    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context) {
-        var model = BreweryInit.CONTAINER_TO_INGMIX_MODEL.get(DrinkUtils.getContainer(stack).getItem());
-        if (model != null) {
-            return model;
-        }
-
-        return Items.POTION.getComponents().get(DataComponentTypes.ITEM_MODEL);
-    }
-
-    @Override
-    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context) {
+    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, RegistryWrapper.WrapperLookup lookup, @Nullable ServerPlayerEntity player) {
+        var out = PolymerItem.super.getPolymerItemStack(itemStack, tooltipType, lookup, player);
         out.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),
                 Optional.of(3694022), List.of()));
         return out;

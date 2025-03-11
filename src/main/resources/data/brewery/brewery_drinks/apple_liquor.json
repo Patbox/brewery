@@ -2,22 +2,22 @@
   "version": 4,
   "unfinished_brew_effects": [
     {
-      "type": "potion",
       "effect": "minecraft:poison",
       "time": "60",
-      "value": "4"
+      "value": "4",
+      "type": "potion"
     },
     {
-      "type": "potion",
       "effect": "minecraft:darkness",
       "time": "60",
-      "value": "4"
+      "value": "4",
+      "type": "potion"
     },
     {
-      "type": "potion",
       "effect": "minecraft:blindness",
       "time": "60",
-      "value": "4"
+      "value": "4",
+      "type": "potion"
     }
   ],
   "book_information": {

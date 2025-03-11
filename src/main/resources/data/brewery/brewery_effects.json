@@ -6,11 +6,11 @@
       "rate": 4.0,
       "effects": [
         {
-          "type": "potion",
           "show_icon": false,
           "effect": "minecraft:weakness",
           "time": "4",
-          "value": "min(max((userAlcoholLevel - 60) / 30, 0), 2)"
+          "value": "min(max((userAlcoholLevel - 60) / 30, 0), 2)",
+          "type": "potion"
         }
       ]
     },
@@ -19,11 +19,11 @@
       "rate": 4.0,
       "effects": [
         {
-          "type": "potion",
           "show_icon": false,
           "effect": "minecraft:slowness",
           "time": "4",
-          "value": "min(max((userAlcoholLevel - 70) / 30, 0), 2)"
+          "value": "min(max((userAlcoholLevel - 70) / 30, 0), 2)",
+          "type": "potion"
         }
       ]
     },
@@ -32,11 +32,11 @@
       "rate": 16.0,
       "effects": [
         {
-          "type": "potion",
           "show_icon": false,
           "effect": "minecraft:nausea",
           "time": "16",
-          "value": "0"
+          "value": "0",
+          "type": "potion"
         }
       ]
     },
@@ -45,11 +45,11 @@
       "rate": 6.0,
       "effects": [
         {
-          "type": "velocity",
           "x": "random() - 0.5",
           "y": "random() / 2 - 0.25",
           "z": "random() - 0.5",
-          "normalized": "(0.3 + random() / 10) * ((userAlcoholLevel - 70) / 80 + 1)"
+          "normalized": "(0.3 + random() / 10) * ((userAlcoholLevel - 70) / 80 + 1)",
+          "type": "velocity"
         }
       ]
     },
@@ -58,11 +58,11 @@
       "rate": 16.0,
       "effects": [
         {
-          "type": "potion",
           "show_icon": false,
           "effect": "minecraft:darkness",
           "time": "16",
-          "value": "0"
+          "value": "0",
+          "type": "potion"
         }
       ]
     },
@@ -71,15 +71,20 @@
       "rate": 4.0,
       "effects": [
         {
-          "type": "damage",
           "id": "brewery:alcohol_poisoning",
-          "value": "(userAlcoholLevel - 110) / 10 + 1"
+          "value": "(userAlcoholLevel - 110) / 10 + 1",
+          "type": "damage"
         }
       ]
     }
   ],
   "alcohol_reduction_items": {
-    "minecraft:bread": 3.0,
-    "minecraft:milk_bucket": 10.0
+    "minecraft:milk_bucket": 10.0,
+    "minecraft:bread": 3.0
+  },
+  "container_to_ingredient_mix_models": {
+    "minecraft:bucket": "minecraft:water_bucket",
+    "minecraft:bowl": "minecraft:suspicious_stew",
+    "minecraft:glass_bottle": "minecraft:potion"
   }
 }

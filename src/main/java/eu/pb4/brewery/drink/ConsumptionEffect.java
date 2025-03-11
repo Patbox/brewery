@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.brewery.duck.StatusEffectInstanceExt;
+import eu.pb4.brewery.other.BCodecs;
 import eu.pb4.brewery.other.FloatSelector;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
@@ -13,7 +14,9 @@ import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.passive.FoxEntity;
-import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.packet.s2c.play.ExplosionS2CPacket;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -27,20 +30,24 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
+import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.event.GameEvent;
+import net.minecraft.world.explosion.Explosion;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
-public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<ConsumptionEffect> {
+public interface ConsumptionEffect {
 
     static void register(Identifier identifier, MapCodec<ConsumptionEffect> codec) {
-        ((TypeMapCodec) CODEC).register(identifier.toString(), codec);
+        EFFECTS.put(identifier.toString(), codec);
     }
     Codec<ConsumptionEffect> CODEC = Codec.lazyInitialized(() -> ConsumptionEffect.EFFECTS.getCodec(Codec.STRING).dispatch(ConsumptionEffect::codec, Function.identity()));
-    Codecs.IdMapper<String, MapCodec<? extends ConsumptionEffect>> EFFECTS = Util.make(new Codecs.IdMapper<>(), self -> {
+    BCodecs.IdMapper<String, MapCodec<? extends ConsumptionEffect>> EFFECTS = Util.make(new BCodecs.IdMapper<>(), self -> {
         self.put("potion", Potion.CODEC);
         self.put("teleport_random", TeleportRandom.CODEC);
         self.put("execute_command", ExecuteCommand.CODEC);
@@ -51,13 +58,11 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
         self.put("add_alcohol_level", AddAlcoholLevel.CODEC);
         self.put("delayed", Delayed.CODEC);
         self.put("attributes", Attributes.CODEC);
-        self.put("consume_effects", ConsumeEffects.CODEC);
+        //self.put("consume_effects", ConsumeEffects.CODEC);
         self.put("velocity", Velocity.CODEC);
         self.put("damage", Damage.CODEC);
         self.put("quality_select", QualitySelect.CODEC);
     });
-
-    Codec<ConsumptionEffect> CODEC = new MapCodec.MapCodecCodec<>(MAP_CODEC);
 
     static ConsumptionEffect of(RegistryEntry<StatusEffect> effect, String time, String value, boolean locked) {
         return new ConsumptionEffect.Potion(effect, WrappedExpression.createDefaultCE(time), WrappedExpression.createDefaultCE(value), locked, false, true);
@@ -65,7 +70,7 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
 
     void apply(LivingEntity user, double age, double quality);
 
-    MapCodec<ConsumptionEffect> codec();
+    MapCodec<? extends ConsumptionEffect> codec();
 
     record Potion(RegistryEntry<StatusEffect> effect, WrappedExpression time, WrappedExpression value, boolean locked,
                   boolean particles, boolean showIcon) implements ConsumptionEffect {
@@ -104,8 +109,8 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
         }
 
         @Override
-        public MapCodec<ConsumptionEffect> codec() {
-            return (MapCodec<ConsumptionEffect>) (Object) CODEC;
+        public MapCodec<? extends ConsumptionEffect> codec() {
+            return CODEC;
         }
     }
 
@@ -132,7 +137,7 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
                     .evaluate();
 
             if (value >= 0) {
-                user.getServer().getCommandManager().executeWithPrefix(user.getCommandSource((ServerWorld) user.getWorld()).withLevel(4).withOutput(CommandOutput.DUMMY), this.command);
+                user.getServer().getCommandManager().executeWithPrefix(user.getCommandSource().withLevel(4).withOutput(CommandOutput.DUMMY), this.command);
             }
         }
 
@@ -142,10 +147,10 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
         }
     }
 
-    record ConsumeEffects(List<ConsumeEffect> effects, WrappedExpression apply) implements ConsumptionEffect {
+    /*record ConsumeEffects(List<ConsumeEffect> effects, WrappedExpression apply) implements ConsumptionEffect {
         public static MapCodec<ConsumeEffects> CODEC = RecordCodecBuilder.mapCodec(instance ->
                 instance.group(
-                        Codecs.listOrSingle(ConsumeEffect.CODEC).fieldOf("entries").forGetter(ConsumeEffects::effects),
+                        BCodecs.listOrSingle(ConsumeEffect.CODEC).fieldOf("entries").forGetter(ConsumeEffects::effects),
                         ExpressionUtil.COMMON_CE_EXPRESSION.optionalFieldOf("apply_check", WrappedExpression.createDefaultCE("1")).forGetter(ConsumeEffects::apply)
                 ).apply(instance, ConsumeEffects::new));
 
@@ -172,15 +177,15 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
         }
 
         @Override
-        public MapCodec<ConsumptionEffect> codec() {
-            return (MapCodec<ConsumptionEffect>) (Object) CODEC;
+        public MapCodec<? extends ConsumptionEffect> codec() {
+            return CODEC;
         }
-    }
+    }*/
 
     record Random(List<ConsumptionEffect> effects, WrappedExpression apply) implements ConsumptionEffect {
         public static MapCodec<Random> CODEC = RecordCodecBuilder.mapCodec(instance ->
                 instance.group(
-                        Codecs.listOrSingle(ConsumptionEffect.CODEC).fieldOf("entries").forGetter(Random::effects),
+                        BCodecs.listOrSingle(ConsumptionEffect.CODEC).fieldOf("entries").forGetter(Random::effects),
                         ExpressionUtil.COMMON_CE_EXPRESSION.optionalFieldOf("apply_check", WrappedExpression.createDefaultCE("1")).forGetter(Random::apply)
                 ).apply(instance, Random::new));
 
@@ -205,8 +210,8 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
         }
 
         @Override
-        public MapCodec<ConsumptionEffect> codec() {
-            return (MapCodec<ConsumptionEffect>) (Object) CODEC;
+        public MapCodec<? extends ConsumptionEffect> codec() {
+            return CODEC;
         }
     }
 
@@ -235,8 +240,8 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
         }
 
         @Override
-        public MapCodec<ConsumptionEffect> codec() {
-            return (MapCodec<ConsumptionEffect>) (Object) CODEC;
+        public MapCodec<? extends ConsumptionEffect> codec() {
+            return CODEC;
         }
     }
 
@@ -265,8 +270,8 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
         }
 
         @Override
-        public MapCodec<ConsumptionEffect> codec() {
-            return (MapCodec<ConsumptionEffect>) (Object) CODEC;
+        public MapCodec<? extends ConsumptionEffect> codec() {
+            return CODEC;
         }
     }
 
@@ -329,7 +334,7 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
     record QualitySelect(FloatSelector<List<ConsumptionEffect>> effects) implements ConsumptionEffect {
         public static MapCodec<QualitySelect> CODEC = RecordCodecBuilder.mapCodec(instance ->
                 instance.group(
-                        FloatSelector.createQualityCodec(Codecs.listOrSingle(ConsumptionEffect.CODEC), null).fieldOf("entries").forGetter(QualitySelect::effects)
+                        FloatSelector.createQualityCodec(BCodecs.listOrSingle(ConsumptionEffect.CODEC), null).fieldOf("entries").forGetter(QualitySelect::effects)
                 ).apply(instance, QualitySelect::new));
 
         public void apply(LivingEntity user, double age, double quality) {
@@ -348,7 +353,7 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
         public static MapCodec<Delayed> CODEC = RecordCodecBuilder.mapCodec(instance ->
                 instance.group(
                         ExpressionUtil.COMMON_CE_EXPRESSION.fieldOf("delay").forGetter(Delayed::time),
-                        Codecs.listOrSingle(ConsumptionEffect.CODEC).fieldOf("entries").forGetter(Delayed::effects)
+                        BCodecs.listOrSingle(ConsumptionEffect.CODEC).fieldOf("entries").forGetter(Delayed::effects)
                 ).apply(instance, Delayed::new));
 
         public static ConsumptionEffect of(List<ConsumptionEffect> effects, String time) {
@@ -368,8 +373,8 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
         }
 
         @Override
-        public MapCodec<ConsumptionEffect> codec() {
-            return (MapCodec<ConsumptionEffect>) (Object) CODEC;
+        public MapCodec<? extends ConsumptionEffect> codec() {
+            return CODEC;
         }
     }
 
@@ -402,8 +407,8 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
         }
 
         @Override
-        public MapCodec<ConsumptionEffect> codec() {
-            return (MapCodec<ConsumptionEffect>) (Object) CODEC;
+        public MapCodec<? extends ConsumptionEffect> codec() {
+            return CODEC;
         }
     }
 
@@ -433,10 +438,6 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
                     double g = user.getX() + (user.getRandom().nextDouble() - 0.5D) * distance;
                     double h = MathHelper.clamp(user.getY() + user.getRandom().nextDouble() - 0.5d, user.getWorld().getBottomY(), user.getWorld().getBottomY() + ((ServerWorld) user.getWorld()).getLogicalHeight() - 1);
                     double j = user.getZ() + (user.getRandom().nextDouble() - 0.5D) * distance;
-                    if (user.hasVehicle()) {
-                        user.stopRiding();
-                    }
-
                     Vec3d vec3d = user.getPos();
                     if (user.teleport(g, h, j, true)) {
                         user.getWorld().emitGameEvent(GameEvent.TELEPORT, vec3d, GameEvent.Emitter.of(user));
@@ -450,8 +451,8 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
         }
 
         @Override
-        public MapCodec<ConsumptionEffect> codec() {
-            return (MapCodec<ConsumptionEffect>) (Object) CODEC;
+        public MapCodec<? extends ConsumptionEffect> codec() {
+            return CODEC;
         }
     }
 
@@ -493,6 +494,7 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
                     .evaluate();
 
             if (x != 0 || y != 0 || z != 0) {
+                Vec3d vec;
                 if (this.normalized.isPresent()) {
                     var value = this.normalized.get().expression()
                             .setVariable(ExpressionUtil.AGE_KEY, age)
@@ -503,23 +505,24 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
                     if (value == 0) {
                         return;
                     }
-                    var vec = new Vec3d(x, y, z).normalize().multiply(Math.min(value, 100));
+                    vec = new Vec3d(x, y, z).normalize().multiply(Math.min(value, 100));
                     user.addVelocity(vec.x, vec.y, vec.z);
                 } else {
-                    var vec = new Vec3d(x, y, z);
+                    vec = new Vec3d(x, y, z);
                     vec = vec.normalize().multiply(Math.min(vec.length(), 100));
                     user.addVelocity(vec.x, vec.y, vec.z);
                 }
 
                 if (user instanceof ServerPlayerEntity player) {
-                    player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
+                    //player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
+                    player.networkHandler.sendPacket(new ExplosionS2CPacket(0, -99999, 0, 0, List.of(), vec, Explosion.DestructionType.KEEP, ParticleTypes.UNDERWATER, ParticleTypes.UNDERWATER, Registries.SOUND_EVENT.getEntry(SoundEvents.INTENTIONALLY_EMPTY)));
                 }
             }
         }
 
         @Override
-        public MapCodec<ConsumptionEffect> codec() {
-            return (MapCodec<ConsumptionEffect>) (Object) CODEC;
+        public MapCodec<? extends ConsumptionEffect> codec() {
+            return CODEC;
         }
     }
 
@@ -531,11 +534,11 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
                         ExpressionUtil.COMMON_CE_EXPRESSION.fieldOf("value").forGetter(Damage::value)
                 ).apply(instance, Damage::new));
         public static ConsumptionEffect of(MinecraftServer server, RegistryKey<DamageType> type, String value) {
-            return new Damage(server.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE).getEntry(type).get(), WrappedExpression.createDefaultCE(value));
+            return new Damage(server.getRegistryManager().getWrapperOrThrow(RegistryKeys.DAMAGE_TYPE).getOrThrow(type), WrappedExpression.createDefaultCE(value));
         }
 
         public static ConsumptionEffect of(MinecraftServer server, Identifier type, String value) {
-            return new Damage(server.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE).getEntry(RegistryKey.of(RegistryKeys.DAMAGE_TYPE, type)).get(), WrappedExpression.createDefaultCE(value));
+            return new Damage(server.getRegistryManager().getWrapperOrThrow(RegistryKeys.DAMAGE_TYPE).getOrThrow(RegistryKey.of(RegistryKeys.DAMAGE_TYPE, type)), WrappedExpression.createDefaultCE(value));
         }
 
         public void apply(LivingEntity user, double age, double quality) {
@@ -553,8 +556,8 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
         }
 
         @Override
-        public MapCodec<ConsumptionEffect> codec() {
-            return (MapCodec<ConsumptionEffect>) (Object) CODEC;
+        public MapCodec<? extends ConsumptionEffect> codec() {
+            return CODEC;
         }
     }
 }

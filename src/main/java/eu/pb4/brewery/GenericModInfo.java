@@ -36,13 +36,13 @@ public class GenericModInfo {
                             if (color == colorPixel) {
                                 line++;
                             } else {
-                                base.append(Text.literal(chr.repeat(line)).setStyle(Style.EMPTY.withColor(color).withShadowColor(color | 0xFF000000)));
+                                base.append(Text.literal(chr.repeat(line)).setStyle(Style.EMPTY.withColor(color)));
                                 color = colorPixel;
                                 line = 1;
                             }
                         }
 
-                        base.append(Text.literal(chr.repeat(line)).setStyle(Style.EMPTY.withColor(color).withShadowColor(color | 0xFF000000)));
+                        base.append(Text.literal(chr.repeat(line)).setStyle(Style.EMPTY.withColor(color)));
                         icon.add(base);
                     }
                 }
@@ -59,13 +59,13 @@ public class GenericModInfo {
                             if (color == colorPixel) {
                                 line++;
                             } else {
-                                base.append(Text.literal(chr.repeat(line)).setStyle(Style.EMPTY.withColor(color).withShadowColor(color | 0xFF000000)));
+                                base.append(Text.literal(chr.repeat(line)).setStyle(Style.EMPTY.withColor(color)));
                                 color = colorPixel;
                                 line = 1;
                             }
                         }
 
-                        base.append(Text.literal(chr.repeat(line)).setStyle(Style.EMPTY.withColor(color).withShadowColor(color | 0xFF000000)));
+                        base.append(Text.literal(chr.repeat(line)).setStyle(Style.EMPTY.withColor(color)));
                         iconBook.add(base);
                     }
                 }

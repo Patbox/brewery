@@ -14,7 +14,7 @@ public record FloatSelector<T>(List<Entry<T>> entries) {
 
     public T select(float value) {
         var diff = Float.POSITIVE_INFINITY;
-        Entry<T> curr = this.entries.getLast();
+        Entry<T> curr = this.entries.get(this.entries.size() - 1);
         for (var entry : entries) {
             var d = Math.abs(entry.valueForPass - value);
             if (d < diff) {
@@ -40,7 +40,7 @@ public record FloatSelector<T>(List<Entry<T>> entries) {
     }
 
     public static <T> Codec<FloatSelector<T>> createSingularCodec(Codec<T> codec) {
-        return codec.xmap(FloatSelector::of, x -> x.entries.getFirst().result);
+        return codec.xmap(FloatSelector::of, x -> x.entries.get(0).result);
     }
 
     public static <T> Codec<FloatSelector<T>> createQualityCodec(Codec<T> codec, T defaultValue) {
@@ -109,7 +109,7 @@ public record FloatSelector<T>(List<Entry<T>> entries) {
             @Override
             public <D> DataResult<D> encode(FloatSelector<T> input, DynamicOps<D> ops, D prefix) {
                 if (input.entries.size() == 1) {
-                    return codec.encode(input.entries.getFirst().result, ops, prefix);
+                    return codec.encode(input.entries.get(0).result, ops, prefix);
                 }
 
                 return entryFullList.encode(input.entries(), ops, prefix);

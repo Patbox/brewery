@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import static eu.pb4.brewery.BreweryInit.id;
 
@@ -56,7 +57,7 @@ public class BrewBlocks {
     }
 
     public static final Block BARREL_SPIGOT = register("barrel_spigot", AbstractBlock.Settings.create().breakInstantly().noCollision().solidBlock(Blocks::never), BrewSpigotBlock::new);
-    public static final Block CAULDRON = register("cauldron", AbstractBlock.Settings.copy(Blocks.CAULDRON).lootTable(Blocks.CAULDRON.getLootTableKey()), BrewCauldronBlock::new);
+    public static final Block CAULDRON = register("cauldron", AbstractBlock.Settings.copy(Blocks.CAULDRON).dropsLike(Blocks.CAULDRON), BrewCauldronBlock::new);
 
     public static void register() {
         registerBarrel("oak", Blocks.OAK_PLANKS, Blocks.OAK_STAIRS, Blocks.OAK_FENCE);
@@ -70,6 +71,10 @@ public class BrewBlocks {
         registerBarrel("crimson", Blocks.CRIMSON_PLANKS, Blocks.CRIMSON_STAIRS, Blocks.CRIMSON_FENCE);
         registerBarrel("cherry", Blocks.CHERRY_PLANKS, Blocks.CHERRY_STAIRS, Blocks.CHERRY_FENCE);
         registerBarrel("bamboo", Blocks.BAMBOO_PLANKS, Blocks.BAMBOO_STAIRS, Blocks.BAMBOO_FENCE);
+    }
+
+    private static <T extends Block> T register(String path, AbstractBlock.Settings settings, Function<AbstractBlock.Settings, T> block) {
+        return Registry.register(Registries.BLOCK, id(path), block.apply(settings));
     }
 
     private static <T extends Block> T register(String path, T block) {

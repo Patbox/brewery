@@ -21,6 +21,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.stat.Stats;
@@ -35,6 +36,7 @@ import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class DrinkItem extends Item implements PolymerItem {
@@ -57,11 +59,11 @@ public class DrinkItem extends Item implements PolymerItem {
     public UseAction getUseAction(ItemStack stack) {
         var type = DrinkUtils.getType(stack);
 
-        if (type == null) {
+        //if (type == null) {
             return UseAction.DRINK;
-        } else {
-            return type.visuals(stack).animation();
-        }
+        //} else {
+            //return type.visuals(stack).animation();
+        //}
     }
 
     public ItemStack finishUsing(ItemStack stack, World world, LivingEntity user) {
@@ -119,10 +121,6 @@ public class DrinkItem extends Item implements PolymerItem {
 
     public int getMaxUseTime(ItemStack stack) {
         return 32;
-    }
-
-    public UseAction getUseAction(ItemStack stack) {
-        return UseAction.DRINK;
     }
 
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
@@ -209,45 +207,56 @@ public class DrinkItem extends Item implements PolymerItem {
     public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
         var type = DrinkUtils.getType(itemStack);
         if (type != null) {
-            return type.visuals().item();
+            var visuals = type.visuals(itemStack);
+
+            if (Registries.ITEM.containsId(visuals.defaultModel())) {
+                return Registries.ITEM.get(visuals.defaultModel());
+            }
         }
 
         return Items.POTION;
     }
 
     @Override
-    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType context, RegistryWrapper.WrapperLookup lookup, @Nullable ServerPlayerEntity player) {
-        var out = PolymerItem.super.getPolymerItemStack(itemStack, context, lookup, player);
+    public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
         var type = DrinkUtils.getType(itemStack);
+        if (type != null) {
+            var visuals = type.visuals(itemStack);
+            if (visuals.resourcePackModel().isPresent()) {
+                var val = BreweryInit.RESOURCE_PACK_MODELS.getOrDefault(visuals.defaultModel(), Map.of()).get(visuals.resourcePackModel().get());
+                if (val != null) {
+                    return val.value();
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    @Override
+    public ItemStack getPolymerItemStack(ItemStack stack, TooltipType context, RegistryWrapper.WrapperLookup lookup, @Nullable ServerPlayerEntity player) {
+        var out = PolymerItem.super.getPolymerItemStack(stack, context, lookup, player);
+        var type = DrinkUtils.getType(stack);
 
         if (type != null) {
             int color = type.color(stack);
             var visual = type.visuals(stack);
-            out.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(), Optional.of(color), List.of(), Optional.empty()));
+            out.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(), Optional.of(color), List.of()));
 
             if (visual.components().isPresent()) {
                 out.applyComponentsFrom(visual.components().get());
             }
 
-            out.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(
-                    FloatList.of((float) DrinkUtils.getQuality(stack), (float) DrinkUtils.getAgeInSeconds(stack), (float) DrinkUtils.getCookingAgeInSeconds(stack), DrinkUtils.getDistillationCount(stack)),
-                    BooleanList.of(type.isFinished(stack), DrinkUtils.getDistillationStatus(stack)),
-                    List.of(DrinkUtils.getTypeId(stack).toString(), DrinkUtils.getBarrelType(stack), type.isFinished(stack) ? "finished_drink" : "unfinished_drink"),
-                    IntList.of(color, color)
-            ));
 
-            out.set(DataComponentTypes.CONSUMABLE, new ConsumableComponent((float) type.drinkingTime(stack, context.getPlayer()), visual.animation(), visual.soundEvent(), visual.particles(), List.of()));
+            out.set(DataComponentTypes.FOOD, new FoodComponent(0, 0, true, (float) type.drinkingTime(stack, player), Optional.empty(), List.of()));
         } else {
-            out.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(
-                    FloatList.of((float) DrinkUtils.getQuality(stack), (float) DrinkUtils.getAgeInSeconds(stack), (float) DrinkUtils.getCookingAgeInSeconds(stack), DrinkUtils.getDistillationCount(stack)),
-                    BooleanList.of(false, DrinkUtils.getDistillationStatus(stack)),
-                    List.of("", DrinkUtils.getBarrelType(stack), "unknown_drink"),
-                    IntList.of(0x385dc6, 0x385dc6))
-            );
+            out.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(), Optional.of(0x385dc6), List.of()));
         }
+
+        return out;
     }
 
-    @Override
+    /*@Override
     public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context) {
         var type = DrinkUtils.getType(stack);
 
@@ -257,5 +266,5 @@ public class DrinkItem extends Item implements PolymerItem {
         }
 
         return Items.POTION.getComponents().get(DataComponentTypes.ITEM_MODEL);
-    }
+    }*/
 }

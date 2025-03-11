@@ -358,7 +358,7 @@ public class DefaultDefinitions {
                 )
         );
 
-        if (true) {
+        if (false) {
             consumer.accept("the_testificate", (id) -> new DrinkType(
                     new DrinkType.Looks(
                             FloatSelector.of(0, 10, WrappedText.of("<red>Failed Experiment"), WrappedText.of("<gold>You tried"),
@@ -373,7 +373,7 @@ public class DefaultDefinitions {
                             Optional.empty(),
                             Optional.empty()
                     ),
-                    Ingredient.ofItem(Items.GLASS_BOTTLE),
+                    Ingredient.ofItems(Items.GLASS_BOTTLE),
                     List.of(),
                     WrappedExpression.createDefault("10"),
                     WrappedExpression.createDefault("0.8 * 10 / max(quality, 0.1)"),

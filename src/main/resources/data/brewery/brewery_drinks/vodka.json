@@ -2,22 +2,22 @@
   "version": 4,
   "unfinished_brew_effects": [
     {
-      "type": "potion",
       "effect": "minecraft:poison",
       "time": "60",
-      "value": "4"
+      "value": "4",
+      "type": "potion"
     },
     {
-      "type": "potion",
       "effect": "minecraft:darkness",
       "time": "60",
-      "value": "4"
+      "value": "4",
+      "type": "potion"
     },
     {
-      "type": "potion",
       "effect": "minecraft:blindness",
       "time": "60",
-      "value": "4"
+      "value": "4",
+      "type": "potion"
     }
   ],
   "book_information": {
@@ -37,18 +37,16 @@
   "base_quality_value": "10",
   "drinking_time": "clamp(1.6 * (7 / (max(quality, 0.1))), 1.6, 4.8)",
   "alcoholic_value": "50",
-  "entries": [
+  "effects": [
     {
-      "type": "delayed",
       "delay": "60 * quality",
-      "entries": [
-        {
-          "type": "potion",
-          "effect": "minecraft:blindness",
-          "time": "10",
-          "value": "0"
-        }
-      ]
+      "entries": {
+        "effect": "minecraft:blindness",
+        "time": "10",
+        "value": "0",
+        "type": "potion"
+      },
+      "type": "delayed"
     }
   ],
   "name": {

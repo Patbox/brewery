@@ -19,13 +19,13 @@
   "base_quality_value": "smooth_value_days(18.0, 2.0, 50.0, age) * 10",
   "drinking_time": "clamp(1.6 * (7 / (max(quality, 0.1))), 1.6, 4.8)",
   "alcoholic_value": "26 * (0.75 + quality / 40)",
-  "entries": [
+  "effects": [
     {
-      "type": "potion",
       "locked": false,
       "effect": "minecraft:absorption",
       "time": "(quality - 4) * 12",
-      "value": "quality / 2 - 2"
+      "value": "quality / 2 - 2",
+      "type": "potion"
     }
   ],
   "name": {

@@ -13,7 +13,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.consume.UseAction;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryCodecs;
@@ -26,6 +25,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.UseAction;
 import net.minecraft.util.Util;
 import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.util.math.ColorHelper;
@@ -56,7 +56,7 @@ public record DrinkType(Looks looks,
                     TextColor.CODEC.optionalFieldOf("failed_color").forGetter(Looks::failedColorSelector),
                     ItemLookData.CODEC.optionalFieldOf("failed_visual").forGetter(Looks::failedVisualsSelector)
             ).apply(instance2, Looks::new)).forGetter(DrinkType::looks),
-            Ingredient.CODEC.optionalFieldOf("required_container", Ingredient.ofItem(Items.GLASS_BOTTLE)).forGetter(DrinkType::requiredContainer),
+            Ingredient.DISALLOW_EMPTY_CODEC.optionalFieldOf("required_container", Ingredient.ofItems(Items.GLASS_BOTTLE)).forGetter(DrinkType::requiredContainer),
             Codec.list(BarrelInfo.CODEC_V1).optionalFieldOf("barrel_definitions", List.of()).forGetter(DrinkType::barrelInfo),
             ExpressionUtil.createCodec(ExpressionUtil.AGE_KEY).fieldOf("base_quality_value").forGetter(DrinkType::baseQuality),
             ExpressionUtil.COMMON_EXPRESSION.optionalFieldOf("drinking_time").xmap(x -> x.orElse(ExpressionUtil.DEFAULT_DRINKING_TIME), Optional::of).forGetter(DrinkType::drinkingTime),
@@ -80,7 +80,7 @@ public record DrinkType(Looks looks,
                     MapCodec.unit(Optional.<TextColor>empty()).forGetter(Looks::failedColorSelector),
                     MapCodec.unit(Optional.<ItemLookData>empty()).forGetter(Looks::failedVisualsSelector)
             ).apply(instance2, Looks::new)).forGetter(DrinkType::looks),
-            MapCodec.unit(Ingredient.ofItem(Items.GLASS_BOTTLE)).forGetter(DrinkType::requiredContainer),
+            MapCodec.unit(Ingredient.ofItems(Items.GLASS_BOTTLE)).forGetter(DrinkType::requiredContainer),
             Codec.list(BarrelInfo.CODEC_V1).optionalFieldOf("barrel_definitions", List.of()).forGetter(DrinkType::barrelInfo),
             ExpressionUtil.createCodec(ExpressionUtil.AGE_KEY).fieldOf("base_quality_value").forGetter(DrinkType::baseQuality),
             MapCodec.unit(ExpressionUtil.LEGACY_DRINKING_TIME).forGetter(DrinkType::drinkingTime),
@@ -105,7 +105,7 @@ public record DrinkType(Looks looks,
                     MapCodec.unit(Optional.<TextColor>empty()).forGetter(Looks::failedColorSelector),
                     MapCodec.unit(Optional.<ItemLookData>empty()).forGetter(Looks::failedVisualsSelector)
             ).apply(instance2, Looks::new)).forGetter(DrinkType::looks),
-            MapCodec.unit(Ingredient.ofItem(Items.GLASS_BOTTLE)).forGetter(DrinkType::requiredContainer),
+            MapCodec.unit(Ingredient.ofItems(Items.GLASS_BOTTLE)).forGetter(DrinkType::requiredContainer),
             Codec.list(BarrelInfo.CODEC_V1).optionalFieldOf("barrel_definitions", List.of()).forGetter(DrinkType::barrelInfo),
             ExpressionUtil.createCodec(ExpressionUtil.AGE_KEY).fieldOf("base_quality_value").forGetter(DrinkType::baseQuality),
             MapCodec.unit(ExpressionUtil.LEGACY_DRINKING_TIME).forGetter(DrinkType::drinkingTime),
@@ -130,7 +130,7 @@ public record DrinkType(Looks looks,
                     MapCodec.unit(Optional.<TextColor>empty()).forGetter(Looks::failedColorSelector),
                     MapCodec.unit(Optional.<ItemLookData>empty()).forGetter(Looks::failedVisualsSelector)
             ).apply(instance2, Looks::new)).forGetter(DrinkType::looks),
-            MapCodec.unit(Ingredient.ofItem(Items.GLASS_BOTTLE)).forGetter(DrinkType::requiredContainer),
+            MapCodec.unit(Ingredient.ofItems(Items.GLASS_BOTTLE)).forGetter(DrinkType::requiredContainer),
             Codec.list(BarrelInfo.CODEC_V1).optionalFieldOf("barrel_definitions", List.of()).forGetter(DrinkType::barrelInfo),
             ExpressionUtil.createCodec(ExpressionUtil.AGE_KEY).fieldOf("base_quality_value").forGetter(DrinkType::baseQuality),
             MapCodec.unit(ExpressionUtil.LEGACY_DRINKING_TIME).forGetter(DrinkType::drinkingTime),
@@ -182,7 +182,7 @@ public record DrinkType(Looks looks,
     }
 
     public static DrinkType create(Identifier identifier, TextColor color, List<BarrelInfo> barrelInfo, String quality, String alcoholicValue, List<ConsumptionEffect> consumptionEffects, String cookingTime, List<BrewIngredient> ingredients, int distillationRuns, List<ConsumptionEffect> unfinishedEffects, DrinkInfo info, TagKey<Block> heatSource) {
-        return create(identifier, color, barrelInfo, quality, alcoholicValue, consumptionEffects, cookingTime, ingredients, distillationRuns, unfinishedEffects, info, Optional.of(RegistryEntryList.of(Registries.BLOCK, heatSource)));
+        return create(identifier, color, barrelInfo, quality, alcoholicValue, consumptionEffects, cookingTime, ingredients, distillationRuns, unfinishedEffects, info, Optional.of(RegistryEntryList.of(Registries.BLOCK.getTagCreatingWrapper(), heatSource)));
     }
 
     public static DrinkType create(Identifier identifier, TextColor color, List<BarrelInfo> barrelInfo, String quality, String alcoholicValue, List<ConsumptionEffect> consumptionEffects, String cookingTime, List<BrewIngredient> ingredients, int distillationRuns, List<ConsumptionEffect> unfinishedEffects, DrinkInfo info, Optional<RegistryEntryList<Block>> heatSource) {
@@ -193,7 +193,7 @@ public record DrinkType(Looks looks,
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty()),
-                Ingredient.ofItem(Items.GLASS_BOTTLE),
+                Ingredient.ofItems(Items.GLASS_BOTTLE),
                 barrelInfo, WrappedExpression.create(quality, ExpressionUtil.AGE_KEY),
                 ExpressionUtil.DEFAULT_DRINKING_TIME,
                 WrappedExpression.createDefault(alcoholicValue), consumptionEffects, WrappedExpression.create(cookingTime, ExpressionUtil.AGE_KEY), ingredients, distillationRuns, unfinishedEffects, Optional.of(info), true, heatSource);
@@ -208,7 +208,7 @@ public record DrinkType(Looks looks,
         var quality = (float) DrinkUtils.getQuality(stack);
         if (!this.isFinished(stack)) {
             return this.looks.unfinishedColorSelector.map(textColorFloatSelector -> textColorFloatSelector.select(quality).getRgb())
-                    .orElseGet(() -> ColorHelper.lerp(0.5f, this.looks.colorSelector.select(quality).getRgb(), 0x385dc6));
+                    .orElseGet(() -> ColorHelper.Argb.lerp(0.5f, this.looks.colorSelector.select(quality).getRgb(), 0x385dc6));
         }
         return this.looks.colorSelector.select(quality).getRgb();
     }
@@ -286,16 +286,15 @@ public record DrinkType(Looks looks,
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public record ItemLookData(Identifier defaultModel, Optional<Identifier> resourcePackModel, Optional<ComponentMap> components, boolean particles,
-                               RegistryEntry<SoundEvent> soundEvent, UseAction animation) {
+                               RegistryEntry<SoundEvent> soundEvent) {
         public static final ItemLookData DEFAULT = new ItemLookData(Identifier.ofVanilla("potion"), Optional.empty(), Optional.empty(),
-                false, SoundEvents.ENTITY_GENERIC_DRINK, UseAction.DRINK);
+                false, Registries.SOUND_EVENT.getEntry(SoundEvents.ENTITY_GENERIC_DRINK));
         public static Codec<ItemLookData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Identifier.CODEC.optionalFieldOf("model", DEFAULT.defaultModel).forGetter(ItemLookData::defaultModel),
                 Identifier.CODEC.optionalFieldOf("resource_pack_model").forGetter(ItemLookData::resourcePackModel),
                 ComponentMap.CODEC.optionalFieldOf("components").forGetter(ItemLookData::components),
                 Codec.BOOL.optionalFieldOf("particles", DEFAULT.particles).forGetter(ItemLookData::particles),
-                SoundEvent.ENTRY_CODEC.optionalFieldOf("sound_event", DEFAULT.soundEvent).forGetter(ItemLookData::soundEvent),
-                UseAction.CODEC.optionalFieldOf("animation", DEFAULT.animation).forGetter(ItemLookData::animation)
+                SoundEvent.ENTRY_CODEC.optionalFieldOf("sound_event", DEFAULT.soundEvent).forGetter(ItemLookData::soundEvent)
         ).apply(instance, ItemLookData::new));
 
         public static Codec<ItemLookData> CODEC_LEGACY = RecordCodecBuilder.create(instance -> instance.group(
@@ -303,15 +302,14 @@ public record DrinkType(Looks looks,
                 Identifier.CODEC.optionalFieldOf("model").forGetter(ItemLookData::resourcePackModel),
                 ComponentMap.CODEC.optionalFieldOf("components").forGetter(ItemLookData::components),
                 Codec.BOOL.optionalFieldOf("particles", DEFAULT.particles).forGetter(ItemLookData::particles),
-                SoundEvent.ENTRY_CODEC.optionalFieldOf("sound_event", DEFAULT.soundEvent).forGetter(ItemLookData::soundEvent),
-                UseAction.CODEC.optionalFieldOf("animation", DEFAULT.animation).forGetter(ItemLookData::animation)
+                SoundEvent.ENTRY_CODEC.optionalFieldOf("sound_event", DEFAULT.soundEvent).forGetter(ItemLookData::soundEvent)
         ).apply(instance, ItemLookData::new));
 
         public ItemLookData withModel(Identifier identifier) {
-            return new ItemLookData(identifier, resourcePackModel, components, particles, soundEvent, animation);
+            return new ItemLookData(identifier, resourcePackModel, components, particles, soundEvent);
         }
         public ItemLookData withResourcePackModel(Identifier identifier) {
-            return new ItemLookData(defaultModel, Optional.ofNullable(identifier), components, particles, soundEvent, animation);
+            return new ItemLookData(defaultModel, Optional.ofNullable(identifier), components, particles, soundEvent);
         }
     }
 

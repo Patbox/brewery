@@ -16,11 +16,9 @@ import eu.pb4.brewery.drink.DrinkType;
 import eu.pb4.brewery.item.BookOfBreweryItem;
 import eu.pb4.brewery.item.BrewComponents;
 import eu.pb4.brewery.item.BrewItems;
-import eu.pb4.brewery.other.BrewCommands;
-import eu.pb4.brewery.other.BrewGameRules;
-import eu.pb4.brewery.other.BrewNetworking;
-import eu.pb4.brewery.other.FloatSelector;
+import eu.pb4.brewery.other.*;
 import eu.pb4.polymer.common.api.PolymerCommonUtils;
+import eu.pb4.polymer.resourcepack.api.PolymerModelData;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import it.unimi.dsi.fastutil.objects.*;
 import net.fabricmc.api.ModInitializer;
@@ -29,22 +27,19 @@ import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
+import net.minecraft.item.*;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BreweryInit implements ModInitializer {
     public static final String MOD_ID = "brewery";
@@ -53,6 +48,8 @@ public class BreweryInit implements ModInitializer {
     public static final List<AlcoholValueEffect.Value> ALCOHOL_EFFECTS = new ArrayList<>();
     public static final Object2DoubleMap<Item> ITEM_ALCOHOL_REMOVAL_VALUES = new Object2DoubleOpenHashMap<>();
     public static final Map<Item, Identifier> CONTAINER_TO_INGMIX_MODEL = new IdentityHashMap<>();
+    // Base -> Respack Model -> CMD
+    public static final Map<Identifier, Map<Identifier, PolymerModelData>> RESOURCE_PACK_MODELS = new HashMap<>();
     public static Ingredient containerIngredient = Ingredient.ofItems(Items.GLASS_BOTTLE);
 
     public static final Logger LOGGER = LogUtils.getLogger();
@@ -70,6 +67,22 @@ public class BreweryInit implements ModInitializer {
     @Nullable
     public static World getOverworld() {
         return overworld;
+    }
+
+    public static void loadStaticResPackData() {
+        var path = FabricLoader.getInstance().getConfigDir().resolve("brewery_resources.json");
+        if (!Files.exists(path)) {
+            return;
+        }
+
+        try {
+            ResourcePackRequestFile.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseString(Files.readString(path))).result()
+                    .ifPresent(x -> {
+                        RESOURCE_PACK_MODELS.putAll(x.getFirst().requestModels());
+                    });
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -94,10 +107,7 @@ public class BreweryInit implements ModInitializer {
 
         ServerLifecycleEvents.SERVER_STARTED.addPhaseOrdering(id, Event.DEFAULT_PHASE);
         ServerLifecycleEvents.SERVER_STARTED.register(id, BreweryInit::loadDrinks);
-        ServerLifecycleEvents.SERVER_STARTED.register((s) -> {
-            CardboardWarning.checkAndAnnounce();
-            overworld = s.getOverworld();
-        });
+        ServerLifecycleEvents.SERVER_STARTED.register(BreweryInit::onServerStarted);
         ServerLifecycleEvents.SERVER_STOPPED.register((s) -> {
             overworld = null;
         });
@@ -178,14 +188,19 @@ public class BreweryInit implements ModInitializer {
             var gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
             String potionModelJson = "";
             try {
-                potionModelJson = Files.readString(PolymerCommonUtils.getClientJarRoot().resolve("assets/minecraft/items/potion.json"));
+                potionModelJson = Files.readString(PolymerCommonUtils.getClientJarRoot().resolve("assets/minecraft/models/item/potion.json"));
             } catch (Throwable e) {
                 e.printStackTrace();
             }
 
             {
                 var dir = FabricLoader.getInstance().getGameDir().resolve("../src/main/resources/data/brewery/brewery_drinks/");
-                var dirModel = FabricLoader.getInstance().getGameDir().resolve("../src/main/resources/assets/brewery/items/");
+                var dirModel = FabricLoader.getInstance().getGameDir().resolve("../src/main/resources/assets/brewery/models/item/brewery_drink/");
+                try {
+                    Files.createDirectories(dirModel);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 String finalPotionModelJson = potionModelJson;
                 DefaultDefinitions.createBrews((key, drinkType) -> {
                     var id = Identifier.of("brewery", key);
@@ -196,7 +211,7 @@ public class BreweryInit implements ModInitializer {
                     }
 
                     try {
-                        Files.writeString(dirModel.resolve( "brewery_drink/" +key + ".json"), finalPotionModelJson);
+                        Files.writeString(dirModel.resolve(  key + ".json"), finalPotionModelJson);
                         Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(ops, drinkType.apply(id)).getOrThrow()));
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -225,10 +240,10 @@ public class BreweryInit implements ModInitializer {
 
         for (var drink : DRINK_TYPES.values()) {
             //noinspection deprecation
-            drink.requiredContainer().getMatchingItems().map(RegistryEntry::value).forEach(list::add);
+            Arrays.stream(drink.requiredContainer().getMatchingStacks()).map(ItemStack::getItem).forEach(list::add);
         }
 
-        containerIngredient = Ingredient.ofItems(list.stream());
+        containerIngredient = Ingredient.ofItems(list.toArray(new ItemConvertible[0]));
     }
 
     private static void onServerStarted(MinecraftServer server) {

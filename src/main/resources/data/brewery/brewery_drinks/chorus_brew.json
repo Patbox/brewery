@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 4,
   "book_information": {
     "best_cooking_time": 960.0,
     "best_barrel_age": 3000.0,
@@ -16,6 +16,22 @@
       "count": 16
     }
   ],
+  "base_quality_value": "smooth_value_days(2.0, 2.0, 5.0, age) * 10",
+  "drinking_time": "clamp(1.6 * (7 / (max(quality, 0.1))), 1.6, 4.8)",
+  "alcoholic_value": "0",
+  "effects": [
+    {
+      "distance": "quality * 10",
+      "type": "teleport_random"
+    }
+  ],
+  "name": {
+    "translate": "drinktype.brewery.chorus_brew"
+  },
+  "color": "dark_purple",
+  "visual": {
+    "resource_pack_model": "brewery:brewery_drink/chorus_brew"
+  },
   "barrel_definitions": [
     {
       "type": "minecraft:warped",
@@ -27,17 +43,5 @@
       "quality_value": "quality * 0.4",
       "reveal_time": 300
     }
-  ],
-  "base_quality_value": "smooth_value_days(2.0, 2.0, 5.0, age) * 10",
-  "alcoholic_value": "0",
-  "entries": [
-    {
-      "type": "teleport_random",
-      "distance": "quality * 10"
-    }
-  ],
-  "name": {
-    "translate": "drinktype.brewery.chorus_brew"
-  },
-  "color": "dark_purple"
+  ]
 }

@@ -8,6 +8,7 @@
     "BrewingStandScreenHandlerPotionSlotMixin",
     "LivingEntityMixin",
     "MilkBucketItemMixin",
+    "RegistriesMixin",
     "ServerPlayerEntityMixin",
     "StatusEffectInstanceMixin",
     "datafixer.ItemStackComponentizationFixMixin",

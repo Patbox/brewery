@@ -36,7 +36,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         if (user instanceof ServerPlayerEntity player) {
             new Gui(player, hand).open();
-            return ActionResult.SUCCESS_SERVER;
+            return TypedActionResult.success(player.getStackInHand(hand));
         }
 
         return super.use(world, user, hand);
@@ -64,7 +64,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
                     Texts.join(List.of(GenericModInfo.getIconBook()), Text.literal("\n")),
                     Text.empty(),
                     Text.empty().append(Text.translatable("item.brewery.book_of_brewery")
-                                    .setStyle(Style.EMPTY.withShadowColor(ColorHelper.scaleRgb(Formatting.DARK_BLUE.getColorValue(), 0.6f) | 0xFF000000))
+                                    .setStyle(Style.EMPTY)
                                     .formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.BLUE))
 
                             .append(Text.literal(" \uD83E\uDDEA").formatted(Formatting.DARK_RED)),
