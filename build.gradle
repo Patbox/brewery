@@ -70,7 +70,7 @@ dependencies {
 	modImplementation include('eu.pb4:polymer-core:0.9.18+1.21.1')
 	modImplementation include('eu.pb4:polymer-resource-pack:0.9.18+1.21.1')
 	modImplementation include('eu.pb4:polymer-virtual-entity:0.9.18+1.21.1')
-	modImplementation include('eu.pb4:polymer-autohost:0.9.18+1.21.1')
+	modImplementation 'eu.pb4:polymer-autohost:0.9.18+1.21.1'
 	modImplementation include("eu.pb4:sgui:1.6.0+1.21")
 	modImplementation include("eu.pb4:placeholder-api:2.4.0-pre.2+1.21")
 	modImplementation include("me.lucko:fabric-permissions-api:0.1-SNAPSHOT")
