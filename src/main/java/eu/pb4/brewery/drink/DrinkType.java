@@ -2,6 +2,7 @@ package eu.pb4.brewery.drink;
 
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import eu.pb4.brewery.other.BCodecs;
 import eu.pb4.brewery.other.BrewUtils;
 import eu.pb4.brewery.other.FloatSelector;
 import eu.pb4.brewery.other.WrappedText;
@@ -56,7 +57,7 @@ public record DrinkType(Looks looks,
                     TextColor.CODEC.optionalFieldOf("failed_color").forGetter(Looks::failedColorSelector),
                     ItemLookData.CODEC.optionalFieldOf("failed_visual").forGetter(Looks::failedVisualsSelector)
             ).apply(instance2, Looks::new)).forGetter(DrinkType::looks),
-            Ingredient.DISALLOW_EMPTY_CODEC.optionalFieldOf("required_container", Ingredient.ofItems(Items.GLASS_BOTTLE)).forGetter(DrinkType::requiredContainer),
+            BCodecs.INGREDIENT_CODEC.optionalFieldOf("required_container", Ingredient.ofItems(Items.GLASS_BOTTLE)).forGetter(DrinkType::requiredContainer),
             Codec.list(BarrelInfo.CODEC_V1).optionalFieldOf("barrel_definitions", List.of()).forGetter(DrinkType::barrelInfo),
             ExpressionUtil.createCodec(ExpressionUtil.AGE_KEY).fieldOf("base_quality_value").forGetter(DrinkType::baseQuality),
             ExpressionUtil.COMMON_EXPRESSION.optionalFieldOf("drinking_time").xmap(x -> x.orElse(ExpressionUtil.DEFAULT_DRINKING_TIME), Optional::of).forGetter(DrinkType::drinkingTime),
