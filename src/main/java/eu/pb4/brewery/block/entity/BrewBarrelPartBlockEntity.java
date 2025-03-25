@@ -38,6 +38,13 @@ public final class BrewBarrelPartBlockEntity extends BlockEntity {
         this.markDirty();
     }
 
+    @Override
+    public void onBlockReplaced(BlockPos pos, BlockState oldState) {
+        super.onBlockReplaced(pos, oldState);
+        if (this.world != null && this.container != null) {
+            world.breakBlock(this.container, true);
+        }
+    }
 
     @Nullable
     public BlockPos getContainer() {

@@ -2,6 +2,7 @@ package eu.pb4.brewery.block.entity;
 
 import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.block.BarrelMaterial;
+import eu.pb4.brewery.block.BrewBarrelPartBlock;
 import eu.pb4.brewery.block.BrewBlocks;
 import eu.pb4.brewery.drink.DrinkType;
 import eu.pb4.brewery.drink.DrinkUtils;
@@ -12,7 +13,6 @@ import eu.pb4.brewery.item.IngredientMixtureItem;
 import eu.pb4.brewery.item.comp.BrewData;
 import eu.pb4.brewery.item.comp.CookingData;
 import eu.pb4.brewery.other.BrewGameRules;
-import eu.pb4.brewery.other.BrewUtils;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import it.unimi.dsi.fastutil.longs.LongArraySet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -34,6 +34,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -228,6 +229,21 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
 
     public LongSet getParts() {
         return this.parts;
+    }
+
+    @Override
+    public void onBlockReplaced(BlockPos pos, BlockState oldState) {
+        super.onBlockReplaced(pos, oldState);
+
+        if (this.world != null) {
+            for (var part : this.iterableParts()) {
+                var partState = world.getBlockState(part);
+
+                if (partState.getBlock() instanceof BrewBarrelPartBlock block) {
+                    world.setBlockState(part, partState.get(BrewBarrelPartBlock.SHAPE).state.apply(block.barrelMaterial));
+                }
+            }
+        }
     }
 
     public Iterable<BlockPos.Mutable> iterableParts() {

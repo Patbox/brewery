@@ -120,23 +120,8 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
 
     @Override
     public void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
-            var blockEntity = world.getBlockEntity(pos);
-
-            if (blockEntity instanceof BrewBarrelSpigotBlockEntity barrelBlock) {
-                ItemScatterer.spawn(world, pos, barrelBlock);
-                world.updateComparators(pos, this);
-
-                for (var part : barrelBlock.iterableParts()) {
-                    var partState = world.getBlockState(part);
-
-                    if (partState.getBlock() instanceof BrewBarrelPartBlock block) {
-                        world.setBlockState(part, partState.get(BrewBarrelPartBlock.SHAPE).state.apply(block.barrelMaterial));
-                    }
-                }
-            }
-
-            super.onStateReplaced(state, world, pos,  moved);
-
+        world.updateComparators(pos, this);
+        super.onStateReplaced(state, world, pos,  moved);
     }
 
     @Nullable

@@ -77,17 +77,6 @@ public final class BrewBarrelPartBlock extends Block implements PolymerBlock, Bl
     }
 
     @Override
-    public void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
-        var blockEntity = world.getBlockEntity(pos);
-
-        if (blockEntity instanceof BrewBarrelPartBlockEntity redirect && redirect.getContainer() != null) {
-            world.breakBlock(redirect.getContainer(), true);
-        }
-
-        super.onStateReplaced(state, world, pos, moved);
-    }
-
-    @Override
     protected List<ItemStack> getDroppedStacks(BlockState state, LootWorldContext.Builder builder) {
         return state.get(SHAPE).state.apply(this.barrelMaterial).getDroppedStacks(builder);
     }
