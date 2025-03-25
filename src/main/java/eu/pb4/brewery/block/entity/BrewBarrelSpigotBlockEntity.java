@@ -101,7 +101,7 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
             Inventories.writeNbt(nbt, this.inventory, lookup);
         }
 
-        nbt.put("Parts", new NbtLongArray(this.parts));
+        nbt.put("Parts", new NbtLongArray(this.parts.toLongArray()));
         nbt.putString("BarrelType", this.material.type().toString());
         nbt.putLong("LastTicked", this.lastTicked);
     }
@@ -114,12 +114,12 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
         }
 
         this.parts.clear();
-        for (var part : nbt.getLongArray("Parts")) {
+        for (var part : nbt.getLongArray("Parts").orElse(new long[0])) {
             this.parts.add(part);
         }
 
-        this.material = BrewBlocks.BARREL_MATERIAL_MAP.get(Identifier.of(nbt.getString("BarrelType")));
-        this.lastTicked = nbt.getLong("LastTicked");
+        this.material = BrewBlocks.BARREL_MATERIAL_MAP.get(Identifier.of(nbt.getString("BarrelType", "")));
+        this.lastTicked = nbt.getLong("LastTicked", 0);
     }
 
     public void tickContents(double l) {
@@ -232,7 +232,7 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
 
     public Iterable<BlockPos.Mutable> iterableParts() {
         var pos = new BlockPos.Mutable();
-        return () -> new Iterator<>() {
+        return () -> new java.util.Iterator<>() {
             final LongIterator iter = BrewBarrelSpigotBlockEntity.this.parts.iterator();
 
             @Override

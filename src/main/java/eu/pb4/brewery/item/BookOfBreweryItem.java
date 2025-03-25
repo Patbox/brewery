@@ -81,7 +81,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
                     Text.literal("")
                             .append(Text.translatable("[%s]", Text.translatable("text.brewery.about.contributors"))
                                     .setStyle(Style.EMPTY.withColor(Formatting.DARK_AQUA)
-                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                            .withHoverEvent(new HoverEvent.ShowText(
                                                     Text.literal(String.join(", ", contributors)
                                                     ))
                                             )))
@@ -142,7 +142,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
             if (index != -1) {
                 int finalIndex = index;
                 indexEntries.add(type.looks().nameSelector().select(7).text().copy()
-                        .styled(x -> x.withClickEvent(new ClickEvent(ClickEvent.Action.CHANGE_PAGE, Integer.toString(1001 + finalIndex))).withUnderline(true)));
+                        .styled(x -> x.withClickEvent(new ClickEvent.ChangePage(1001 + finalIndex)).withUnderline(true)));
 
                 if (indexEntries.size() == 12) {
                     builder.addPage(indexEntries.toArray(new Text[0]));
@@ -182,7 +182,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
                     }
 
                     list.add(Text.literal(i.count() + " × ").append(Text.translatable("polydex.brewery.any_of_the_list").formatted(Formatting.ITALIC))
-                            .setStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, text)))
+                            .setStyle(Style.EMPTY.withHoverEvent(new HoverEvent.ShowText(text)))
                     );
                 }
             }

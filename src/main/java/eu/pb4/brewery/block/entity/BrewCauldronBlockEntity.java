@@ -120,13 +120,13 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
 
     public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
         super.readNbt(nbt, lookup);
-        this.lastTicked = nbt.getLong("LastTicked");
+        this.lastTicked = nbt.getLong("LastTicked", 0);
         this.inventory.clear();
-        var list = nbt.getList("Ingredients", NbtElement.COMPOUND_TYPE);
+        var list = nbt.getListOrEmpty("Ingredients");
         for (var item : list) {
-            this.inventory.add(ItemStack.fromNbtOrEmpty(lookup, (NbtCompound) item));
+            this.inventory.add(ItemStack.fromNbt(lookup, (NbtCompound) item).orElse(ItemStack.EMPTY));
         }
-        this.timeCooking = nbt.getDouble("CookingTime");
+        this.timeCooking = nbt.getDouble("CookingTime", 0);
     }
 
     public void addIngredients(List<ItemEntity> entities) {

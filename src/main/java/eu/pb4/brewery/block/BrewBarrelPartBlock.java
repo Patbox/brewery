@@ -11,6 +11,7 @@ import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.context.LootWorldContext;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
@@ -76,16 +77,14 @@ public final class BrewBarrelPartBlock extends Block implements PolymerBlock, Bl
     }
 
     @Override
-    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-        if (!state.isOf(newState.getBlock())) {
-            var blockEntity = world.getBlockEntity(pos);
+    public void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
+        var blockEntity = world.getBlockEntity(pos);
 
-            if (blockEntity instanceof BrewBarrelPartBlockEntity redirect && redirect.getContainer() != null) {
-                world.breakBlock(redirect.getContainer(), true);
-            }
-
-            super.onStateReplaced(state, world, pos, newState, moved);
+        if (blockEntity instanceof BrewBarrelPartBlockEntity redirect && redirect.getContainer() != null) {
+            world.breakBlock(redirect.getContainer(), true);
         }
+
+        super.onStateReplaced(state, world, pos, moved);
     }
 
     @Override

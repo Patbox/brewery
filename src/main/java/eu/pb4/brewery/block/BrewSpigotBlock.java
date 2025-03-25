@@ -17,7 +17,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ModelTransformationMode;
+import net.minecraft.item.ItemDisplayContext;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -119,8 +119,7 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
     }
 
     @Override
-    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-        if (!state.isOf(newState.getBlock())) {
+    public void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
             var blockEntity = world.getBlockEntity(pos);
 
             if (blockEntity instanceof BrewBarrelSpigotBlockEntity barrelBlock) {
@@ -136,8 +135,8 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
                 }
             }
 
-            super.onStateReplaced(state, world, pos, newState, moved);
-        }
+            super.onStateReplaced(state, world, pos,  moved);
+
     }
 
     @Nullable
@@ -160,7 +159,7 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
         for (var i = 0; i < 3; i++) {
             for (var o = 0; o < 2; o++) {
                 var a = new ItemDisplayElement(PolymerUtils.createPlayerHead("ewogICJ0aW1lc3RhbXAiIDogMTY3ODU0MTAyNzMwNiwKICAicHJvZmlsZUlkIiA6ICI4MTc1MTc4NzQ2MjE0NmY2YjllOWM3MTYyMWRiODQwZSIsCiAgInByb2ZpbGVOYW1lIiA6ICJSZWFwcGVhcmFuY2UiLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNmY3NTVjNDc1YTcwODcxMGQwNGRiZDk0YjNiZDI5MDZlMDFhODMwY2IwNGE2Y2QyYWExY2JhOTk2YmU3OGYyZCIsCiAgICAgICJtZXRhZGF0YSIgOiB7CiAgICAgICAgIm1vZGVsIiA6ICJzbGltIgogICAgICB9CiAgICB9CiAgfQp9"));
-                a.setModelTransformation(ModelTransformationMode.FIXED);
+                a.setItemDisplayContext(ItemDisplayContext.FIXED);
                 a.setDisplayHeight(5f);
                 a.setDisplayWidth(5f);
                 a.setViewRange(0.5f);

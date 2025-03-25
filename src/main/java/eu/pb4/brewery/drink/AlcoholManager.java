@@ -81,15 +81,15 @@ public final class AlcoholManager {
     }
 
     public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-        this.alcoholLevel = nbt.getDouble("brewery:alcohol_level");
-        this.quality = nbt.getDouble("brewery:quality");
+        this.alcoholLevel = nbt.getDouble("brewery:alcohol_level",0);
+        this.quality = nbt.getDouble("brewery:quality", 0);
 
         this.delayedEffects.clear();
-        for (var effect : nbt.getList("brewery:delayed_effects", NbtElement.COMPOUND_TYPE)) {
+        for (var effect : nbt.getListOrEmpty("brewery:delayed_effects")) {
             this.delayedEffects.add(DelayedEffect.fromNbt((NbtCompound) effect, lookup));
         }
 
-        for (var effect : nbt.getList("brewery:timed_attributes", NbtElement.COMPOUND_TYPE)) {
+        for (var effect : nbt.getListOrEmpty("brewery:timed_attributes")) {
             this.timedAttributes.add(TimedAttributes.fromNbt((NbtCompound) effect, lookup));
         }
     }
@@ -207,14 +207,14 @@ public final class AlcoholManager {
         }
 
         public static TimedAttributes fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-            var ticks = nbt.getInt("ticks");
-            var quality = nbt.getDouble("quality");
-            var age = nbt.getDouble("age");
+            var ticks = nbt.getInt("ticks", 0);
+            var quality = nbt.getDouble("quality", 0);
+            var age = nbt.getDouble("age", 0);
 
             var list = new ArrayList<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>>();
             var ops = RegistryOps.of(NbtOps.INSTANCE, lookup);
 
-            for (var effect : nbt.getList("entries", NbtElement.COMPOUND_TYPE)) {
+            for (var effect : nbt.getListOrEmpty("entries")) {
                 ConsumptionEffect.Attributes.ATTRIBUTE_PAIR.codec().decode(ops, effect).ifSuccess(x -> list.add(x.getFirst()));
             }
 
@@ -253,14 +253,14 @@ public final class AlcoholManager {
         }
 
         public static DelayedEffect fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-            var ticks = nbt.getInt("ticks");
-            var quality = nbt.getDouble("quality");
-            var age = nbt.getDouble("age");
+            var ticks = nbt.getInt("ticks", 0);
+            var quality = nbt.getDouble("quality", 0);
+            var age = nbt.getDouble("age", 0);
 
             var list = new ArrayList<ConsumptionEffect>();
             var ops = RegistryOps.of(NbtOps.INSTANCE, lookup);
 
-            for (var effect : nbt.getList("entries", NbtElement.COMPOUND_TYPE)) {
+            for (var effect : nbt.getListOrEmpty("entries")) {
                 var x = ConsumptionEffect.CODEC.decode(ops, effect).result();
                 if (x.isPresent()) {
                     list.add(x.get().getFirst());

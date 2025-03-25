@@ -17,6 +17,7 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ConsumableComponent;
 import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.component.type.PotionContentsComponent;
+import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
@@ -37,6 +38,7 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class DrinkItem extends Item implements PolymerItem {
     public DrinkItem(Settings settings) {
@@ -143,7 +145,8 @@ public class DrinkItem extends Item implements PolymerItem {
         }
     }
 
-    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType typex) {
+    @Override
+    public void appendTooltip(ItemStack stack, TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType typex) {
         var world = BreweryInit.getOverworld();
         if (world != null) {
             var type = DrinkUtils.getType(stack);
@@ -169,7 +172,7 @@ public class DrinkItem extends Item implements PolymerItem {
                     antistars.append("☆");
                 }
 
-                tooltip.add(Text.translatable("text.brewery.quality", Text.empty()
+                textConsumer.accept(Text.translatable("text.brewery.quality", Text.empty()
                         .append(Text.literal(stars.toString()).formatted(Formatting.YELLOW))
                         .append(Text.literal(antistars.toString()).formatted(Formatting.DARK_GRAY))
                 ));
@@ -180,16 +183,16 @@ public class DrinkItem extends Item implements PolymerItem {
 
                 var age = DrinkUtils.getAgeInSeconds(stack) / mult;
                 if (age > 0) {
-                    tooltip.add(Text.translatable("text.brewery.age", BrewUtils.fromTimeShort(age).formatted(Formatting.GRAY)));
+                    textConsumer.accept(Text.translatable("text.brewery.age", BrewUtils.fromTimeShort(age).formatted(Formatting.GRAY)));
                 }
             }
 
             if (BreweryInit.DISPLAY_DEV) {
-                tooltip.add(Text.literal("== DEV ==").formatted(Formatting.AQUA));
-                tooltip.add(Text.literal("BrewType: ").append(stack.getOrDefault(BrewComponents.BREW_DATA, BrewData.DEFAULT).type().toString()).formatted(Formatting.GRAY));
-                tooltip.add(Text.literal("BrewQuality: ").append("" + DrinkUtils.getQuality(stack)).formatted(Formatting.GRAY));
-                tooltip.add(Text.literal("BrewAge: ").append("" + DrinkUtils.getAgeInTicks(stack)).formatted(Formatting.GRAY));
-                tooltip.add(Text.literal("BrewDistillated: ").append("" + DrinkUtils.getDistillationStatus(stack)).formatted(Formatting.GRAY));
+                textConsumer.accept(Text.literal("== DEV ==").formatted(Formatting.AQUA));
+                textConsumer.accept(Text.literal("BrewType: ").append(stack.getOrDefault(BrewComponents.BREW_DATA, BrewData.DEFAULT).type().toString()).formatted(Formatting.GRAY));
+                textConsumer.accept(Text.literal("BrewQuality: ").append("" + DrinkUtils.getQuality(stack)).formatted(Formatting.GRAY));
+                textConsumer.accept(Text.literal("BrewAge: ").append("" + DrinkUtils.getAgeInTicks(stack)).formatted(Formatting.GRAY));
+                textConsumer.accept(Text.literal("BrewDistillated: ").append("" + DrinkUtils.getDistillationStatus(stack)).formatted(Formatting.GRAY));
             }
         }
     }

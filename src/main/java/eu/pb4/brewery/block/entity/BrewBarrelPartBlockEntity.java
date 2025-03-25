@@ -27,8 +27,8 @@ public final class BrewBarrelPartBlockEntity extends BlockEntity {
 
     @Override
     public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-        if (nbt.contains("Container", NbtElement.COMPOUND_TYPE)) {
-            this.container = LegacyNbtHelper.toBlockPos(nbt.getCompound("Container"));
+        if (nbt.contains("Container")) {
+            this.container = LegacyNbtHelper.toBlockPos(nbt.getCompoundOrEmpty("Container"));
         }
     }
 
