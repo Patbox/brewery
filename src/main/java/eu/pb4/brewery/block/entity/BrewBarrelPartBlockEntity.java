@@ -8,6 +8,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,17 +21,17 @@ public final class BrewBarrelPartBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+    protected void writeData(WriteView view) {
+        super.writeData(view);
         if (this.container != null) {
-            nbt.put("Container", LegacyNbtHelper.fromBlockPos(this.container));
+            view.put("Container", NbtCompound.CODEC, LegacyNbtHelper.fromBlockPos(this.container));
         }
     }
 
     @Override
-    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-        if (nbt.contains("Container")) {
-            this.container = LegacyNbtHelper.toBlockPos(nbt.getCompoundOrEmpty("Container"));
-        }
+    public void readData(ReadView view) {
+        super.readData(view);
+        this.container = view.read("Container", NbtCompound.CODEC).map(LegacyNbtHelper::toBlockPos).orElse(null);
     }
 
     public void setContainer(BlockPos pos) {

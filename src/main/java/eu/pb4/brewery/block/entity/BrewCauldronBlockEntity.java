@@ -25,6 +25,8 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -106,27 +108,25 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
         this.elementHolder = null;
     }
 
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-        super.writeNbt(nbt, lookup);
-        nbt.putLong("LastTicked", this.lastTicked);
-        var list = new NbtList();
+    protected void writeData(WriteView view) {
+        super.writeData(view);
+        view.putLong("LastTicked", this.lastTicked);
+        var list = view.getListAppender("Ingredients", ItemStack.OPTIONAL_CODEC);
         for (var stack : this.inventory) {
-            list.add(stack.toNbt(lookup));
+            list.add(stack);
         }
 
-        nbt.put("Ingredients", list);
-        nbt.putDouble("CookingTime", this.timeCooking);
+        view.putDouble("CookingTime", this.timeCooking);
     }
 
-    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-        super.readNbt(nbt, lookup);
-        this.lastTicked = nbt.getLong("LastTicked", 0);
+    public void readData(ReadView view) {
+        super.readData(view);
+        this.lastTicked = view.getLong("LastTicked", 0);
         this.inventory.clear();
-        var list = nbt.getListOrEmpty("Ingredients");
-        for (var item : list) {
-            this.inventory.add(ItemStack.fromNbt(lookup, (NbtCompound) item).orElse(ItemStack.EMPTY));
+        for (var item : view.getTypedListView("Ingredients", ItemStack.OPTIONAL_CODEC)) {
+            this.inventory.add(item);
         }
-        this.timeCooking = nbt.getDouble("CookingTime", 0);
+        this.timeCooking = view.getDouble("CookingTime", 0);
     }
 
     public void addIngredients(List<ItemEntity> entities) {

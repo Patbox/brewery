@@ -1,5 +1,6 @@
 package eu.pb4.brewery.block.entity;
 
+import com.mojang.serialization.Codec;
 import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.block.BarrelMaterial;
 import eu.pb4.brewery.block.BrewBarrelPartBlock;
@@ -32,6 +33,8 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.ItemScatterer;
@@ -41,10 +44,12 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEntity implements TickableContents, SidedInventory {
     private static final int[] SLOTS = IntStream.range(0, 27).toArray();
@@ -96,31 +101,29 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
         this.requestUpdate = false;
     }
 
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-        super.writeNbt(nbt, lookup);
-        if (!this.writeLootTable(nbt)) {
-            Inventories.writeNbt(nbt, this.inventory, lookup);
+    protected void writeData(WriteView view) {
+        super.writeData(view);
+        if (!this.writeLootTable(view)) {
+            Inventories.writeData(view, this.inventory);
         }
 
-        nbt.put("Parts", new NbtLongArray(this.parts.toLongArray()));
-        nbt.putString("BarrelType", this.material.type().toString());
-        nbt.putLong("LastTicked", this.lastTicked);
+        view.put("Parts", Codec.LONG_STREAM, Arrays.stream(this.parts.toLongArray()));
+        view.putString("BarrelType", this.material.type().toString());
+        view.putLong("LastTicked", this.lastTicked);
     }
 
-    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-        super.readNbt(nbt, lookup);
+    public void readData(ReadView view) {
+        super.readData(view);
         this.inventory = DefaultedList.ofSize(this.size(), ItemStack.EMPTY);
-        if (!this.readLootTable(nbt)) {
-            Inventories.readNbt(nbt, this.inventory, lookup);
+        if (!this.readLootTable(view)) {
+            Inventories.readData(view, this.inventory);
         }
 
         this.parts.clear();
-        for (var part : nbt.getLongArray("Parts").orElse(new long[0])) {
-            this.parts.add(part);
-        }
+        view.read("Parts", Codec.LONG_STREAM).orElse(LongStream.empty()).forEach(this.parts::add);
 
-        this.material = BrewBlocks.BARREL_MATERIAL_MAP.get(Identifier.of(nbt.getString("BarrelType", "")));
-        this.lastTicked = nbt.getLong("LastTicked", 0);
+        this.material = BrewBlocks.BARREL_MATERIAL_MAP.get(Identifier.of(view.getString("BarrelType", "")));
+        this.lastTicked = view  .getLong("LastTicked", 0);
     }
 
     public void tickContents(double l) {

@@ -4,19 +4,19 @@ import com.mojang.datafixers.util.Pair;
 import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.duck.LivingEntityExt;
 import eu.pb4.brewery.other.BrewGameRules;
-import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -64,33 +64,32 @@ public final class AlcoholManager {
         return entity != null ? ((LivingEntityExt) entity).brewery$getAlcoholManager() : FALLBACK;
     }
 
-    public void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-        nbt.putDouble("brewery:alcohol_level", this.alcoholLevel);
-        nbt.putDouble("brewery:quality", this.quality);
+    public void writeData(WriteView view) {
+        view.putDouble("brewery:alcohol_level", this.alcoholLevel);
+        view.putDouble("brewery:quality", this.quality);
 
-        var list = new NbtList();
-        var list2 = new NbtList();
+        var list = view.getList("brewery:delayed_effects");
+        var list2 = view.getList("brewery:timed_attributes");
+
         for (var effect : this.delayedEffects) {
-            list.add(effect.toNbt(lookup));
+            effect.writeData(list.add());
         }
         for (var effect : this.timedAttributes) {
-            list.add(effect.toNbt(lookup));
+            effect.writeData(list2.add());
         }
-        nbt.put("brewery:delayed_effects", list);
-        nbt.put("brewery:timed_attributes", list2);
     }
 
-    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-        this.alcoholLevel = nbt.getDouble("brewery:alcohol_level",0);
-        this.quality = nbt.getDouble("brewery:quality", 0);
+    public void readData(ReadView view) {
+        this.alcoholLevel = view.getDouble("brewery:alcohol_level",0);
+        this.quality = view.getDouble("brewery:quality", 0);
 
         this.delayedEffects.clear();
-        for (var effect : nbt.getListOrEmpty("brewery:delayed_effects")) {
-            this.delayedEffects.add(DelayedEffect.fromNbt((NbtCompound) effect, lookup));
+        for (var effect : view.getListReadView("brewery:delayed_effects")) {
+            this.delayedEffects.add(DelayedEffect.readData(effect));
         }
 
-        for (var effect : nbt.getListOrEmpty("brewery:timed_attributes")) {
-            this.timedAttributes.add(TimedAttributes.fromNbt((NbtCompound) effect, lookup));
+        for (var effect : view.getListReadView("brewery:timed_attributes")) {
+            this.timedAttributes.add(TimedAttributes.readData(effect));
         }
     }
     
@@ -190,32 +189,26 @@ public final class AlcoholManager {
         }
 
 
-        public NbtCompound toNbt(RegistryWrapper.WrapperLookup lookup) {
-            var nbt = new NbtCompound();
-            nbt.putInt("ticks", this.ticksLeft);
-            nbt.putDouble("quality", this.quality);
-            nbt.putDouble("age", this.age);
+        public void writeData(WriteView view) {
+            view.putInt("ticks", this.ticksLeft);
+            view.putDouble("quality", this.quality);
+            view.putDouble("age", this.age);
 
-            var list = new NbtList();
-            var ops = RegistryOps.of(NbtOps.INSTANCE, lookup);
+            var list = view.getListAppender("entries", ConsumptionEffect.Attributes.ATTRIBUTE_PAIR.codec());
             for (var effect : this.attributes) {
-                list.add(ConsumptionEffect.Attributes.ATTRIBUTE_PAIR.codec().encodeStart(ops, effect).getOrThrow());
+                list.add(effect);
             }
-
-            nbt.put("entries", list);
-            return nbt;
         }
 
-        public static TimedAttributes fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-            var ticks = nbt.getInt("ticks", 0);
-            var quality = nbt.getDouble("quality", 0);
-            var age = nbt.getDouble("age", 0);
+        public static TimedAttributes readData(ReadView view) {
+            var ticks = view.getInt("ticks", 0);
+            var quality = view.getDouble("quality", 0);
+            var age = view.getDouble("age", 0);
 
             var list = new ArrayList<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>>();
-            var ops = RegistryOps.of(NbtOps.INSTANCE, lookup);
 
-            for (var effect : nbt.getListOrEmpty("entries")) {
-                ConsumptionEffect.Attributes.ATTRIBUTE_PAIR.codec().decode(ops, effect).ifSuccess(x -> list.add(x.getFirst()));
+            for (var effect : view.getTypedListView("entries", ConsumptionEffect.Attributes.ATTRIBUTE_PAIR.codec())) {
+                list.add(effect);
             }
 
             return new TimedAttributes(ticks, quality, age, list);
@@ -236,35 +229,26 @@ public final class AlcoholManager {
         }
 
 
-        public NbtCompound toNbt(RegistryWrapper.WrapperLookup lookup) {
-            var nbt = new NbtCompound();
-            nbt.putInt("ticks", this.ticksLeft);
-            nbt.putDouble("quality", this.quality);
-            nbt.putDouble("age", this.age);
+        public void writeData(WriteView view) {
+            view.putInt("ticks", this.ticksLeft);
+            view.putDouble("quality", this.quality);
+            view.putDouble("age", this.age);
 
-            var list = new NbtList();
-            var ops = RegistryOps.of(NbtOps.INSTANCE, lookup);
+            var list = view.getListAppender("entries", ConsumptionEffect.CODEC);
             for (var effect : this.effects) {
-                list.add(ConsumptionEffect.CODEC.encodeStart(ops, effect).result().get());
+                list.add(effect);
             }
-
-            nbt.put("entries", list);
-            return nbt;
         }
 
-        public static DelayedEffect fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-            var ticks = nbt.getInt("ticks", 0);
-            var quality = nbt.getDouble("quality", 0);
-            var age = nbt.getDouble("age", 0);
+        public static DelayedEffect readData(ReadView view) {
+            var ticks = view.getInt("ticks", 0);
+            var quality = view.getDouble("quality", 0);
+            var age = view.getDouble("age", 0);
 
             var list = new ArrayList<ConsumptionEffect>();
-            var ops = RegistryOps.of(NbtOps.INSTANCE, lookup);
 
-            for (var effect : nbt.getListOrEmpty("entries")) {
-                var x = ConsumptionEffect.CODEC.decode(ops, effect).result();
-                if (x.isPresent()) {
-                    list.add(x.get().getFirst());
-                }
+            for (var effect : view.getTypedListView("entries", ConsumptionEffect.CODEC)) {
+                list.add(effect);
             }
 
             return new DelayedEffect(ticks, quality, age, list);
