@@ -31,6 +31,7 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
+import net.minecraft.util.collection.Pool;
 import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -136,7 +137,7 @@ public interface ConsumptionEffect {
                     .evaluate();
 
             if (value >= 0) {
-                user.getServer().getCommandManager().executeWithPrefix(user.getCommandSource((ServerWorld) user.getWorld()).withLevel(4).withOutput(CommandOutput.DUMMY), this.command);
+                user.getEntityWorld().getServer().getCommandManager().executeWithPrefix(user.getCommandSource((ServerWorld) user.getEntityWorld()).withLevel(4).withOutput(CommandOutput.DUMMY), this.command);
             }
         }
 
@@ -170,7 +171,7 @@ public interface ConsumptionEffect {
 
             if (value >= 0) {
                 for (var effect : this.effects) {
-                    effect.onConsume(user.getWorld(), ItemStack.EMPTY, user);
+                    effect.onConsume(user.getEntityWorld(), ItemStack.EMPTY, user);
                 }
             }
         }
@@ -435,13 +436,13 @@ public interface ConsumptionEffect {
 
                 for (int i = 0; i < 16; ++i) {
                     double g = user.getX() + (user.getRandom().nextDouble() - 0.5D) * distance;
-                    double h = MathHelper.clamp(user.getY() + user.getRandom().nextDouble() - 0.5d, user.getWorld().getBottomY(), user.getWorld().getBottomY() + ((ServerWorld) user.getWorld()).getLogicalHeight() - 1);
+                    double h = MathHelper.clamp(user.getY() + user.getRandom().nextDouble() - 0.5d, user.getEntityWorld().getBottomY(), user.getEntityWorld().getBottomY() + ((ServerWorld) user.getEntityWorld()).getLogicalHeight() - 1);
                     double j = user.getZ() + (user.getRandom().nextDouble() - 0.5D) * distance;
-                    Vec3d vec3d = user.getPos();
+                    Vec3d vec3d = user.getEntityPos();
                     if (user.teleport(g, h, j, true)) {
-                        user.getWorld().emitGameEvent(GameEvent.TELEPORT, vec3d, GameEvent.Emitter.of(user));
+                        user.getEntityWorld().emitGameEvent(GameEvent.TELEPORT, vec3d, GameEvent.Emitter.of(user));
                         SoundEvent soundEvent = user instanceof FoxEntity ? SoundEvents.ENTITY_FOX_TELEPORT : SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT;
-                        user.getWorld().playSound(null, d, e, f, soundEvent, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                        user.getEntityWorld().playSound(null, d, e, f, soundEvent, SoundCategory.PLAYERS, 1.0F, 1.0F);
                         user.playSound(soundEvent, 1.0F, 1.0F);
                         break;
                     }
@@ -514,7 +515,7 @@ public interface ConsumptionEffect {
 
                 if (user instanceof ServerPlayerEntity player) {
                     //player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
-                    player.networkHandler.sendPacket(new ExplosionS2CPacket(player.getPos().add(0, -99999, 0), Optional.of(vec), ParticleTypes.UNDERWATER, Registries.SOUND_EVENT.getEntry(SoundEvents.INTENTIONALLY_EMPTY)));
+                    player.networkHandler.sendPacket(new ExplosionS2CPacket(player.getEntityPos().add(0, -99999, 0), 0, 0, Optional.of(vec), ParticleTypes.UNDERWATER, Registries.SOUND_EVENT.getEntry(SoundEvents.INTENTIONALLY_EMPTY), Pool.empty()));
                 }
             }
         }
@@ -550,7 +551,7 @@ public interface ConsumptionEffect {
             if (value >= 0) {
                 var source = new DamageSource(type);
 
-                user.damage((ServerWorld) user.getWorld(), source, (float) value);
+                user.damage((ServerWorld) user.getEntityWorld(), source, (float) value);
             }
         }
 

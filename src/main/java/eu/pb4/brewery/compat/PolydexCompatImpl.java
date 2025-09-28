@@ -17,6 +17,7 @@ import net.minecraft.recipe.Ingredient;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
+import net.minecraft.text.StyleSpriteSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -59,7 +60,7 @@ public class PolydexCompatImpl {
     }
 
     public static class BrewingPage implements PolydexPage {
-        private static final Text TEXTURE = Text.literal("0").setStyle(Style.EMPTY.withFont(id("gui")));
+        private static final Text TEXTURE = Text.literal("0").setStyle(Style.EMPTY.withFont(new StyleSpriteSource.Font(id("gui"))));
 
         public static final ItemStack ICON = new GuiElementBuilder(Items.BARREL).setName(Text.translatable("polydex.brewery.brewing_recipe")).asStack();
         public static final ItemStack INGREDIENTS = new GuiElementBuilder(Items.CAULDRON).setName(Text.translatable("polydex.brewery.ingredients").formatted(Formatting.GOLD)).asStack();
