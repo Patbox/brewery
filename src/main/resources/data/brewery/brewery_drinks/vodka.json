@@ -1,5 +1,37 @@
 {
   "version": 4,
+  "name": {
+    "translate": "drinktype.brewery.vodka"
+  },
+  "color": "#EEEEFF",
+  "visual": {
+    "resource_pack_model": "brewery:brewery_drink/vodka"
+  },
+  "base_quality_value": "10",
+  "drinking_time": "clamp(1.6 * (7 / (max(quality, 0.1))), 1.6, 4.8)",
+  "alcoholic_value": "50",
+  "effects": [
+    {
+      "delay": "60 * quality",
+      "entries": {
+        "effect": "minecraft:blindness",
+        "time": "10",
+        "value": "0",
+        "type": "potion"
+      },
+      "type": "delayed"
+    }
+  ],
+  "cooking_quality_multiplier": "smooth_value_minutes(20.0, 0.5, 20.0, age)",
+  "ingredients": [
+    {
+      "items": [
+        "minecraft:potato"
+      ],
+      "count": 6
+    }
+  ],
+  "distillation_runs": 1,
   "unfinished_brew_effects": [
     {
       "effect": "minecraft:poison",
@@ -23,37 +55,5 @@
   "book_information": {
     "best_cooking_time": 1200.0,
     "best_barrel_age": -1200.0
-  },
-  "cooking_quality_multiplier": "smooth_value_minutes(20.0, 0.5, 20.0, age)",
-  "ingredients": [
-    {
-      "items": [
-        "minecraft:potato"
-      ],
-      "count": 6
-    }
-  ],
-  "distillation_runs": 1,
-  "base_quality_value": "10",
-  "drinking_time": "clamp(1.6 * (7 / (max(quality, 0.1))), 1.6, 4.8)",
-  "alcoholic_value": "50",
-  "effects": [
-    {
-      "delay": "60 * quality",
-      "entries": {
-        "effect": "minecraft:blindness",
-        "time": "10",
-        "value": "0",
-        "type": "potion"
-      },
-      "type": "delayed"
-    }
-  ],
-  "name": {
-    "translate": "drinktype.brewery.vodka"
-  },
-  "color": "#EEEEFF",
-  "visual": {
-    "resource_pack_model": "brewery:brewery_drink/vodka"
   }
 }

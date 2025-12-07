@@ -1,30 +1,5 @@
 {
   "version": 4,
-  "book_information": {
-    "best_cooking_time": 960.0,
-    "best_barrel_age": 3000.0,
-    "best_barrel_type": [
-      "warped"
-    ]
-  },
-  "cooking_quality_multiplier": "cos(clamp((age / 60 - 16.0) * 0.1, -2, 2))",
-  "ingredients": [
-    {
-      "items": [
-        "minecraft:chorus_fruit"
-      ],
-      "count": 16
-    }
-  ],
-  "base_quality_value": "smooth_value_days(2.0, 2.0, 5.0, age) * 10",
-  "drinking_time": "clamp(1.6 * (7 / (max(quality, 0.1))), 1.6, 4.8)",
-  "alcoholic_value": "0",
-  "effects": [
-    {
-      "distance": "quality * 10",
-      "type": "teleport_random"
-    }
-  ],
   "name": {
     "translate": "drinktype.brewery.chorus_brew"
   },
@@ -43,5 +18,30 @@
       "quality_value": "quality * 0.4",
       "reveal_time": 300
     }
-  ]
+  ],
+  "base_quality_value": "smooth_value_days(2.0, 2.0, 5.0, age) * 10",
+  "drinking_time": "clamp(1.6 * (7 / (max(quality, 0.1))), 1.6, 4.8)",
+  "alcoholic_value": "0",
+  "effects": [
+    {
+      "distance": "quality * 10",
+      "type": "teleport_random"
+    }
+  ],
+  "cooking_quality_multiplier": "cos(clamp((age / 60 - 16.0) * 0.1, -2, 2))",
+  "ingredients": [
+    {
+      "items": [
+        "minecraft:chorus_fruit"
+      ],
+      "count": 16
+    }
+  ],
+  "book_information": {
+    "best_cooking_time": 960.0,
+    "best_barrel_age": 3000.0,
+    "best_barrel_type": [
+      "warped"
+    ]
+  }
 }

@@ -104,8 +104,8 @@ public class BreweryInit implements ModInitializer {
             BreweryInit.loadDrinks(x);
             BookOfBreweryItem.build(
                     DRINK_TYPES.entrySet(),
-                    x.getOverworld().getGameRules().get(BrewGameRules.BARREL_AGING_MULTIPLIER).get(),
-                    x.getOverworld().getGameRules().get(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER).get()
+                    x.getOverworld().getGameRules().getValue(BrewGameRules.BARREL_AGING_MULTIPLIER),
+                    x.getOverworld().getGameRules().getValue(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER)
             );
         });
 
@@ -235,8 +235,8 @@ public class BreweryInit implements ModInitializer {
 
         BookOfBreweryItem.build(
                 DRINK_TYPES.entrySet(),
-                server.getOverworld().getGameRules().get(BrewGameRules.BARREL_AGING_MULTIPLIER).get(),
-                server.getOverworld().getGameRules().get(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER).get()
+                server.getOverworld().getGameRules().getValue(BrewGameRules.BARREL_AGING_MULTIPLIER),
+                server.getOverworld().getGameRules().getValue(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER)
         );
     }
 }

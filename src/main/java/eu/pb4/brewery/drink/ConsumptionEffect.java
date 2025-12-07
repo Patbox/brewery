@@ -137,7 +137,8 @@ public interface ConsumptionEffect {
                     .evaluate();
 
             if (value >= 0) {
-                user.getEntityWorld().getServer().getCommandManager().executeWithPrefix(user.getCommandSource((ServerWorld) user.getEntityWorld()).withLevel(4).withOutput(CommandOutput.DUMMY), this.command);
+                user.getEntityWorld().getServer().getCommandManager().parseAndExecute(user.getCommandSource((ServerWorld) user.getEntityWorld())
+                        .withPermissions(x -> true).withOutput(CommandOutput.DUMMY), this.command);
             }
         }
 

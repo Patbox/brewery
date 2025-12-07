@@ -46,9 +46,9 @@ public class IngredientMixtureItem extends Item implements PolymerItem {
     public void appendTooltip(ItemStack stack, TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType type) {
         var world = BreweryInit.getOverworld();
 
-        if (stack.contains(BrewComponents.COOKING_DATA) && world != null && world.getGameRules().getBoolean(BrewGameRules.SHOW_AGE)) {
+        if (stack.contains(BrewComponents.COOKING_DATA) && world != null && world.getGameRules().getValue(BrewGameRules.SHOW_AGE)) {
             var time = Objects.requireNonNull(stack.get(BrewComponents.COOKING_DATA)).time();
-            double mult = world.getGameRules().get(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER).get();
+            double mult = world.getGameRules().getValue(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER);
 
             var age = DrinkUtils.getAgeInSeconds(stack) / mult;
 

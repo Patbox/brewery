@@ -150,7 +150,7 @@ public class DrinkItem extends Item implements PolymerItem {
         var world = BreweryInit.getOverworld();
         if (world != null) {
             var type = DrinkUtils.getType(stack);
-            if (type != null && type.showQuality() && world.getGameRules().getBoolean(BrewGameRules.SHOW_QUALITY)) {
+            if (type != null && type.showQuality() && world.getGameRules().getValue(BrewGameRules.SHOW_QUALITY)) {
                 var quality
                         = DrinkUtils.getQuality(stack);
                 var starCount = (Math.round((quality / 2) * 10)) / 10d;
@@ -178,8 +178,8 @@ public class DrinkItem extends Item implements PolymerItem {
                 ));
             }
 
-            if (world.getGameRules().getBoolean(BrewGameRules.SHOW_AGE)) {
-                double mult = world != null ? world.getGameRules().get(BrewGameRules.BARREL_AGING_MULTIPLIER).get() : 1;
+            if (world.getGameRules().getValue(BrewGameRules.SHOW_AGE)) {
+                double mult = world != null ? world.getGameRules().getValue(BrewGameRules.BARREL_AGING_MULTIPLIER) : 1;
 
                 var age = DrinkUtils.getAgeInSeconds(stack) / mult;
                 if (age > 0) {

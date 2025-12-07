@@ -92,9 +92,9 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
             return;
         }
 
-        var agingMultiplier = ((ServerWorld) world).getGameRules().get(BrewGameRules.BARREL_AGING_MULTIPLIER).get();
+        var agingMultiplier = ((ServerWorld) world).getGameRules().getValue(BrewGameRules.BARREL_AGING_MULTIPLIER);
 
-        this.tickContents(((ServerWorld) world).getGameRules().getBoolean(BrewGameRules.AGE_UNLOADED) ? (currentTime - this.lastTicked) * agingMultiplier : this.loadedTime * agingMultiplier);
+        this.tickContents(((ServerWorld) world).getGameRules().getValue(BrewGameRules.AGE_UNLOADED) ? (currentTime - this.lastTicked) * agingMultiplier : this.loadedTime * agingMultiplier);
 
         this.lastTicked = currentTime;
         this.loadedTime = 0;

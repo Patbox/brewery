@@ -14,8 +14,11 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.network.packet.s2c.play.PlaySoundFromEntityS2CPacket;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.*;
 import net.minecraft.util.*;
@@ -264,7 +267,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
         @Override
         public void onTakeBookButton() {
             if (this.book != indexBook) {
-                this.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
+                playSoundToPlayer(this.player, SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
                 var page = this.stack.getOrDefault(BrewComponents.BOOK_PAGE, 0);
                 this.book = indexBook;
                 this.screenHandler.sendContentUpdates();
@@ -276,7 +279,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
 
         @Override
         public void setPage(int page) {
-            this.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
+            playSoundToPlayer(this.player, SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
             if (page >= 1000 && BOOKS.size() > page - 1000) {
                 this.book = BOOKS.get(page - 1000);
                 this.screenHandler.sendContentUpdates();
@@ -287,6 +290,12 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
             super.setPage(page);
             if (this.book == indexBook && this.stack == this.player.getStackInHand(hand)) {
                 this.stack.set(BrewComponents.BOOK_PAGE, page);
+            }
+        }
+
+        public static void playSoundToPlayer(PlayerEntity player, SoundEvent soundEvent, SoundCategory category, float volume, float pitch) {
+            if (player instanceof ServerPlayerEntity serverPlayer) {
+                serverPlayer.networkHandler.sendPacket(new PlaySoundFromEntityS2CPacket(Registries.SOUND_EVENT.getEntry(soundEvent), category, player, volume, pitch, player.getRandom().nextLong()));
             }
         }
     }

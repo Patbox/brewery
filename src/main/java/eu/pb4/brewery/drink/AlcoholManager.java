@@ -43,7 +43,7 @@ public final class AlcoholManager {
             return;
         }
         if (this.entity.getEntityWorld() instanceof ServerWorld world) {
-            var multiplier = world.getGameRules().get(BrewGameRules.ALCOHOL_MULTIPLIER).get();
+            var multiplier = world.getGameRules().getValue(BrewGameRules.ALCOHOL_MULTIPLIER);
 
             this.alcoholLevel = Math.max(this.alcoholLevel + alcoholicValue * multiplier, alcoholicValue * multiplier);
             if (this.quality == -1) {

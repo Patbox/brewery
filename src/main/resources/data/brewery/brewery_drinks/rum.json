@@ -1,5 +1,52 @@
 {
   "version": 4,
+  "name": {
+    "translate": "drinktype.brewery.rum"
+  },
+  "color": "red",
+  "visual": {
+    "resource_pack_model": "brewery:brewery_drink/rum"
+  },
+  "barrel_definitions": [
+    {
+      "type": "*",
+      "quality_value": "quality",
+      "reveal_time": 300
+    }
+  ],
+  "base_quality_value": "smooth_value_days(16.0, 5.0, 100.0, age) * 10",
+  "drinking_time": "clamp(1.6 * (7 / (max(quality, 0.1))), 1.6, 4.8)",
+  "alcoholic_value": "30 * (0.75 + quality / 40)",
+  "effects": [
+    {
+      "effect": "minecraft:fire_resistance",
+      "time": "(quality - 4) * 60",
+      "value": "0",
+      "locked": false,
+      "type": "potion"
+    },
+    {
+      "effect": "minecraft:poison",
+      "time": "(6 - quality) * 10",
+      "value": "0",
+      "locked": false,
+      "type": "potion"
+    },
+    {
+      "time": "(quality - 2) * 10",
+      "type": "set_on_fire"
+    }
+  ],
+  "cooking_quality_multiplier": "cos(clamp((age / 60 - 8.0) * 0.25, -2, 2))",
+  "ingredients": [
+    {
+      "items": [
+        "minecraft:sugar"
+      ],
+      "count": 18
+    }
+  ],
+  "distillation_runs": 1,
   "unfinished_brew_effects": [
     {
       "effect": "minecraft:poison",
@@ -26,52 +73,5 @@
     "best_barrel_type": [
       "*"
     ]
-  },
-  "cooking_quality_multiplier": "cos(clamp((age / 60 - 8.0) * 0.25, -2, 2))",
-  "ingredients": [
-    {
-      "items": [
-        "minecraft:sugar"
-      ],
-      "count": 18
-    }
-  ],
-  "distillation_runs": 1,
-  "base_quality_value": "smooth_value_days(16.0, 5.0, 100.0, age) * 10",
-  "drinking_time": "clamp(1.6 * (7 / (max(quality, 0.1))), 1.6, 4.8)",
-  "alcoholic_value": "30 * (0.75 + quality / 40)",
-  "effects": [
-    {
-      "locked": false,
-      "effect": "minecraft:fire_resistance",
-      "time": "(quality - 4) * 60",
-      "value": "0",
-      "type": "potion"
-    },
-    {
-      "locked": false,
-      "effect": "minecraft:poison",
-      "time": "(6 - quality) * 10",
-      "value": "0",
-      "type": "potion"
-    },
-    {
-      "time": "(quality - 2) * 10",
-      "type": "set_on_fire"
-    }
-  ],
-  "name": {
-    "translate": "drinktype.brewery.rum"
-  },
-  "color": "red",
-  "visual": {
-    "resource_pack_model": "brewery:brewery_drink/rum"
-  },
-  "barrel_definitions": [
-    {
-      "type": "*",
-      "quality_value": "quality",
-      "reveal_time": 300
-    }
-  ]
+  }
 }

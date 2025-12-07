@@ -6,10 +6,10 @@
       "rate": 4.0,
       "effects": [
         {
-          "show_icon": false,
           "effect": "minecraft:weakness",
           "time": "4",
           "value": "min(max((userAlcoholLevel - 60) / 30, 0), 2)",
+          "show_icon": false,
           "type": "potion"
         }
       ]
@@ -19,10 +19,10 @@
       "rate": 4.0,
       "effects": [
         {
-          "show_icon": false,
           "effect": "minecraft:slowness",
           "time": "4",
           "value": "min(max((userAlcoholLevel - 70) / 30, 0), 2)",
+          "show_icon": false,
           "type": "potion"
         }
       ]
@@ -32,10 +32,10 @@
       "rate": 16.0,
       "effects": [
         {
-          "show_icon": false,
           "effect": "minecraft:nausea",
           "time": "32",
           "value": "0",
+          "show_icon": false,
           "type": "potion"
         }
       ]
@@ -58,10 +58,10 @@
       "rate": 16.0,
       "effects": [
         {
-          "show_icon": false,
           "effect": "minecraft:darkness",
           "time": "16",
           "value": "0",
+          "show_icon": false,
           "type": "potion"
         }
       ]
@@ -79,12 +79,12 @@
     }
   ],
   "alcohol_reduction_items": {
-    "minecraft:bread": 3.0,
-    "minecraft:milk_bucket": 10.0
+    "minecraft:milk_bucket": 10.0,
+    "minecraft:bread": 3.0
   },
   "container_to_ingredient_mix_models": {
-    "minecraft:glass_bottle": "minecraft:potion",
     "minecraft:bucket": "minecraft:water_bucket",
-    "minecraft:bowl": "minecraft:suspicious_stew"
+    "minecraft:bowl": "minecraft:suspicious_stew",
+    "minecraft:glass_bottle": "minecraft:potion"
   }
 }
