@@ -9,72 +9,75 @@ import eu.pb4.polymer.core.api.utils.PolymerUtils;
 import eu.pb4.polymer.virtualentity.api.BlockWithElementHolder;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemDisplayContext;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.StateManager;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ItemScatterer;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.TripWireHookBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import xyz.nucleoid.packettweaker.PacketContext;
 
-public final class BrewSpigotBlock extends HorizontalFacingBlock implements PolymerBlock, BlockEntityProvider, BlockWithElementHolder {
-    private static final MapCodec<BrewSpigotBlock> CODEC = createCodec(BrewSpigotBlock::new);
+public final class BrewSpigotBlock extends HorizontalDirectionalBlock implements PolymerBlock, EntityBlock, BlockWithElementHolder {
+    private static final MapCodec<BrewSpigotBlock> CODEC = simpleCodec(BrewSpigotBlock::new);
 
-    public BrewSpigotBlock(Settings settings) {
+    public BrewSpigotBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    protected MapCodec<? extends HorizontalFacingBlock> getCodec() {
+    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
         return CODEC;
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING);
     }
 
     @Override
-    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
-        var facing = state.get(FACING);
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+        var facing = state.getValue(FACING);
 
         for (var pattern : BrewBlocks.BARREL_PATTERNS) {
-            var result = pattern.getRight().testTransform(world, pos.offset(facing)
-                    .add(facing.getOffsetZ(), 1, -facing.getOffsetX()), facing, Direction.UP);
+            var result = pattern.getB().matches(world, pos.relative(facing)
+                    .offset(facing.getStepZ(), 1, -facing.getStepX()), facing, Direction.UP);
             if (result != null) {
-                var mat = pattern.getLeft();
+                var mat = pattern.getA();
                 var partBlockType = BrewBlocks.BARREL_PARTS.get(mat.type());
 
                 var be = world.getBlockEntity(pos);
                 if (be instanceof BrewBarrelSpigotBlockEntity spigotBlock) {
-                    spigotBlock.setBarrelType(pattern.getLeft());
+                    spigotBlock.setBarrelType(pattern.getA());
                     for (var x = 0; x < result.getWidth(); x++) {
                         for (var y = 0; y < result.getHeight(); y++) {
                             for (var z = 0; z < result.getDepth(); z++) {
-                                var blockPosition = result.translate(x, y, z);
-                                var partState = partBlockType.getState(blockPosition.getBlockState().getBlock(), x, y, facing);
+                                var blockPosition = result.getBlock(x, y, z);
+                                var partState = partBlockType.getState(blockPosition.getState().getBlock(), x, y, facing);
                                 if (partState != null) {
-                                    world.setBlockState(blockPosition.getBlockPos(), partState, 2);
-                                    spigotBlock.addPart(blockPosition.getBlockPos());
-                                    world.getBlockEntity(blockPosition.getBlockPos(), BrewBlockEntities.BARREL_PART).get().setContainer(pos);
+                                    world.setBlock(blockPosition.getPos(), partState, 2);
+                                    spigotBlock.addPart(blockPosition.getPos());
+                                    world.getBlockEntity(blockPosition.getPos(), BrewBlockEntities.BARREL_PART).get().setContainer(pos);
                                 }
                             }
                         }
@@ -83,18 +86,18 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
             }
         }
 
-        super.onPlaced(world, pos, state, placer, itemStack);
+        super.setPlacedBy(world, pos, state, placer, itemStack);
     }
 
     @Nullable
     @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        if (ctx.getSide().getAxis() != Direction.Axis.Y) {
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        if (ctx.getClickedFace().getAxis() != Direction.Axis.Y) {
             for (var pattern : BrewBlocks.BARREL_PATTERNS) {
-                var result = pattern.getRight().testTransform(ctx.getWorld(), ctx.getBlockPos().offset(ctx.getSide().getOpposite())
-                        .add(-ctx.getSide().getOffsetZ(), 1, ctx.getSide().getOffsetX()), ctx.getSide().getOpposite(), Direction.UP);
+                var result = pattern.getB().matches(ctx.getLevel(), ctx.getClickedPos().relative(ctx.getClickedFace().getOpposite())
+                        .offset(-ctx.getClickedFace().getStepZ(), 1, ctx.getClickedFace().getStepX()), ctx.getClickedFace().getOpposite(), Direction.UP);
                 if (result != null) {
-                    return this.getDefaultState().with(FACING, ctx.getSide().getOpposite());
+                    return this.defaultBlockState().setValue(FACING, ctx.getClickedFace().getOpposite());
                 }
             }
         }
@@ -103,41 +106,41 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player,  BlockHitResult hit) {
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player,  BlockHitResult hit) {
         var blockEntity = world.getBlockEntity(pos);
 
-        if (blockEntity instanceof BrewBarrelSpigotBlockEntity barrelBlock && barrelBlock.canPlayerUse(player)) {
-            barrelBlock.openGui((ServerPlayerEntity) player);
+        if (blockEntity instanceof BrewBarrelSpigotBlockEntity barrelBlock && barrelBlock.stillValid(player)) {
+            barrelBlock.openGui((ServerPlayer) player);
             world.playSound(null,
-                    barrelBlock.getPos().getX() + 0.5,
-                    barrelBlock.getPos().getY() + 0.5,
-                    barrelBlock.getPos().getZ() + 0.5, SoundEvents.BLOCK_BARREL_OPEN, SoundCategory.BLOCKS, 0.5F, world.random.nextFloat() * 0.1F + 0.9F);
-            return ActionResult.SUCCESS_SERVER;
+                    barrelBlock.getBlockPos().getX() + 0.5,
+                    barrelBlock.getBlockPos().getY() + 0.5,
+                    barrelBlock.getBlockPos().getZ() + 0.5, SoundEvents.BARREL_OPEN, SoundSource.BLOCKS, 0.5F, world.random.nextFloat() * 0.1F + 0.9F);
+            return InteractionResult.SUCCESS_SERVER;
         }
 
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 
     @Override
-    public void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
-        world.updateComparators(pos, this);
-        super.onStateReplaced(state, world, pos,  moved);
+    public void affectNeighborsAfterRemoval(BlockState state, ServerLevel world, BlockPos pos, boolean moved) {
+        world.updateNeighbourForOutputSignal(pos, this);
+        super.affectNeighborsAfterRemoval(state, world, pos,  moved);
     }
 
     @Nullable
     @Override
-    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new BrewBarrelSpigotBlockEntity(pos, state);
     }
 
     @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
         return BrewBarrelSpigotBlockEntity::ticker;
     }
 
     @Override
-    public @Nullable ElementHolder createElementHolder(ServerWorld world, BlockPos pos, BlockState initialBlockState) {
+    public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
         var holder = new ElementHolder();
         var m = new Matrix4f();
 
@@ -148,9 +151,9 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
                 a.setDisplayHeight(5f);
                 a.setDisplayWidth(5f);
                 a.setViewRange(0.5f);
-                a.setTransformation(m.identity().rotateY(MathHelper.HALF_PI-initialBlockState.get(FACING).getHorizontalQuarterTurns() * MathHelper.HALF_PI)
+                a.setTransformation(m.identity().rotateY(Mth.HALF_PI-initialBlockState.getValue(FACING).get2DDataValue() * Mth.HALF_PI)
                         .translate(-1.3f - i * 1.2f, 0, 0).scale(2)
-                        .rotateX(o * MathHelper.HALF_PI)
+                        .rotateX(o * Mth.HALF_PI)
                         .scale(0.15f, 3.001f, 2.001f));
                 holder.addElement(a);
             }
@@ -160,6 +163,6 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
 
     @Override
     public BlockState getPolymerBlockState(BlockState state, PacketContext context) {
-        return Blocks.TRIPWIRE_HOOK.getDefaultState().with(TripwireHookBlock.FACING, state.get(FACING).getOpposite());
+        return Blocks.TRIPWIRE_HOOK.defaultBlockState().setValue(TripWireHookBlock.FACING, state.getValue(FACING).getOpposite());
     }
 }

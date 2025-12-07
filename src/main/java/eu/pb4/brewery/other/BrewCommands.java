@@ -17,43 +17,42 @@ import eu.pb4.brewery.drink.DrinkType;
 import eu.pb4.brewery.drink.DrinkUtils;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.block.Blocks;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.argument.BlockPosArgumentType;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.IdentifierArgumentType;
-import net.minecraft.command.argument.TimeArgumentType;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.IdentifierArgument;
+import net.minecraft.commands.arguments.TimeArgument;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.Blocks;
 import java.nio.file.Files;
 import java.util.Locale;
 import java.util.function.Function;
 
 import static eu.pb4.brewery.BreweryInit.id;
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 
 public class BrewCommands {
 
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, CommandManager.RegistrationEnvironment environment) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess, Commands.CommandSelection environment) {
         dispatcher.register(
                 literal("brewery")
                         .executes(BrewCommands::about)
                         .then(literal("create")
                                 .requires(Permissions.require("brewery.create", 2))
-                                .then(argument("type", IdentifierArgumentType.identifier())
+                                .then(argument("type", IdentifierArgument.id())
                                         .suggests((context, builder) -> {
                                             Iterable<Identifier> candidates = BreweryInit.DRINK_TYPES.keySet()::iterator;
                                             var remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
 
-                                            CommandSource.forEachMatching(candidates, remaining, Function.identity(), id -> {
+                                            SharedSuggestionProvider.filterResources(candidates, remaining, Function.identity(), id -> {
                                                 builder.suggest(id.toString(), BreweryInit.DRINK_TYPES.get(id).looks().nameSelector().select(7).text());
                                             });
                                             return builder.buildFuture();
@@ -72,21 +71,21 @@ public class BrewCommands {
                         )
                         .then(literal("force_age")
                                 .requires(Permissions.require("brewery.force_age", 2))
-                                .then(argument("position", BlockPosArgumentType.blockPos())
-                                        .then(argument("time", TimeArgumentType.time())
+                                .then(argument("position", BlockPosArgument.blockPos())
+                                        .then(argument("time", TimeArgument.time())
                                                 .executes(BrewCommands::ageContainer)
                                         )
                                 )
                         )
                         .then(literal("stats")
                                 .requires(Permissions.require("brewery.stats", 2))
-                                .executes((ctx) -> showStats(ctx, ctx.getSource().getPlayerOrThrow()))
-                                .then(argument("player", EntityArgumentType.entity()).requires(Permissions.require("brewery.stats_others", 2))
-                                        .executes(ctx -> showStats(ctx, EntityArgumentType.getEntity(ctx, "player"))))
+                                .executes((ctx) -> showStats(ctx, ctx.getSource().getPlayerOrException()))
+                                .then(argument("player", EntityArgument.entity()).requires(Permissions.require("brewery.stats_others", 2))
+                                        .executes(ctx -> showStats(ctx, EntityArgument.getEntity(ctx, "player"))))
                         )
                         .then(literal("set")
                                 .requires(Permissions.require("brewery.set", 2))
-                                .then(argument("target", EntityArgumentType.entities())
+                                .then(argument("target", EntityArgument.entities())
                                         .then(argument("alcohol", DoubleArgumentType.doubleArg())
                                                 .then(argument("quality", FloatArgumentType.floatArg(0, 10))
                                                         .executes(BrewCommands::setAlcoholValue)
@@ -103,11 +102,11 @@ public class BrewCommands {
         );
     }
 
-    private static int setAlcoholValue(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+    private static int setAlcoholValue(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         var alcohol = DoubleArgumentType.getDouble(ctx, "alcohol");
         var quality = FloatArgumentType.getFloat(ctx, "quality");
         int r = 0;
-        for (var entity : EntityArgumentType.getEntities(ctx, "target")) {
+        for (var entity : EntityArgument.getEntities(ctx, "target")) {
             if (entity instanceof LivingEntity livingEntity) {
                 var m = AlcoholManager.of(livingEntity);
                 m.alcoholLevel = alcohol;
@@ -118,11 +117,11 @@ public class BrewCommands {
         return r;
     }
 
-    private static int ageContainer(CommandContext<ServerCommandSource> ctx) {
-        var pos = BlockPosArgumentType.getBlockPos(ctx, "position");
+    private static int ageContainer(CommandContext<CommandSourceStack> ctx) {
+        var pos = BlockPosArgument.getBlockPos(ctx, "position");
         var time = ctx.getArgument("time", Integer.class);
 
-        if (ctx.getSource().getWorld().getBlockEntity(pos) instanceof TickableContents tickableContents) {
+        if (ctx.getSource().getLevel().getBlockEntity(pos) instanceof TickableContents tickableContents) {
             tickableContents.tickContents(time);
         }
         return 0;
@@ -151,20 +150,20 @@ public class BrewCommands {
         return 0;
     }
 
-    private static int showStats(CommandContext<ServerCommandSource> ctx, Entity player) {
+    private static int showStats(CommandContext<CommandSourceStack> ctx, Entity player) {
         if (player instanceof LivingEntity livingEntity) {
             var m = AlcoholManager.of(livingEntity);
-            ctx.getSource().sendFeedback(() -> Text.translatable("text.brewery.stats", player.getDisplayName(), m.alcoholLevel, m.quality), false);
+            ctx.getSource().sendSuccess(() -> Component.translatable("text.brewery.stats", player.getDisplayName(), m.alcoholLevel, m.quality), false);
         }
         return 0;
     }
 
-    private static int createDrink(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var id = IdentifierArgumentType.getIdentifier(context, "type");
+    private static int createDrink(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        var id = IdentifierArgument.getId(context, "type");
         var type = BreweryInit.DRINK_TYPES.get(id);
 
         if (type == null) {
-            context.getSource().sendError(Text.literal("Invalid type!"));
+            context.getSource().sendFailure(Component.literal("Invalid type!"));
             return -1;
         }
 
@@ -192,15 +191,15 @@ public class BrewCommands {
             distillated = type.distillationRuns();
         }
 
-        context.getSource().getPlayerOrThrow().giveItemStack(DrinkUtils.createDrink(id, age, quality, distillated, Blocks.AIR));
+        context.getSource().getPlayerOrException().addItem(DrinkUtils.createDrink(id, age, quality, distillated, Blocks.AIR));
 
         return 1;
     }
 
 
-    private static int about(CommandContext<ServerCommandSource> context) {
-        for (var text : context.getSource().getEntity() instanceof ServerPlayerEntity ? GenericModInfo.getAboutFull() : GenericModInfo.getAboutConsole()) {
-            context.getSource().sendFeedback(() -> text, false);
+    private static int about(CommandContext<CommandSourceStack> context) {
+        for (var text : context.getSource().getEntity() instanceof ServerPlayer ? GenericModInfo.getAboutFull() : GenericModInfo.getAboutConsole()) {
+            context.getSource().sendSuccess(() -> text, false);
         }
 
         return 1;

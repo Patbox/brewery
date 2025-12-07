@@ -3,10 +3,10 @@ package eu.pb4.brewery.block.entity;
 import eu.pb4.brewery.block.BrewBlocks;
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import static eu.pb4.brewery.BreweryInit.id;
 
@@ -29,7 +29,7 @@ public class BrewBlockEntities {
 
 
     private static <T extends BlockEntity> BlockEntityType<T> register(String path, BlockEntityType<T> block) {
-        Registry.register(Registries.BLOCK_ENTITY_TYPE, id(path), block);
+        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id(path), block);
         PolymerBlockUtils.registerBlockEntity(block);
         return block;
     }

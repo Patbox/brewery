@@ -2,19 +2,14 @@ package eu.pb4.brewery.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.serialization.Codec;
-import eu.pb4.brewery.duck.StatusEffectInstanceExt;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.nbt.NbtCompound;
+import eu.pb4.brewery.duck.MobInstanceExt;
+import net.minecraft.world.effect.MobEffectInstance;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(StatusEffectInstance.class)
-public class StatusEffectInstanceMixin implements StatusEffectInstanceExt {
+@Mixin(MobEffectInstance.class)
+public class MobEffectInstanceMixin implements MobInstanceExt {
     @Unique
     private boolean brewery$locked;
 
@@ -29,7 +24,7 @@ public class StatusEffectInstanceMixin implements StatusEffectInstanceExt {
     }
 
     @ModifyExpressionValue(method = "<clinit>", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/codecs/RecordCodecBuilder;create(Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;"))
-    private static Codec<StatusEffectInstance> replaceCodec(Codec<StatusEffectInstance> codec) {
-        return StatusEffectInstanceExt.codec(codec);
+    private static Codec<MobEffectInstance> replaceCodec(Codec<MobEffectInstance> codec) {
+        return MobInstanceExt.codec(codec);
     }
 }

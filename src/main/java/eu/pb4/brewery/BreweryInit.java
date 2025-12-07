@@ -29,14 +29,14 @@ import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.registry.RegistryOps;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -54,7 +54,7 @@ public class BreweryInit implements ModInitializer {
     public static final List<AlcoholValueEffect.Value> ALCOHOL_EFFECTS = new ArrayList<>();
     public static final Object2DoubleMap<Item> ITEM_ALCOHOL_REMOVAL_VALUES = new Object2DoubleOpenHashMap<>();
     public static final Map<Item, Identifier> CONTAINER_TO_INGMIX_MODEL = new IdentityHashMap<>();
-    public static Ingredient containerIngredient = Ingredient.ofItems(Items.GLASS_BOTTLE);
+    public static Ingredient containerIngredient = Ingredient.of(Items.GLASS_BOTTLE);
 
     public static final Logger LOGGER = LogUtils.getLogger();
 
@@ -62,14 +62,14 @@ public class BreweryInit implements ModInitializer {
     public static final boolean DISPLAY_DEV = IS_DEV && true;
     public static final boolean USE_GENERATOR = IS_DEV && true;
 
-    private static ServerWorld overworld = null;
+    private static ServerLevel overworld = null;
 
     public static Identifier id(String path) {
-        return Identifier.of(MOD_ID, path);
+        return Identifier.fromNamespaceAndPath(MOD_ID, path);
     }
 
     @Nullable
-    public static ServerWorld getOverworld() {
+    public static ServerLevel getOverworld() {
         return overworld;
     }
 
@@ -104,8 +104,8 @@ public class BreweryInit implements ModInitializer {
             BreweryInit.loadDrinks(x);
             BookOfBreweryItem.build(
                     DRINK_TYPES.entrySet(),
-                    x.getOverworld().getGameRules().getValue(BrewGameRules.BARREL_AGING_MULTIPLIER),
-                    x.getOverworld().getGameRules().getValue(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER)
+                    x.overworld().getGameRules().get(BrewGameRules.BARREL_AGING_MULTIPLIER),
+                    x.overworld().getGameRules().get(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER)
             );
         });
 
@@ -127,7 +127,7 @@ public class BreweryInit implements ModInitializer {
         ITEM_ALCOHOL_REMOVAL_VALUES.clear();
         ALCOHOL_EFFECTS.clear();
         CONTAINER_TO_INGMIX_MODEL.clear();
-        containerIngredient = Ingredient.ofItems(Items.GLASS_BOTTLE);
+        containerIngredient = Ingredient.of(Items.GLASS_BOTTLE);
     }
 
     public static void addDrink(Identifier identifier, DrinkType type) {
@@ -136,14 +136,14 @@ public class BreweryInit implements ModInitializer {
     }
 
     private static void loadDrinks(MinecraftServer server) {
-        var ops = RegistryOps.of(JsonOps.INSTANCE, server.getRegistryManager());
+        var ops = RegistryOps.create(JsonOps.INSTANCE, server.registryAccess());
         clearData();
 
-        for (var res : server.getResourceManager().findResources("brewery_drinks", (x) -> x.getPath().endsWith(".json")).entrySet()) {
-            var id = Identifier.of(res.getKey().getNamespace(), res.getKey().getPath().substring("brewery_drinks/".length(), res.getKey().getPath().length() - 5));
+        for (var res : server.getResourceManager().listResources("brewery_drinks", (x) -> x.getPath().endsWith(".json")).entrySet()) {
+            var id = Identifier.fromNamespaceAndPath(res.getKey().getNamespace(), res.getKey().getPath().substring("brewery_drinks/".length(), res.getKey().getPath().length() - 5));
 
             try {
-                var drinkType = DrinkType.CODEC.decode(ops, JsonParser.parseReader(res.getValue().getReader())).getOrThrow();
+                var drinkType = DrinkType.CODEC.decode(ops, JsonParser.parseReader(res.getValue().openAsReader())).getOrThrow();
 
                 addDrink(id, drinkType.getFirst());
             } catch (Throwable e) {
@@ -153,9 +153,9 @@ public class BreweryInit implements ModInitializer {
             }
         }
 
-        for (var res : server.getResourceManager().findResources("", (x) -> x.getPath().equals("brewery_effects.json")).entrySet()) {
+        for (var res : server.getResourceManager().listResources("", (x) -> x.getPath().equals("brewery_effects.json")).entrySet()) {
             try {
-                var effects = AlcoholValueEffect.CODEC.decode(ops, JsonParser.parseReader(res.getValue().getReader())).result().get().getFirst();
+                var effects = AlcoholValueEffect.CODEC.decode(ops, JsonParser.parseReader(res.getValue().openAsReader())).result().get().getFirst();
 
                 if (effects.replace()) {
                     ALCOHOL_EFFECTS.clear();
@@ -186,7 +186,7 @@ public class BreweryInit implements ModInitializer {
                 var dirModel = FabricLoader.getInstance().getGameDir().resolve("../src/main/resources/assets/brewery/items/");
                 String finalPotionModelJson = potionModelJson;
                 DefaultDefinitions.createBrews((key, drinkType) -> {
-                    var id = Identifier.of("brewery", key);
+                    var id = Identifier.fromNamespaceAndPath("brewery", key);
                     addDrink(id, drinkType.apply(id));
 
                     if (id.getPath().equals("the_testificate")) {
@@ -223,20 +223,20 @@ public class BreweryInit implements ModInitializer {
 
         for (var drink : DRINK_TYPES.values()) {
             //noinspection deprecation
-            drink.requiredContainer().getMatchingItems().map(RegistryEntry::value).forEach(list::add);
+            drink.requiredContainer().items().map(Holder::value).forEach(list::add);
         }
 
-        containerIngredient = Ingredient.ofItems(list.stream());
+        containerIngredient = Ingredient.of(list.stream());
     }
 
     private static void onServerStarted(MinecraftServer server) {
         CardboardWarning.checkAndAnnounce();
-        overworld = server.getOverworld();
+        overworld = server.overworld();
 
         BookOfBreweryItem.build(
                 DRINK_TYPES.entrySet(),
-                server.getOverworld().getGameRules().getValue(BrewGameRules.BARREL_AGING_MULTIPLIER),
-                server.getOverworld().getGameRules().getValue(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER)
+                server.overworld().getGameRules().get(BrewGameRules.BARREL_AGING_MULTIPLIER),
+                server.overworld().getGameRules().get(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER)
         );
     }
 }

@@ -1,16 +1,12 @@
 package eu.pb4.brewery.block.entity;
 
 import eu.pb4.brewery.other.LegacyNbtHelper;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.inventory.SidedInventory;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 public final class BrewBarrelPartBlockEntity extends BlockEntity {
@@ -21,30 +17,30 @@ public final class BrewBarrelPartBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void writeData(WriteView view) {
-        super.writeData(view);
+    protected void saveAdditional(ValueOutput view) {
+        super.saveAdditional(view);
         if (this.container != null) {
-            view.put("Container", NbtCompound.CODEC, LegacyNbtHelper.fromBlockPos(this.container));
+            view.store("Container", CompoundTag.CODEC, LegacyNbtHelper.fromBlockPos(this.container));
         }
     }
 
     @Override
-    public void readData(ReadView view) {
-        super.readData(view);
-        this.container = view.read("Container", NbtCompound.CODEC).map(LegacyNbtHelper::toBlockPos).orElse(null);
+    public void loadAdditional(ValueInput view) {
+        super.loadAdditional(view);
+        this.container = view.read("Container", CompoundTag.CODEC).map(LegacyNbtHelper::toBlockPos).orElse(null);
     }
 
     public void setContainer(BlockPos pos) {
         this.container = pos;
 
-        this.markDirty();
+        this.setChanged();
     }
 
     @Override
-    public void onBlockReplaced(BlockPos pos, BlockState oldState) {
-        super.onBlockReplaced(pos, oldState);
-        if (this.world != null && this.container != null) {
-            world.breakBlock(this.container, true);
+    public void preRemoveSideEffects(BlockPos pos, BlockState oldState) {
+        super.preRemoveSideEffects(pos, oldState);
+        if (this.level != null && this.container != null) {
+            level.destroyBlock(this.container, true);
         }
     }
 
@@ -54,6 +50,6 @@ public final class BrewBarrelPartBlockEntity extends BlockEntity {
     }
 
     public BrewBarrelSpigotBlockEntity getContainerBe() {
-        return this.world.getBlockEntity(this.getContainer()) instanceof BrewBarrelSpigotBlockEntity be ? be : null;
+        return this.level.getBlockEntity(this.getContainer()) instanceof BrewBarrelSpigotBlockEntity be ? be : null;
     }
 }

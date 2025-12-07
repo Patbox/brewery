@@ -5,23 +5,23 @@ import eu.pb4.brewery.item.BrewComponents;
 import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.item.comp.BrewData;
 import eu.pb4.brewery.item.comp.CookingData;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 
 public class DrinkUtils {
     @Nullable
     public static DrinkType getType(ItemStack stack) {
-        if (stack.contains(BrewComponents.BREW_DATA)) {
+        if (stack.has(BrewComponents.BREW_DATA)) {
             if (Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).type().isPresent()) {
                 return BreweryInit.DRINK_TYPES.get(Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).type().get());
             }
@@ -32,7 +32,7 @@ public class DrinkUtils {
 
     @Nullable
     public static Identifier getTypeId(ItemStack stack) {
-        if (stack.contains(BrewComponents.BREW_DATA)) {
+        if (stack.has(BrewComponents.BREW_DATA)) {
             if (Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).type().isPresent()) {
                 return Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).type().get();
             }
@@ -42,7 +42,7 @@ public class DrinkUtils {
     }
 
     public static double getQuality(ItemStack stack) {
-        if (stack.contains(BrewComponents.BREW_DATA)) {
+        if (stack.has(BrewComponents.BREW_DATA)) {
             return Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).quality();
         }
 
@@ -50,7 +50,7 @@ public class DrinkUtils {
     }
 
     public static String getBarrelType(ItemStack stack) {
-        if (stack.contains(BrewComponents.BREW_DATA)) {
+        if (stack.has(BrewComponents.BREW_DATA)) {
             return Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).barrelType();
         }
 
@@ -58,7 +58,7 @@ public class DrinkUtils {
     }
 
     public static boolean getDistillationStatus(ItemStack stack) {
-        if (stack.contains(BrewComponents.BREW_DATA)) {
+        if (stack.has(BrewComponents.BREW_DATA)) {
             var type = getType(stack);
             if (type != null) {
                 return Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).distillations() >= type.distillationRuns();
@@ -69,7 +69,7 @@ public class DrinkUtils {
     }
 
     public static int getDistillationCount(ItemStack stack) {
-        if (stack.contains(BrewComponents.BREW_DATA)) {
+        if (stack.has(BrewComponents.BREW_DATA)) {
             return Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).distillations();
         }
 
@@ -77,7 +77,7 @@ public class DrinkUtils {
     }
 
     public static Block getHeatSource(ItemStack stack) {
-        if (stack.contains(BrewComponents.COOKING_DATA)) {
+        if (stack.has(BrewComponents.COOKING_DATA)) {
             return Objects.requireNonNull(stack.get(BrewComponents.COOKING_DATA)).heatSource();
         }
 
@@ -86,7 +86,7 @@ public class DrinkUtils {
 
 
     public static ItemStack getContainer(ItemStack stack) {
-        if (stack.contains(BrewComponents.COOKING_DATA)) {
+        if (stack.has(BrewComponents.COOKING_DATA)) {
             return Objects.requireNonNull(stack.get(BrewComponents.COOKING_DATA)).container();
         }
 
@@ -96,7 +96,7 @@ public class DrinkUtils {
     public static boolean canBeDistillated(ItemStack stack) {
         var type = DrinkUtils.getType(stack);
         var already = DrinkUtils.getDistillationStatus(stack);
-        return !already && ((type != null && type.requireDistillation()) || stack.isOf(BrewItems.INGREDIENT_MIXTURE));
+        return !already && ((type != null && type.requireDistillation()) || stack.is(BrewItems.INGREDIENT_MIXTURE));
     }
 
     public static double getAgeInTicks(ItemStack stack) {
@@ -104,7 +104,7 @@ public class DrinkUtils {
     }
 
     public static double getAgeInTicks(ItemStack stack, double defaultValue) {
-        if (stack.contains(BrewComponents.BREW_DATA)) {
+        if (stack.has(BrewComponents.BREW_DATA)) {
             return Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).age();
         }
 
@@ -116,7 +116,7 @@ public class DrinkUtils {
     }
 
     public static double getCookingInTicks(ItemStack stack, double defaultValue) {
-        if (stack.contains(BrewComponents.COOKING_DATA)) {
+        if (stack.has(BrewComponents.COOKING_DATA)) {
             return Objects.requireNonNull(stack.get(BrewComponents.COOKING_DATA)).time();
         }
 
@@ -150,7 +150,7 @@ public class DrinkUtils {
         base:
         for (var type : BreweryInit.DRINK_TYPES.values()) {
             if ((((barrelType == null && type.barrelInfo().isEmpty()) || (barrelType != null && type.getBarrelInfo(barrelType) != null))
-                    && !type.ingredients().isEmpty() && (type.heatSource().isEmpty() || type.heatSource().get().contains(Registries.BLOCK.getEntry(heatSource)))) && type.requiredContainer().test(container)) {
+                    && !type.ingredients().isEmpty() && (type.heatSource().isEmpty() || type.heatSource().get().contains(BuiltInRegistries.BLOCK.wrapAsHolder(heatSource)))) && type.requiredContainer().test(container)) {
                 var ing = new ArrayList<ItemStack>(ingredients.size());
                 for (var i : ingredients) {
                     ing.add(new ItemStack(i.getItem(), i.getCount()));

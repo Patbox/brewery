@@ -1,44 +1,44 @@
 package eu.pb4.brewery.item.debug;
 
-import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.block.entity.TickableContents;
 import eu.pb4.brewery.item.BrewComponents;
 import eu.pb4.polymer.core.api.item.PolymerItem;
-import net.minecraft.item.*;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.UseOnContext;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 public class BlockTickerItem extends Item implements PolymerItem {
-    public BlockTickerItem(Settings settings) {
+    public BlockTickerItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public ActionResult useOnBlock(ItemUsageContext context) {
-        var be = context.getWorld().getBlockEntity(context.getBlockPos());
+    public InteractionResult useOn(UseOnContext context) {
+        var be = context.getLevel().getBlockEntity(context.getClickedPos());
 
         if (be instanceof TickableContents tickableContents) {
-            tickableContents.tickContents(context.getStack().getOrDefault(BrewComponents.TICK_COUNT, 0));
+            tickableContents.tickContents(context.getItemInHand().getOrDefault(BrewComponents.TICK_COUNT, 0));
         }
 
-        return super.useOnBlock(context);
+        return super.useOn(context);
     }
 
     @Override
-    public Text getName(ItemStack stack) {
+    public Component getName(ItemStack stack) {
         var tick = stack.getOrDefault(BrewComponents.TICK_COUNT, 0);
-        return Text.literal("debug/BlockTickerItem [" + tick + " ticks | "
+        return Component.literal("debug/BlockTickerItem [" + tick + " ticks | "
                 + ((int) (tick / 20d / 60d * 100) / 100d) + " minutes | "
                 + ((int) (tick / 24000d * 100) / 100d) + " days]");
     }
 
     @Override
-    public boolean hasGlint(ItemStack stack) {
+    public boolean isFoil(ItemStack stack) {
         return true;
     }
 

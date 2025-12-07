@@ -12,27 +12,27 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import it.unimi.dsi.fastutil.booleans.BooleanList;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.advancement.criterion.Criteria;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ConsumableComponent;
-import net.minecraft.component.type.CustomModelDataComponent;
-import net.minecraft.component.type.PotionContentsComponent;
-import net.minecraft.component.type.TooltipDisplayComponent;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.*;
-import net.minecraft.item.consume.UseAction;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ColorHelper;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gameevent.GameEvent;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -41,12 +41,12 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public class DrinkItem extends Item implements PolymerItem {
-    public DrinkItem(Settings settings) {
-        super(settings.maxCount(1).component(DataComponentTypes.CONSUMABLE, new ConsumableComponent(32 / 20f, UseAction.DRINK, SoundEvents.ENTITY_GENERIC_DRINK, false, List.of())));
+    public DrinkItem(Properties settings) {
+        super(settings.stacksTo(1).component(DataComponents.CONSUMABLE, new Consumable(32 / 20f, ItemUseAnimation.DRINK, SoundEvents.GENERIC_DRINK, false, List.of())));
     }
 
     @Override
-    public int getMaxUseTime(ItemStack stack, LivingEntity user) {
+    public int getUseDuration(ItemStack stack, LivingEntity user) {
         var type = DrinkUtils.getType(stack);
 
         if (type == null) {
@@ -57,23 +57,23 @@ public class DrinkItem extends Item implements PolymerItem {
     }
 
     @Override
-    public UseAction getUseAction(ItemStack stack) {
+    public ItemUseAnimation getUseAnimation(ItemStack stack) {
         var type = DrinkUtils.getType(stack);
 
         if (type == null) {
-            return UseAction.DRINK;
+            return ItemUseAnimation.DRINK;
         } else {
             return type.visuals(stack).animation();
         }
     }
 
-    public ItemStack finishUsing(ItemStack stack, World world, LivingEntity user) {
-        PlayerEntity playerEntity = user instanceof PlayerEntity ? (PlayerEntity) user : null;
-        if (playerEntity instanceof ServerPlayerEntity) {
-            Criteria.CONSUME_ITEM.trigger((ServerPlayerEntity) playerEntity, stack);
+    public ItemStack finishUsingItem(ItemStack stack, Level world, LivingEntity user) {
+        Player playerEntity = user instanceof Player ? (Player) user : null;
+        if (playerEntity instanceof ServerPlayer) {
+            CriteriaTriggers.CONSUME_ITEM.trigger((ServerPlayer) playerEntity, stack);
         }
 
-        if (!world.isClient()) {
+        if (!world.isClientSide()) {
             try {
                 var type = DrinkUtils.getType(stack);
 
@@ -98,12 +98,12 @@ public class DrinkItem extends Item implements PolymerItem {
         }
 
         if (playerEntity != null) {
-            playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
+            playerEntity.awardStat(Stats.ITEM_USED.get(this));
         }
-        user.emitGameEvent(GameEvent.DRINK);
+        user.gameEvent(GameEvent.DRINK);
 
         var cookingData = stack.get(BrewComponents.COOKING_DATA);
-        stack.decrementUnlessCreative(1, playerEntity);
+        stack.consume(1, playerEntity);
 
         if (playerEntity == null || !playerEntity.isCreative()) {
             if (cookingData != null) {
@@ -112,7 +112,7 @@ public class DrinkItem extends Item implements PolymerItem {
                 }
 
                 if (playerEntity != null) {
-                    playerEntity.getInventory().insertStack(cookingData.container().copy());
+                    playerEntity.getInventory().add(cookingData.container().copy());
                 }
             }
         }
@@ -121,36 +121,36 @@ public class DrinkItem extends Item implements PolymerItem {
     }
 
     @Override
-    public Text getName(ItemStack stack) {
+    public Component getName(ItemStack stack) {
         var type = DrinkUtils.getType(stack);
 
         if (type != null) {
             if (type.isFinished(stack)) {
                 return type.name(stack).text();
             } else {
-                return Text.translatable("item.brewery.ingredient_mixture_specific", type.name(stack).text());
+                return Component.translatable("item.brewery.ingredient_mixture_specific", type.name(stack).text());
             }
         } else {
             var id = DrinkUtils.getType(stack);
 
-            Text text;
+            Component text;
 
             if (id != null) {
                 text = id.name(stack).text();
             } else {
-                text = Text.literal("<Unknown>");
+                text = Component.literal("<Unknown>");
             }
 
-            return Text.translatable(this.getTranslationKey(), text);
+            return Component.translatable(this.getDescriptionId(), text);
         }
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType typex) {
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay displayComponent, Consumer<Component> textConsumer, TooltipFlag typex) {
         var world = BreweryInit.getOverworld();
         if (world != null) {
             var type = DrinkUtils.getType(stack);
-            if (type != null && type.showQuality() && world.getGameRules().getValue(BrewGameRules.SHOW_QUALITY)) {
+            if (type != null && type.showQuality() && world.getGameRules().get(BrewGameRules.SHOW_QUALITY)) {
                 var quality
                         = DrinkUtils.getQuality(stack);
                 var starCount = (Math.round((quality / 2) * 10)) / 10d;
@@ -172,27 +172,27 @@ public class DrinkItem extends Item implements PolymerItem {
                     antistars.append("☆");
                 }
 
-                textConsumer.accept(Text.translatable("text.brewery.quality", Text.empty()
-                        .append(Text.literal(stars.toString()).formatted(Formatting.YELLOW))
-                        .append(Text.literal(antistars.toString()).formatted(Formatting.DARK_GRAY))
+                textConsumer.accept(Component.translatable("text.brewery.quality", Component.empty()
+                        .append(Component.literal(stars.toString()).withStyle(ChatFormatting.YELLOW))
+                        .append(Component.literal(antistars.toString()).withStyle(ChatFormatting.DARK_GRAY))
                 ));
             }
 
-            if (world.getGameRules().getValue(BrewGameRules.SHOW_AGE)) {
-                double mult = world != null ? world.getGameRules().getValue(BrewGameRules.BARREL_AGING_MULTIPLIER) : 1;
+            if (world.getGameRules().get(BrewGameRules.SHOW_AGE)) {
+                double mult = world != null ? world.getGameRules().get(BrewGameRules.BARREL_AGING_MULTIPLIER) : 1;
 
                 var age = DrinkUtils.getAgeInSeconds(stack) / mult;
                 if (age > 0) {
-                    textConsumer.accept(Text.translatable("text.brewery.age", BrewUtils.fromTimeShort(age).formatted(Formatting.GRAY)));
+                    textConsumer.accept(Component.translatable("text.brewery.age", BrewUtils.fromTimeShort(age).withStyle(ChatFormatting.GRAY)));
                 }
             }
 
             if (BreweryInit.DISPLAY_DEV) {
-                textConsumer.accept(Text.literal("== DEV ==").formatted(Formatting.AQUA));
-                textConsumer.accept(Text.literal("BrewType: ").append(stack.getOrDefault(BrewComponents.BREW_DATA, BrewData.DEFAULT).type().toString()).formatted(Formatting.GRAY));
-                textConsumer.accept(Text.literal("BrewQuality: ").append("" + DrinkUtils.getQuality(stack)).formatted(Formatting.GRAY));
-                textConsumer.accept(Text.literal("BrewAge: ").append("" + DrinkUtils.getAgeInTicks(stack)).formatted(Formatting.GRAY));
-                textConsumer.accept(Text.literal("BrewDistillated: ").append("" + DrinkUtils.getDistillationStatus(stack)).formatted(Formatting.GRAY));
+                textConsumer.accept(Component.literal("== DEV ==").withStyle(ChatFormatting.AQUA));
+                textConsumer.accept(Component.literal("BrewType: ").append(stack.getOrDefault(BrewComponents.BREW_DATA, BrewData.DEFAULT).type().toString()).withStyle(ChatFormatting.GRAY));
+                textConsumer.accept(Component.literal("BrewQuality: ").append("" + DrinkUtils.getQuality(stack)).withStyle(ChatFormatting.GRAY));
+                textConsumer.accept(Component.literal("BrewAge: ").append("" + DrinkUtils.getAgeInTicks(stack)).withStyle(ChatFormatting.GRAY));
+                textConsumer.accept(Component.literal("BrewDistillated: ").append("" + DrinkUtils.getDistillationStatus(stack)).withStyle(ChatFormatting.GRAY));
             }
         }
     }
@@ -209,22 +209,22 @@ public class DrinkItem extends Item implements PolymerItem {
         if (type != null) {
             int color = type.color(stack);
             var visual = type.visuals(stack);
-            out.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(), Optional.of(color), List.of(), Optional.empty()));
+            out.set(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(), Optional.of(color), List.of(), Optional.empty()));
 
             if (visual.components().isPresent()) {
-                out.applyComponentsFrom(visual.components().get());
+                out.applyComponents(visual.components().get());
             }
 
-            out.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(
+            out.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(
                     FloatList.of((float) DrinkUtils.getQuality(stack), (float) DrinkUtils.getAgeInSeconds(stack), (float) DrinkUtils.getCookingAgeInSeconds(stack), DrinkUtils.getDistillationCount(stack)),
                     BooleanList.of(type.isFinished(stack), DrinkUtils.getDistillationStatus(stack)),
                     List.of(DrinkUtils.getTypeId(stack).toString(), DrinkUtils.getBarrelType(stack), type.isFinished(stack) ? "finished_drink" : "unfinished_drink"),
                     IntList.of(color, color)
             ));
 
-            out.set(DataComponentTypes.CONSUMABLE, new ConsumableComponent((float) type.drinkingTime(stack, context.getPlayer()), visual.animation(), visual.soundEvent(), visual.particles(), List.of()));
+            out.set(DataComponents.CONSUMABLE, new Consumable((float) type.drinkingTime(stack, context.getPlayer()), visual.animation(), visual.soundEvent(), visual.particles(), List.of()));
         } else {
-            out.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(
+            out.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(
                     FloatList.of((float) DrinkUtils.getQuality(stack), (float) DrinkUtils.getAgeInSeconds(stack), (float) DrinkUtils.getCookingAgeInSeconds(stack), DrinkUtils.getDistillationCount(stack)),
                     BooleanList.of(false, DrinkUtils.getDistillationStatus(stack)),
                     List.of("", DrinkUtils.getBarrelType(stack), "unknown_drink"),
@@ -242,6 +242,6 @@ public class DrinkItem extends Item implements PolymerItem {
             return visuals.resourcePackModel().isPresent() && PolymerResourcePackUtils.hasMainPack(context) ? visuals.resourcePackModel().get() : visuals.defaultModel();
         }
 
-        return Items.POTION.getComponents().get(DataComponentTypes.ITEM_MODEL);
+        return Items.POTION.components().get(DataComponents.ITEM_MODEL);
     }
 }

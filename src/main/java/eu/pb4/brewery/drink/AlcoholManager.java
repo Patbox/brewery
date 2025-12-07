@@ -4,19 +4,15 @@ import com.mojang.datafixers.util.Pair;
 import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.duck.LivingEntityExt;
 import eu.pb4.brewery.other.BrewGameRules;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.RegistryOps;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -42,8 +38,8 @@ public final class AlcoholManager {
         if (this.entity == null) {
             return;
         }
-        if (this.entity.getEntityWorld() instanceof ServerWorld world) {
-            var multiplier = world.getGameRules().getValue(BrewGameRules.ALCOHOL_MULTIPLIER);
+        if (this.entity.level() instanceof ServerLevel world) {
+            var multiplier = world.getGameRules().get(BrewGameRules.ALCOHOL_MULTIPLIER);
 
             this.alcoholLevel = Math.max(this.alcoholLevel + alcoholicValue * multiplier, alcoholicValue * multiplier);
             if (this.quality == -1) {
@@ -64,31 +60,31 @@ public final class AlcoholManager {
         return entity != null ? ((LivingEntityExt) entity).brewery$getAlcoholManager() : FALLBACK;
     }
 
-    public void writeData(WriteView view) {
+    public void writeData(ValueOutput view) {
         view.putDouble("brewery:alcohol_level", this.alcoholLevel);
         view.putDouble("brewery:quality", this.quality);
 
-        var list = view.getList("brewery:delayed_effects");
-        var list2 = view.getList("brewery:timed_attributes");
+        var list = view.childrenList("brewery:delayed_effects");
+        var list2 = view.childrenList("brewery:timed_attributes");
 
         for (var effect : this.delayedEffects) {
-            effect.writeData(list.add());
+            effect.writeData(list.addChild());
         }
         for (var effect : this.timedAttributes) {
-            effect.writeData(list2.add());
+            effect.writeData(list2.addChild());
         }
     }
 
-    public void readData(ReadView view) {
-        this.alcoholLevel = view.getDouble("brewery:alcohol_level",0);
-        this.quality = view.getDouble("brewery:quality", 0);
+    public void readData(ValueInput view) {
+        this.alcoholLevel = view.getDoubleOr("brewery:alcohol_level",0);
+        this.quality = view.getDoubleOr("brewery:quality", 0);
 
         this.delayedEffects.clear();
-        for (var effect : view.getListReadView("brewery:delayed_effects")) {
+        for (var effect : view.childrenListOrEmpty("brewery:delayed_effects")) {
             this.delayedEffects.add(DelayedEffect.readData(effect));
         }
 
-        for (var effect : view.getListReadView("brewery:timed_attributes")) {
+        for (var effect : view.childrenListOrEmpty("brewery:timed_attributes")) {
             this.timedAttributes.add(TimedAttributes.readData(effect));
         }
     }
@@ -116,7 +112,7 @@ public final class AlcoholManager {
             var level = this.getModifiedAlcoholLevel();
 
             for (var effects : BreweryInit.ALCOHOL_EFFECTS) {
-                if (level >= effects.minimumValue() && this.entity.age % effects.rate() == 0) {
+                if (level >= effects.minimumValue() && this.entity.tickCount % effects.rate() == 0) {
                     for (var effect : effects.effects()) {
                         effect.apply(this.entity, 0, this.quality);
                     }
@@ -131,9 +127,9 @@ public final class AlcoholManager {
         }
         if (--timedAttributes.ticksLeft > 0) {
             for (var effect : timedAttributes.attributes) {
-                var x = this.entity.getAttributeInstance(effect.getFirst());
+                var x = this.entity.getAttribute(effect.getFirst());
                 if (x != null && !x.hasModifier(effect.getSecond().id())) {
-                    x.addTemporaryModifier(effect.getSecond());
+                    x.addTransientModifier(effect.getSecond());
                 }
             }
 
@@ -141,7 +137,7 @@ public final class AlcoholManager {
         }
 
         for (var effect : timedAttributes.attributes) {
-            var x = this.entity.getAttributeInstance(effect.getFirst());
+            var x = this.entity.getAttribute(effect.getFirst());
             if (x != null && x.hasModifier(effect.getSecond().id())) {
                 x.removeModifier(effect.getSecond());
             }
@@ -167,7 +163,7 @@ public final class AlcoholManager {
         this.delayedEffectsNext.add(new DelayedEffect(ticks, drinkQuality, drinkAge, List.copyOf(effects)));
     }
 
-    public void addTimedAttributes(int ticks, double drinkAge, double drinkQuality, List<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>> effects) {
+    public void addTimedAttributes(int ticks, double drinkAge, double drinkQuality, List<Pair<Holder<Attribute>, AttributeModifier>> effects) {
         this.timedAttributes.add(new TimedAttributes(ticks, drinkQuality, drinkAge, List.copyOf(effects)));
     }
 
@@ -179,9 +175,9 @@ public final class AlcoholManager {
         public int ticksLeft;
         private final double quality;
         private final double age;
-        private final List<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>> attributes;
+        private final List<Pair<Holder<Attribute>, AttributeModifier>> attributes;
 
-        public TimedAttributes(int ticks, double quality, double age, List<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>> effects) {
+        public TimedAttributes(int ticks, double quality, double age, List<Pair<Holder<Attribute>, AttributeModifier>> effects) {
             this.ticksLeft = ticks;
             this.quality = quality;
             this.age = age;
@@ -189,25 +185,25 @@ public final class AlcoholManager {
         }
 
 
-        public void writeData(WriteView view) {
+        public void writeData(ValueOutput view) {
             view.putInt("ticks", this.ticksLeft);
             view.putDouble("quality", this.quality);
             view.putDouble("age", this.age);
 
-            var list = view.getListAppender("entries", ConsumptionEffect.Attributes.ATTRIBUTE_PAIR.codec());
+            var list = view.list("entries", ConsumptionEffect.Attributes.ATTRIBUTE_PAIR.codec());
             for (var effect : this.attributes) {
                 list.add(effect);
             }
         }
 
-        public static TimedAttributes readData(ReadView view) {
-            var ticks = view.getInt("ticks", 0);
-            var quality = view.getDouble("quality", 0);
-            var age = view.getDouble("age", 0);
+        public static TimedAttributes readData(ValueInput view) {
+            var ticks = view.getIntOr("ticks", 0);
+            var quality = view.getDoubleOr("quality", 0);
+            var age = view.getDoubleOr("age", 0);
 
-            var list = new ArrayList<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>>();
+            var list = new ArrayList<Pair<Holder<Attribute>, AttributeModifier>>();
 
-            for (var effect : view.getTypedListView("entries", ConsumptionEffect.Attributes.ATTRIBUTE_PAIR.codec())) {
+            for (var effect : view.listOrEmpty("entries", ConsumptionEffect.Attributes.ATTRIBUTE_PAIR.codec())) {
                 list.add(effect);
             }
 
@@ -229,25 +225,25 @@ public final class AlcoholManager {
         }
 
 
-        public void writeData(WriteView view) {
+        public void writeData(ValueOutput view) {
             view.putInt("ticks", this.ticksLeft);
             view.putDouble("quality", this.quality);
             view.putDouble("age", this.age);
 
-            var list = view.getListAppender("entries", ConsumptionEffect.CODEC);
+            var list = view.list("entries", ConsumptionEffect.CODEC);
             for (var effect : this.effects) {
                 list.add(effect);
             }
         }
 
-        public static DelayedEffect readData(ReadView view) {
-            var ticks = view.getInt("ticks", 0);
-            var quality = view.getDouble("quality", 0);
-            var age = view.getDouble("age", 0);
+        public static DelayedEffect readData(ValueInput view) {
+            var ticks = view.getIntOr("ticks", 0);
+            var quality = view.getDoubleOr("quality", 0);
+            var age = view.getDoubleOr("age", 0);
 
             var list = new ArrayList<ConsumptionEffect>();
 
-            for (var effect : view.getTypedListView("entries", ConsumptionEffect.CODEC)) {
+            for (var effect : view.listOrEmpty("entries", ConsumptionEffect.CODEC)) {
                 list.add(effect);
             }
 

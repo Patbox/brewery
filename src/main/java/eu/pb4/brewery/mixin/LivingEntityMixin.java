@@ -2,13 +2,12 @@ package eu.pb4.brewery.mixin;
 
 import eu.pb4.brewery.drink.AlcoholManager;
 import eu.pb4.brewery.duck.LivingEntityExt;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,7 +19,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
     @Unique
     private AlcoholManager brewery$alcoholManager = new AlcoholManager((LivingEntity) (Object) this);
 
-    public LivingEntityMixin(EntityType<?> type, World world) {
+    public LivingEntityMixin(EntityType<?> type, Level world) {
         super(type, world);
     }
 
@@ -34,13 +33,13 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
         this.brewery$alcoholManager = manager;
     }
 
-    @Inject(method = "writeCustomData", at = @At("TAIL"))
-    private void brewery$writeData(WriteView view, CallbackInfo ci) {
+    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
+    private void brewery$writeData(ValueOutput view, CallbackInfo ci) {
         this.brewery$alcoholManager.writeData(view);
     }
 
-    @Inject(method = "readCustomData", at = @At("TAIL"))
-    private void brewery$readData(ReadView view, CallbackInfo ci) {
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    private void brewery$readData(ValueInput view, CallbackInfo ci) {
         this.brewery$alcoholManager.readData(view);
     }
 

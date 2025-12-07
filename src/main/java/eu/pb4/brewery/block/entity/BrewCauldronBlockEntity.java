@@ -12,29 +12,25 @@ import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.TextDisplayElement;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.LeveledCauldronBlock;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LayeredCauldronBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class BrewCauldronBlockEntity extends BlockEntity implements TickableContents {
     private List<ItemStack> inventory = new ArrayList<>();
@@ -47,9 +43,9 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
         super(BrewBlockEntities.CAULDRON, pos, state);
     }
 
-    public static <T extends BlockEntity> void ticker(World world, BlockPos pos, BlockState state, T t) {
-        if (t instanceof BrewCauldronBlockEntity cauldron && world instanceof ServerWorld world1) {
-            var currentTime = world.getTime();
+    public static <T extends BlockEntity> void ticker(Level world, BlockPos pos, BlockState state, T t) {
+        if (t instanceof BrewCauldronBlockEntity cauldron && world instanceof ServerLevel world1) {
+            var currentTime = world.getGameTime();
 
             if (cauldron.lastTicked == -1) {
                 cauldron.lastTicked = currentTime;
@@ -61,10 +57,10 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
                 var matrix = new Matrix4f();
                 var seconds = (int) (cauldron.timeCooking / 20) % 60;
                 var minutes = (int) (cauldron.timeCooking / (20 * 60));
-                var text = Text.literal(minutes + ":" + (seconds < 10 ? "0" : "") + seconds);
+                var text = Component.literal(minutes + ":" + (seconds < 10 ? "0" : "") + seconds);
                 for (int i = 0; i < 4; i++) {
                     var element = cauldron.textDisplayElement[i] = new TextDisplayElement();
-                    element.setTransformation(matrix.rotationY(i * MathHelper.HALF_PI).translate(0,-0.14f ,0.51f));
+                    element.setTransformation(matrix.rotationY(i * Mth.HALF_PI).translate(0,-0.14f ,0.51f));
                     element.setDisplayHeight(1f);
                     element.setDisplayWidth(1f);
                     element.setText(text);
@@ -72,22 +68,22 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
                     cauldron.elementHolder.addElement(element);
                 }
 
-                ChunkAttachment.of(cauldron.elementHolder, world1, cauldron.pos);
+                ChunkAttachment.of(cauldron.elementHolder, world1, cauldron.worldPosition);
             }
 
             if (BrewCauldronBlock.isValid(pos, state, world)) {
-                cauldron.timeCooking += world1.getGameRules().getValue(BrewGameRules.AGE_UNLOADED) ? (currentTime - cauldron.lastTicked) : 1;
+                cauldron.timeCooking += world1.getGameRules().get(BrewGameRules.AGE_UNLOADED) ? (currentTime - cauldron.lastTicked) : 1;
 
-                world1.spawnParticles(ParticleTypes.BUBBLE_POP,
+                world1.sendParticles(ParticleTypes.BUBBLE_POP,
                         0.4 * world.random.nextFloat(),
-                        (6.0D + (double)state.get(LeveledCauldronBlock.LEVEL) * 3.0D) / 16.0D,
+                        (6.0D + (double)state.getValue(LayeredCauldronBlock.LEVEL) * 3.0D) / 16.0D,
                         0.4 * world.random.nextFloat(),
                 0, 0, 0, 0, 0);
 
                 if (cauldron.timeCooking % 20 == 0) {
                     var seconds = (int) (cauldron.timeCooking / 20) % 60;
                     var minutes = (int) (cauldron.timeCooking / (20 * 60));
-                    var text = Text.literal(minutes + ":" + (seconds < 10 ? "0" : "") + seconds);
+                    var text = Component.literal(minutes + ":" + (seconds < 10 ? "0" : "") + seconds);
                     for (int i = 0; i < 4; i++) {
                         cauldron.textDisplayElement[i].setText(text);
                     }
@@ -100,18 +96,18 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
     }
 
     @Override
-    public void markRemoved() {
-        super.markRemoved();
+    public void setRemoved() {
+        super.setRemoved();
         if (this.elementHolder != null) {
             this.elementHolder.destroy();
         }
         this.elementHolder = null;
     }
 
-    protected void writeData(WriteView view) {
-        super.writeData(view);
+    protected void saveAdditional(ValueOutput view) {
+        super.saveAdditional(view);
         view.putLong("LastTicked", this.lastTicked);
-        var list = view.getListAppender("Ingredients", ItemStack.OPTIONAL_CODEC);
+        var list = view.list("Ingredients", ItemStack.OPTIONAL_CODEC);
         for (var stack : this.inventory) {
             list.add(stack);
         }
@@ -119,25 +115,25 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
         view.putDouble("CookingTime", this.timeCooking);
     }
 
-    public void readData(ReadView view) {
-        super.readData(view);
-        this.lastTicked = view.getLong("LastTicked", 0);
+    public void loadAdditional(ValueInput view) {
+        super.loadAdditional(view);
+        this.lastTicked = view.getLongOr("LastTicked", 0);
         this.inventory.clear();
-        for (var item : view.getTypedListView("Ingredients", ItemStack.OPTIONAL_CODEC)) {
+        for (var item : view.listOrEmpty("Ingredients", ItemStack.OPTIONAL_CODEC)) {
             this.inventory.add(item);
         }
-        this.timeCooking = view.getDouble("CookingTime", 0);
+        this.timeCooking = view.getDoubleOr("CookingTime", 0);
     }
 
     public void addIngredients(List<ItemEntity> entities) {
         for (var entity : entities) {
-            if (!entity.getStack().isEmpty()) {
-                var stack = entity.getStack().copy();
+            if (!entity.getItem().isEmpty()) {
+                var stack = entity.getItem().copy();
                 for (var existing : this.inventory) {
-                    if (ItemStack.areItemsAndComponentsEqual(stack, existing)) {
-                        var count = Math.min(stack.getCount(), existing.getMaxCount() - existing.getCount());
-                        existing.increment(count);
-                        stack.decrement(count);
+                    if (ItemStack.isSameItemSameComponents(stack, existing)) {
+                        var count = Math.min(stack.getCount(), existing.getMaxStackSize() - existing.getCount());
+                        existing.grow(count);
+                        stack.shrink(count);
                     }
                     if (stack.isEmpty()) {
                         break;
@@ -152,20 +148,20 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
         }
     }
 
-    public boolean onUse(PlayerEntity player) {
-        var stack = player.getMainHandStack();
+    public boolean onUse(Player player) {
+        var stack = player.getMainHandItem();
 
         if (!stack.isEmpty() && BreweryInit.containerIngredient.test(stack)) {
             var container = stack.copyWithCount(1);
-            stack.decrement(1);
-            var agingMultiplier = ((ServerWorld) this.world).getGameRules().getValue(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER);
+            stack.shrink(1);
+            var agingMultiplier = ((ServerLevel) this.level).getGameRules().get(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER);
 
             var ingredients = new ArrayList<ItemStack>();
 
             for (var nbt : this.inventory) {
                 ingredients.add(nbt.copy());
             }
-            var heatSource = this.getWorld().getBlockState(this.pos.down()).getBlock();
+            var heatSource = this.getLevel().getBlockState(this.worldPosition.below()).getBlock();
             var types = DrinkUtils.findTypes(ingredients, null, heatSource, container);
 
             var age = this.timeCooking * agingMultiplier;
@@ -196,19 +192,19 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
                 if (match == null || quality < 0) {
                     var out = new ItemStack(BrewItems.INGREDIENT_MIXTURE);
                     out.set(BrewComponents.COOKING_DATA, cookingData);
-                    player.giveItemStack(out);
+                    player.addItem(out);
                 } else {
-                    player.giveItemStack(DrinkUtils.createDrink(BreweryInit.DRINK_TYPE_ID.get(match), 0, quality * 10, 0, cookingData));
+                    player.addItem(DrinkUtils.createDrink(BreweryInit.DRINK_TYPE_ID.get(match), 0, quality * 10, 0, cookingData));
                 }
             }
 
-            var level = this.getCachedState().get(LeveledCauldronBlock.LEVEL) - 1;
+            var level = this.getBlockState().getValue(LayeredCauldronBlock.LEVEL) - 1;
 
             if (level == 0) {
-                this.world.setBlockState(this.pos, Blocks.CAULDRON.getDefaultState());
+                this.level.setBlockAndUpdate(this.worldPosition, Blocks.CAULDRON.defaultBlockState());
 
             } else {
-                this.world.setBlockState(this.pos,this.getCachedState().with(LeveledCauldronBlock.LEVEL, level));
+                this.level.setBlockAndUpdate(this.worldPosition,this.getBlockState().setValue(LayeredCauldronBlock.LEVEL, level));
             }
 
             return true;

@@ -6,52 +6,52 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import it.unimi.dsi.fastutil.booleans.BooleanList;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ConsumableComponent;
-import net.minecraft.component.type.CustomModelDataComponent;
-import net.minecraft.component.type.FoodComponent;
-import net.minecraft.component.type.PotionContentsComponent;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.consume.ApplyEffectsConsumeEffect;
-import net.minecraft.item.consume.UseAction;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
+import net.minecraft.world.level.Level;
 
 public class FailedDrinkItem extends Item implements PolymerItem {
-    public FailedDrinkItem(Item.Settings settings) {
-        super(settings.food(new FoodComponent.Builder().alwaysEdible().saturationModifier(-0.2f).build(),
-                ConsumableComponent.builder()
-                        .consumeEffect(new ApplyEffectsConsumeEffect(new StatusEffectInstance(StatusEffects.HUNGER, 30 * 20), 0.95f))
-                        .consumeEffect(new ApplyEffectsConsumeEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 10 * 20), 0.80f))
-                        .consumeEffect(new ApplyEffectsConsumeEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 10 * 20), 0.60f))
-                        .consumeEffect(new ApplyEffectsConsumeEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 10 * 20, 1), 0.30f))
-                        .consumeEffect(new ApplyEffectsConsumeEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 10 * 20), 0.60f))
+    public FailedDrinkItem(Item.Properties settings) {
+        super(settings.food(new FoodProperties.Builder().alwaysEdible().saturationModifier(-0.2f).build(),
+                Consumable.builder()
+                        .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.HUNGER, 30 * 20), 0.95f))
+                        .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.NAUSEA, 10 * 20), 0.80f))
+                        .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.SLOWNESS, 10 * 20), 0.60f))
+                        .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.SLOWNESS, 10 * 20, 1), 0.30f))
+                        .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.WEAKNESS, 10 * 20), 0.60f))
                         .consumeSeconds(32 / 20f * 3)
-                        .consumeParticles(true)
-                        .useAction(UseAction.DRINK)
+                        .hasConsumeParticles(true)
+                        .animation(ItemUseAnimation.DRINK)
                         .build()
         ));
     }
 
     @Override
-    public ItemStack finishUsing(ItemStack stack, World world, LivingEntity user) {
-        if (!user.isInCreativeMode()) {
+    public ItemStack finishUsingItem(ItemStack stack, Level world, LivingEntity user) {
+        if (!user.hasInfiniteMaterials()) {
             var cookingData = stack.get(BrewComponents.COOKING_DATA);
             if (cookingData != null) {
-                user.giveOrDropStack(cookingData.container().copy());
+                user.handleExtraItemsCreatedOnUse(cookingData.container().copy());
             }
         }
-        return super.finishUsing(stack, world, user);
+        return super.finishUsingItem(stack, world, user);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class FailedDrinkItem extends Item implements PolymerItem {
             return visuals.resourcePackModel().isPresent() && PolymerResourcePackUtils.hasMainPack(context) ? visuals.resourcePackModel().get() : visuals.defaultModel();
         }
 
-        return Items.POTION.getComponents().get(DataComponentTypes.ITEM_MODEL);
+        return Items.POTION.components().get(DataComponents.ITEM_MODEL);
     }
 
 
@@ -76,10 +76,10 @@ public class FailedDrinkItem extends Item implements PolymerItem {
     public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context) {
         var type = DrinkUtils.getType(stack);
         var color = type != null ? type.failedColor() : 0x051a0a;
-        out.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),
+        out.set(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(),
                 Optional.of(color), List.of(), Optional.empty()));
 
-        out.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(
+        out.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(
                 FloatList.of(0, (float) DrinkUtils.getAgeInSeconds(stack), (float) DrinkUtils.getCookingAgeInSeconds(stack), DrinkUtils.getDistillationCount(stack)),
                 BooleanList.of(false, false),
                 List.of(type != null ? DrinkUtils.getTypeId(stack).toString() : "", DrinkUtils.getBarrelType(stack), "failed_drink"),

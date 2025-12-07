@@ -1,31 +1,24 @@
 package eu.pb4.brewery.mixin.datafixer;
 
-import com.llamalad7.mixinextras.sugar.Local;
-import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.templates.TypeTemplate;
-import com.mojang.datafixers.util.Pair;
-import net.minecraft.datafixer.TypeReferences;
-import net.minecraft.datafixer.schema.Schema1460;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import net.minecraft.util.datafix.schemas.V1460;
 
-@Mixin(Schema1460.class)
-public abstract class Schema1460Mixin extends Schema {
+@Mixin(V1460.class)
+public abstract class V1460Mixin extends Schema {
     @Shadow
     protected static void registerInventory(Schema schema, Map<String, Supplier<TypeTemplate>> map, String name) {}
 
-    public Schema1460Mixin(int versionKey, Schema parent) {
+    public V1460Mixin(int versionKey, Schema parent) {
         super(versionKey, parent);
     }
 

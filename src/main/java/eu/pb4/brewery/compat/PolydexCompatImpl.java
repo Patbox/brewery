@@ -8,19 +8,19 @@ import eu.pb4.brewery.item.BrewItems;
 
 import eu.pb4.polydex.api.v1.recipe.*;
 import eu.pb4.sgui.api.elements.*;
-import net.minecraft.block.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.Ingredient;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FontDescription;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Style;
-import net.minecraft.text.StyleSpriteSource;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -41,14 +41,14 @@ public class PolydexCompatImpl {
         var type = DrinkUtils.getType(stack);
 
         if (type != null) {
-            return PolydexEntry.of(id("drink_bottle/" + BreweryInit.DRINK_TYPE_ID.get(type).toUnderscoreSeparatedString()), stack, PolydexCompatImpl::isPartOf);
+            return PolydexEntry.of(id("drink_bottle/" + BreweryInit.DRINK_TYPE_ID.get(type).toDebugFileName()), stack, PolydexCompatImpl::isPartOf);
         }
         return PolydexEntry.of(stack);
     }
 
     private static boolean isPartOf(PolydexEntry entry, PolydexStack<?> polydexStack) {
         if (polydexStack.getBacking() instanceof ItemStack checked && entry.stack().getBacking() instanceof ItemStack base) {
-            return DrinkUtils.getType(checked) == DrinkUtils.getType(base) && checked.isOf(base.getItem());
+            return DrinkUtils.getType(checked) == DrinkUtils.getType(base) && checked.is(base.getItem());
         }
         return false;
     }
@@ -60,17 +60,17 @@ public class PolydexCompatImpl {
     }
 
     public static class BrewingPage implements PolydexPage {
-        private static final Text TEXTURE = Text.literal("0").setStyle(Style.EMPTY.withFont(new StyleSpriteSource.Font(id("gui"))));
+        private static final Component TEXTURE = Component.literal("0").setStyle(Style.EMPTY.withFont(new FontDescription.Resource(id("gui"))));
 
-        public static final ItemStack ICON = new GuiElementBuilder(Items.BARREL).setName(Text.translatable("polydex.brewery.brewing_recipe")).asStack();
-        public static final ItemStack INGREDIENTS = new GuiElementBuilder(Items.CAULDRON).setName(Text.translatable("polydex.brewery.ingredients").formatted(Formatting.GOLD)).asStack();
-        public static final ItemStack REQUIRE_DISTILLATION = new GuiElementBuilder(Items.BREWING_STAND).setName(Text.translatable("polydex.brewery.require_distillation").formatted(Formatting.YELLOW)).asStack();
+        public static final ItemStack ICON = new GuiElementBuilder(Items.BARREL).setName(Component.translatable("polydex.brewery.brewing_recipe")).asStack();
+        public static final ItemStack INGREDIENTS = new GuiElementBuilder(Items.CAULDRON).setName(Component.translatable("polydex.brewery.ingredients").withStyle(ChatFormatting.GOLD)).asStack();
+        public static final ItemStack REQUIRE_DISTILLATION = new GuiElementBuilder(Items.BREWING_STAND).setName(Component.translatable("polydex.brewery.require_distillation").withStyle(ChatFormatting.YELLOW)).asStack();
         public static final ItemStack[] ANY_BARREL;
 
         static {
             var stacks = new ArrayList<ItemStack>();
             var e = new GuiElementBuilder();
-            e.setName(Text.translatable("polydex.brewery.any_barrel").formatted(Formatting.YELLOW));
+            e.setName(Component.translatable("polydex.brewery.any_barrel").withStyle(ChatFormatting.YELLOW));
             for (var barrel : BrewBlocks.BARREL_MATERIALS) {
                 e.setItem(barrel.planks().asItem());
                 stacks.add(e.asStack());
@@ -85,18 +85,18 @@ public class PolydexCompatImpl {
         private final Identifier typeId;
 
         public BrewingPage(Identifier identifier, DrinkType type) {
-            this.identifier = identifier.withPrefixedPath("brewery_drink/");
+            this.identifier = identifier.withPrefix("brewery_drink/");
             this.typeId = identifier;
             this.type = type;
             List<PolydexIngredient<?>> list = new ArrayList<>();
             for (DrinkType.BrewIngredient x : type.ingredients()) {
-                list.add(PolydexIngredient.of(Ingredient.ofItems(x.items().toArray(new ItemConvertible[0])), x.count()));
+                list.add(PolydexIngredient.of(Ingredient.of(x.items().toArray(new ItemLike[0])), x.count()));
             }
             this.ingredients = list;
         }
 
         @Override
-        public @Nullable Text texture(ServerPlayerEntity player) {
+        public @Nullable Component texture(ServerPlayer player) {
             return TEXTURE;
         }
 
@@ -106,17 +106,17 @@ public class PolydexCompatImpl {
         }
 
         @Override
-        public ItemStack typeIcon(ServerPlayerEntity serverPlayerEntity) {
+        public ItemStack typeIcon(ServerPlayer serverPlayerEntity) {
             return ICON;
         }
 
         @Override
-        public ItemStack entryIcon(@Nullable PolydexEntry polydexEntry, ServerPlayerEntity serverPlayerEntity) {
+        public ItemStack entryIcon(@Nullable PolydexEntry polydexEntry, ServerPlayer serverPlayerEntity) {
             return DrinkUtils.createDrink(this.typeId, 0, 10, this.type.distillationRuns(), Blocks.AIR);
         }
 
         @Override
-        public void createPage(@Nullable PolydexEntry polydexEntry, ServerPlayerEntity serverPlayerEntity, PageBuilder layer) {
+        public void createPage(@Nullable PolydexEntry polydexEntry, ServerPlayer serverPlayerEntity, PageBuilder layer) {
             int i = 0;
 
             layer.set(4,0, INGREDIENTS);
@@ -150,20 +150,20 @@ public class PolydexCompatImpl {
                     var material = BrewBlocks.BARREL_MATERIAL_MAP.get(data.type());
 
                     element = new ItemStack[] {
-                            new GuiElementBuilder(material.planks().asItem()).setName(Text.translatable("container.brewery." + material.type().toString().replace("minecraft:", "") + "_barrel").formatted(Formatting.YELLOW)).asStack()
+                            new GuiElementBuilder(material.planks().asItem()).setName(Component.translatable("container.brewery." + material.type().toString().replace("minecraft:", "") + "_barrel").withStyle(ChatFormatting.YELLOW)).asStack()
                     };
                 } else {
-                    var lore = new ArrayList<Text>();
+                    var lore = new ArrayList<Component>();
                     var item = new ArrayList<Item>();
 
                     for (var data : type.barrelInfo()) {
                         var material = BrewBlocks.BARREL_MATERIAL_MAP.get(data.type());
                         item.add(material.planks().asItem());
-                        lore.add(Text.translatable("container.brewery." + material.type() + "_barrel"));
+                        lore.add(Component.translatable("container.brewery." + material.type() + "_barrel"));
                     }
                     var b = new GuiElementBuilder();
                     b.setLore(lore);
-                    b.setName(Text.translatable("polydex.brewery.one_of_barrel").formatted(Formatting.YELLOW));
+                    b.setName(Component.translatable("polydex.brewery.one_of_barrel").withStyle(ChatFormatting.YELLOW));
 
                     var list = new ArrayList<ItemStack>();
                     for (var a : item) {

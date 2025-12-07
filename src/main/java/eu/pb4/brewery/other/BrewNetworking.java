@@ -5,14 +5,12 @@ import eu.pb4.brewery.drink.DrinkType;
 import eu.pb4.polymer.networking.api.server.PolymerServerNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtInt;
+import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import java.util.function.BiConsumer;
 
 import static eu.pb4.brewery.BreweryInit.id;
@@ -23,23 +21,23 @@ public class BrewNetworking {
     public static final Identifier DEFINE_PACKET_ID = id("define");
 
 
-    public static boolean hasMod(ServerPlayNetworkHandler handler) {
-        return PolymerServerNetworking.getMetadata(handler, HELLO_PACKET_ID, NbtInt.TYPE) != null;
+    public static boolean hasMod(ServerGamePacketListenerImpl handler) {
+        return PolymerServerNetworking.getMetadata(handler, HELLO_PACKET_ID, IntTag.TYPE) != null;
     }
 
-    private static void sendInitialData(ServerPlayNetworkHandler handler, PacketSender packetSender, MinecraftServer server) {
+    private static void sendInitialData(ServerGamePacketListenerImpl handler, PacketSender packetSender, MinecraftServer server) {
         //if (hasMod(handler) && !server.isHost(handler.player.getGameProfile())) {
         //    sendHello(handler);
         //    sendData(handler);
         //}
     }
 
-    private static void sendHello(ServerPlayNetworkHandler handler) {
+    private static void sendHello(ServerGamePacketListenerImpl handler) {
         //var packet = PolymerServerNetworking.buf(PROTOCOL);
         //PolymerServerNetworking.sendDirect(handler, HELLO_PACKET_ID, packet);
     }
 
-    private static void sendData(ServerPlayNetworkHandler handler) {
+    private static void sendData(ServerGamePacketListenerImpl handler) {
         /*var packet = PolymerServerNetworking.buf(PROTOCOL);
 
         for (var entry : BreweryInit.DRINK_TYPES.entrySet()) {
@@ -59,7 +57,7 @@ public class BrewNetworking {
         PolymerServerNetworking.sendDirect(handler, DEFINE_PACKET_ID, packet);*/
     }
 
-    public static void decodeData(PacketByteBuf buf, BiConsumer<Identifier, DrinkType> consumer) {
+    public static void decodeData(FriendlyByteBuf buf, BiConsumer<Identifier, DrinkType> consumer) {
         while (buf.readBoolean()) {
             try {
                 var id = buf.readIdentifier();

@@ -18,30 +18,6 @@ import eu.pb4.sgui.api.gui.SimpleGui;
 import it.unimi.dsi.fastutil.longs.LongArraySet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.LootableContainerBlockEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventories;
-import net.minecraft.inventory.SidedInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtLongArray;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.ItemScatterer;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -50,11 +26,31 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
-public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEntity implements TickableContents, SidedInventory {
+public final class BrewBarrelSpigotBlockEntity extends RandomizableContainerBlockEntity implements TickableContents, WorldlyContainer {
     private static final int[] SLOTS = IntStream.range(0, 27).toArray();
     private final LongSet parts = new LongArraySet();
-    private DefaultedList<ItemStack> inventory;
+    private NonNullList<ItemStack> inventory;
     private long lastTicked = -1;
     private int loadedTime;
     private boolean requestUpdate;
@@ -62,10 +58,10 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
 
     public BrewBarrelSpigotBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(BrewBlockEntities.BARREL_SPIGOT, blockPos, blockState);
-        this.inventory = DefaultedList.ofSize(27, ItemStack.EMPTY);
+        this.inventory = NonNullList.withSize(27, ItemStack.EMPTY);
     }
 
-    public static <T extends BlockEntity> void ticker(World world, BlockPos pos, BlockState state, T t) {
+    public static <T extends BlockEntity> void ticker(Level world, BlockPos pos, BlockState state, T t) {
         if (!(t instanceof BrewBarrelSpigotBlockEntity)) {
             return;
         }
@@ -74,7 +70,7 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
 
         barrel.loadedTime++;
 
-        if (barrel.requestUpdate && world.getTime() % 20 == 0) {
+        if (barrel.requestUpdate && world.getGameTime() % 20 == 0) {
             barrel.updateAges();
         }
     }
@@ -84,59 +80,59 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
     }
 
     public void updateAges() {
-        var currentTime = world.getTime();
+        var currentTime = level.getGameTime();
 
 
         if (this.lastTicked == -1) {
-            this.lastTicked = world.getTime();
+            this.lastTicked = level.getGameTime();
             return;
         }
 
-        var agingMultiplier = ((ServerWorld) world).getGameRules().getValue(BrewGameRules.BARREL_AGING_MULTIPLIER);
+        var agingMultiplier = ((ServerLevel) level).getGameRules().get(BrewGameRules.BARREL_AGING_MULTIPLIER);
 
-        this.tickContents(((ServerWorld) world).getGameRules().getValue(BrewGameRules.AGE_UNLOADED) ? (currentTime - this.lastTicked) * agingMultiplier : this.loadedTime * agingMultiplier);
+        this.tickContents(((ServerLevel) level).getGameRules().get(BrewGameRules.AGE_UNLOADED) ? (currentTime - this.lastTicked) * agingMultiplier : this.loadedTime * agingMultiplier);
 
         this.lastTicked = currentTime;
         this.loadedTime = 0;
         this.requestUpdate = false;
     }
 
-    protected void writeData(WriteView view) {
-        super.writeData(view);
-        if (!this.writeLootTable(view)) {
-            Inventories.writeData(view, this.inventory);
+    protected void saveAdditional(ValueOutput view) {
+        super.saveAdditional(view);
+        if (!this.trySaveLootTable(view)) {
+            ContainerHelper.saveAllItems(view, this.inventory);
         }
 
-        view.put("Parts", Codec.LONG_STREAM, Arrays.stream(this.parts.toLongArray()));
+        view.store("Parts", Codec.LONG_STREAM, Arrays.stream(this.parts.toLongArray()));
         view.putString("BarrelType", this.material.type().toString());
         view.putLong("LastTicked", this.lastTicked);
     }
 
-    public void readData(ReadView view) {
-        super.readData(view);
-        this.inventory = DefaultedList.ofSize(this.size(), ItemStack.EMPTY);
-        if (!this.readLootTable(view)) {
-            Inventories.readData(view, this.inventory);
+    public void loadAdditional(ValueInput view) {
+        super.loadAdditional(view);
+        this.inventory = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+        if (!this.tryLoadLootTable(view)) {
+            ContainerHelper.loadAllItems(view, this.inventory);
         }
 
         this.parts.clear();
         view.read("Parts", Codec.LONG_STREAM).orElse(LongStream.empty()).forEach(this.parts::add);
 
-        this.material = BrewBlocks.BARREL_MATERIAL_MAP.get(Identifier.of(view.getString("BarrelType", "")));
-        this.lastTicked = view  .getLong("LastTicked", 0);
+        this.material = BrewBlocks.BARREL_MATERIAL_MAP.get(Identifier.parse(view.getStringOr("BarrelType", "")));
+        this.lastTicked = view  .getLongOr("LastTicked", 0);
     }
 
     public void tickContents(double l) {
-        for (int i = 0; i < this.size(); i++) {
-            var stack = this.getStack(i);
+        for (int i = 0; i < this.getContainerSize(); i++) {
+            var stack = this.getItem(i);
             if (!stack.isEmpty()) {
-                if (stack.isOf(BrewItems.INGREDIENT_MIXTURE) || stack.isOf(BrewItems.DRINK_ITEM)) {
+                if (stack.is(BrewItems.INGREDIENT_MIXTURE) || stack.is(BrewItems.DRINK_ITEM)) {
                     var age = DrinkUtils.getAgeInTicks(stack, 0) + l;
                     var ageSec = age / 20d;
 
                     var oldType = DrinkUtils.getType(stack);
 
-                    if (oldType == null && stack.contains(BrewComponents.BREW_DATA) && Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).type().isPresent()) {
+                    if (oldType == null && stack.has(BrewComponents.BREW_DATA) && Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).type().isPresent()) {
                         continue;
                     }
 
@@ -144,7 +140,7 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
                     var types = DrinkUtils.findTypes(ingredients, this.material.type(), DrinkUtils.getHeatSource(stack), DrinkUtils.getContainer(stack));
 
                     if (types.isEmpty() && oldType == null) {
-                        this.setStack(i, stack.copyComponentsToNewStack(BrewItems.FAILED_DRINK_ITEM, stack.getCount()));
+                        this.setItem(i, stack.transmuteCopy(BrewItems.FAILED_DRINK_ITEM, stack.getCount()));
                     } else {
                         double quality = -1;
                         DrinkType match = null;
@@ -172,15 +168,15 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
                         }
 
                         if (match == null) {
-                            stack.apply(BrewComponents.BREW_DATA, BrewData.DEFAULT, x -> x.withAge(age));
+                            stack.update(BrewComponents.BREW_DATA, BrewData.DEFAULT, x -> x.withAge(age));
                         } else if (quality < 0) {
-                            this.setStack(i, stack.copyComponentsToNewStack(BrewItems.FAILED_DRINK_ITEM, stack.getCount()));
+                            this.setItem(i, stack.transmuteCopy(BrewItems.FAILED_DRINK_ITEM, stack.getCount()));
                         } else {
-                            if (stack.isOf(BrewItems.INGREDIENT_MIXTURE)) {
+                            if (stack.is(BrewItems.INGREDIENT_MIXTURE)) {
                                 var nStack = new ItemStack(BrewItems.DRINK_ITEM);
                                 nStack.set(BrewComponents.COOKING_DATA, stack.get(BrewComponents.COOKING_DATA));
                                 stack = nStack;
-                                this.setStack(i, stack);
+                                this.setItem(i, stack);
                             }
                             var barrelInfo = match.getBarrelInfo(this.material.type());
 
@@ -190,7 +186,7 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
                                 if (quality * mult >= 0) {
                                     stack.set(BrewComponents.BREW_DATA, new BrewData(Optional.of(BreweryInit.DRINK_TYPE_ID.get(match)), Math.min(quality * mult, 10), this.material.type().toString(), 0, age));
                                 } else {
-                                    this.setStack(i, stack.copyComponentsToNewStack(BrewItems.FAILED_DRINK_ITEM, stack.getCount()));
+                                    this.setItem(i, stack.transmuteCopy(BrewItems.FAILED_DRINK_ITEM, stack.getCount()));
                                 }
                             }
                         }
@@ -201,33 +197,33 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
     }
 
     @Override
-    protected Text getContainerName() {
+    protected Component getDefaultName() {
         return this.material.name();
     }
 
     @Override
-    protected ScreenHandler createScreenHandler(int syncId, PlayerInventory playerInventory) {
+    protected AbstractContainerMenu createMenu(int syncId, Inventory playerInventory) {
         return null;
     }
 
     @Override
-    protected DefaultedList<ItemStack> getHeldStacks() {
+    protected NonNullList<ItemStack> getItems() {
         return this.inventory;
     }
 
     @Override
-    protected void setHeldStacks(DefaultedList<ItemStack> inventory) {
+    protected void setItems(NonNullList<ItemStack> inventory) {
         this.inventory = inventory;
     }
 
     @Override
-    public int size() {
+    public int getContainerSize() {
         return 27;
     }
 
     public void addPart(BlockPos pos) {
         this.parts.add(pos.asLong());
-        this.markDirty();
+        this.setChanged();
     }
 
     public LongSet getParts() {
@@ -235,22 +231,22 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
     }
 
     @Override
-    public void onBlockReplaced(BlockPos pos, BlockState oldState) {
-        super.onBlockReplaced(pos, oldState);
+    public void preRemoveSideEffects(BlockPos pos, BlockState oldState) {
+        super.preRemoveSideEffects(pos, oldState);
 
-        if (this.world != null) {
+        if (this.level != null) {
             for (var part : this.iterableParts()) {
-                var partState = world.getBlockState(part);
+                var partState = level.getBlockState(part);
 
                 if (partState.getBlock() instanceof BrewBarrelPartBlock block) {
-                    world.setBlockState(part, partState.get(BrewBarrelPartBlock.SHAPE).state.apply(block.barrelMaterial));
+                    level.setBlockAndUpdate(part, partState.getValue(BrewBarrelPartBlock.SHAPE).state.apply(block.barrelMaterial));
                 }
             }
         }
     }
 
-    public Iterable<BlockPos.Mutable> iterableParts() {
-        var pos = new BlockPos.Mutable();
+    public Iterable<BlockPos.MutableBlockPos> iterableParts() {
+        var pos = new BlockPos.MutableBlockPos();
         return () -> new java.util.Iterator<>() {
             final LongIterator iter = BrewBarrelSpigotBlockEntity.this.parts.iterator();
 
@@ -260,9 +256,9 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
             }
 
             @Override
-            public BlockPos.Mutable next() {
+            public BlockPos.MutableBlockPos next() {
                 var val = iter.nextLong();
-                return pos.set(BlockPos.unpackLongX(val), BlockPos.unpackLongY(val), BlockPos.unpackLongZ(val));
+                return pos.set(BlockPos.getX(val), BlockPos.getY(val), BlockPos.getZ(val));
             }
         };
     }
@@ -271,57 +267,57 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
         this.material = material;
     }
 
-    public void openGui(ServerPlayerEntity player) {
+    public void openGui(ServerPlayer player) {
         this.updateAges();
         new Gui(player);
     }
 
     @Override
-    public int[] getAvailableSlots(Direction side) {
+    public int[] getSlotsForFace(Direction side) {
         return SLOTS;
     }
 
     @Override
-    public boolean canInsert(int slot, ItemStack stack, @Nullable Direction dir) {
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction dir) {
         return canInsert(stack);
     }
 
     public boolean canInsert(ItemStack stack) {
-        if (stack.isOf(BrewItems.DRINK_ITEM)) {
+        if (stack.is(BrewItems.DRINK_ITEM)) {
 
             var type = DrinkUtils.getType(stack);
             var barrelType = DrinkUtils.getBarrelType(stack);
             return type != null && !type.barrelInfo().isEmpty() &&
                     (barrelType.isEmpty() || barrelType.equals(this.material.type()) || DrinkUtils.getAgeInTicks(stack) <= 0);
         } else {
-            return stack.isOf(BrewItems.INGREDIENT_MIXTURE);
+            return stack.is(BrewItems.INGREDIENT_MIXTURE);
         }
     }
 
     @Override
-    public boolean canExtract(int slot, ItemStack stack, Direction dir) {
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction dir) {
         return true;
     }
 
     private class Gui extends SimpleGui {
-        public Gui(ServerPlayerEntity player) {
-            super(ScreenHandlerType.GENERIC_9X3, player, false);
+        public Gui(ServerPlayer player) {
+            super(MenuType.GENERIC_9x3, player, false);
             this.setTitle(BrewBarrelSpigotBlockEntity.this.getDisplayName());
 
-            for (int i = 0; i < BrewBarrelSpigotBlockEntity.this.size(); i++) {
+            for (int i = 0; i < BrewBarrelSpigotBlockEntity.this.getContainerSize(); i++) {
                 this.setSlotRedirect(i, new Slot(BrewBarrelSpigotBlockEntity.this, i, 0, 0) {
                     @Override
-                    public boolean canInsert(ItemStack stack) {
+                    public boolean mayPlace(ItemStack stack) {
                         return BrewBarrelSpigotBlockEntity.this.canInsert(stack);
                     }
 
                     @Override
-                    public int getMaxItemCount() {
+                    public int getMaxStackSize() {
                         return 1;
                     }
 
                     @Override
-                    public int getMaxItemCount(ItemStack stack) {
+                    public int getMaxStackSize(ItemStack stack) {
                         return 1;
                     }
                 });
@@ -333,7 +329,7 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
         @Override
         public void onTick() {
             if (BrewBarrelSpigotBlockEntity.this.isRemoved()
-                    || BrewBarrelSpigotBlockEntity.this.getPos().getSquaredDistanceFromCenter(this.player.getX(), this.player.getY(), this.player.getZ()) > 20 * 20) {
+                    || BrewBarrelSpigotBlockEntity.this.getBlockPos().distToCenterSqr(this.player.getX(), this.player.getY(), this.player.getZ()) > 20 * 20) {
                 this.close();
             }
 

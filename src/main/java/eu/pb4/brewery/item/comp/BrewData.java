@@ -2,9 +2,8 @@ package eu.pb4.brewery.item.comp;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.Identifier;
-
 import java.util.Optional;
+import net.minecraft.resources.Identifier;
 
 public record BrewData(Optional<Identifier> type, double quality, String barrelType, int distillations, double age) {
     public static final Codec<BrewData> CODEC = RecordCodecBuilder.create(instance -> instance.group(

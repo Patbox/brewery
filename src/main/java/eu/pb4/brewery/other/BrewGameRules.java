@@ -2,17 +2,17 @@ package eu.pb4.brewery.other;
 
 import net.fabricmc.fabric.api.gamerule.v1.CustomGameRuleCategory;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleBuilder;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.rule.GameRule;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.gamerules.GameRule;
 
 import static eu.pb4.brewery.BreweryInit.id;
 
 public class BrewGameRules {
-    public static CustomGameRuleCategory CATEGORY = new CustomGameRuleCategory(id("gamerules"), Text.literal("Brewery").formatted(Formatting.YELLOW, Formatting.BOLD));
+    public static CustomGameRuleCategory CATEGORY = new CustomGameRuleCategory(id("gamerules"), Component.literal("Brewery").withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD));
 
     public static GameRule<Boolean> AGE_UNLOADED = register(
             id("aging_unloaded"), GameRuleBuilder.forBoolean(true)
@@ -39,7 +39,7 @@ public class BrewGameRules {
     );
 
     private static <T> GameRule<T> register(Identifier identifier, GameRuleBuilder<T> t) {
-        return Registry.register(Registries.GAME_RULE, identifier, t.category(CATEGORY).build());
+        return Registry.register(BuiltInRegistries.GAME_RULE, identifier, t.category(CATEGORY).build());
     }
 
     public static void register() {
