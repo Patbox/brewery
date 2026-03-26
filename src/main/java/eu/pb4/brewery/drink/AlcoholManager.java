@@ -56,7 +56,7 @@ public final class AlcoholManager {
         }
     }
 
-    public static AlcoholManager of(LivingEntity entity) {
+    public static AlcoholManager of(@Nullable LivingEntity entity) {
         return entity != null ? ((LivingEntityExt) entity).brewery$getAlcoholManager() : FALLBACK;
     }
 

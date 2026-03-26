@@ -30,7 +30,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 
 import java.util.*;
 import java.util.function.Function;
@@ -68,7 +68,7 @@ public final class BrewBarrelPartBlock extends Block implements PolymerBlock, En
             world.playSound(null,
                     barrelBlock.getBlockPos().getX() + 0.5,
                     barrelBlock.getBlockPos().getY() + 0.5,
-                    barrelBlock.getBlockPos().getZ() + 0.5, SoundEvents.BARREL_OPEN, SoundSource.BLOCKS, 0.5F, world.random.nextFloat() * 0.1F + 0.9F);
+                    barrelBlock.getBlockPos().getZ() + 0.5, SoundEvents.BARREL_OPEN, SoundSource.BLOCKS, 0.5F, world.getRandom().nextFloat() * 0.1F + 0.9F);
             return InteractionResult.SUCCESS_SERVER;
         }
         return InteractionResult.PASS;

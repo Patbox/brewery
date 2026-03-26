@@ -1,14 +1,13 @@
 plugins {
-	id 'fabric-loom' version '1.13.+'
+	id 'net.fabricmc.fabric-loom' version '1.15.+'
 	id 'maven-publish'
 	id "com.modrinth.minotaur" version "2.+"
 	id 'com.matthewprenger.cursegradle' version '1.4.0'
 }
 
-sourceCompatibility = JavaVersion.VERSION_21
-targetCompatibility = JavaVersion.VERSION_21
-
-archivesBaseName = project.archives_base_name
+base {
+	archivesName = project.archives_base_name
+}
 version = project.mod_version + "+" + project.minecraft_version
 group = project.maven_group
 
@@ -40,25 +39,24 @@ loom {
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	modImplementation include('xyz.nucleoid:server-translations-api:2.5.2+1.21.9-pre3')
-	modImplementation include("eu.pb4:sgui:1.11.0+1.21.9")
-	modImplementation include("eu.pb4:placeholder-api:2.8.0+1.21.9")
-	modImplementation include("me.lucko:fabric-permissions-api:0.6.0-patbox")
-	//modImplementation include('xyz.nucleoid:more-codecs:0.2.2+1.18')
-	modImplementation 'eu.pb4:polymer-core:0.15.0-beta.4+1.21.11-rc2'
-	modImplementation 'eu.pb4:polymer-resource-pack:0.15.0-beta.4+1.21.11-rc2'
-	modImplementation 'eu.pb4:polymer-virtual-entity:0.15.0-beta.4+1.21.11-rc2'
+	implementation include('xyz.nucleoid:server-translations-api:3.0.1+26.1')
+	implementation 'eu.pb4:polymer-core:0.16.0-pre.2+26.1-rc-2'
+	implementation 'eu.pb4:polymer-virtual-entity:0.16.0-pre.2+26.1-rc-2'
+	implementation 'eu.pb4:polymer-resource-pack:0.16.0-pre.2+26.1-rc-2'
+	localRuntime 'eu.pb4:polymer-autohost:0.16.0-pre.2+26.1-rc-2'
+	implementation include("eu.pb4:sgui:2.0.0-beta.2+26.1")
+	implementation include("eu.pb4:placeholder-api:3.0.0-beta.2+26.1")
 
+	implementation include("me.lucko:fabric-permissions-api:0.7.0")
 	implementation include("net.objecthunter:exp4j:0.4.8")
 
 
-	modCompileOnly "maven.modrinth:polydex:1.5.0+1.21.5-rc2"
+	compileOnly "eu.pb4:polydex:1.9.2+26.1-rc-3"
 
 	// Uncomment the following line to enable the deprecated Fabric API modules. 
 	// These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
@@ -76,7 +74,7 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	// Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
-	it.options.release = 21
+	it.options.release = 25
 }
 
 java {
@@ -88,7 +86,7 @@ java {
 
 jar {
 	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}"}
+		rename { "${it}_${project.archives_base_name}"}
 	}
 
 	from("src/main/resources/data/brewery/lang") {
@@ -127,11 +125,10 @@ curseforge {
 			relations {
 				requiredDependency 'polymer'
 			}
-			//addGameVersion "Quilt"
-			mainArtifact(remapJar)
+			mainArtifact(jar.archiveFile)
 
 			afterEvaluate {
-				uploadTask.dependsOn("remapJar")
+				uploadTask.dependsOn("jar")
 			}
 		}
 	}
@@ -139,7 +136,7 @@ curseforge {
 	options {
 		forgeGradleIntegration = false
 	}
-	remapJar {
+	jar {
 		finalizedBy project.tasks.curseforge
 	}
 }
@@ -150,17 +147,17 @@ if (System.getenv("MODRINTH")) {
 		projectId = 'nr7cSJlY'// The ID of your modrinth project, slugs will not work.
 		versionNumber = "" + version // The version of the mod to upload.
 		versionType = "release"
-		uploadFile = remapJar // This links to a task that builds your mod jar and sets "uploadFile" to the mod jar.
+		uploadFile = jar // This links to a task that builds your mod jar and sets "uploadFile" to the mod jar.
 		gameVersions = [((String) project.minecraft_version)]
 		changelog = System.getenv("CHANGELOG")
 		dependencies {
 			required.project "polymer"
 		}
 
-		loaders = ["fabric", "quilt"]
+		loaders = ["fabric"]
 	}
 
-	remapJar {
+	jar {
 		finalizedBy project.tasks.modrinth
 	}
 }

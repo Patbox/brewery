@@ -305,7 +305,7 @@ public final class BrewBarrelSpigotBlockEntity extends RandomizableContainerBloc
             this.setTitle(BrewBarrelSpigotBlockEntity.this.getDisplayName());
 
             for (int i = 0; i < BrewBarrelSpigotBlockEntity.this.getContainerSize(); i++) {
-                this.setSlotRedirect(i, new Slot(BrewBarrelSpigotBlockEntity.this, i, 0, 0) {
+                this.setSlot(i, new Slot(BrewBarrelSpigotBlockEntity.this, i, 0, 0) {
                     @Override
                     public boolean mayPlace(ItemStack stack) {
                         return BrewBarrelSpigotBlockEntity.this.canInsert(stack);

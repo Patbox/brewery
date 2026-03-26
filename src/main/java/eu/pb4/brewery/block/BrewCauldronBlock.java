@@ -31,7 +31,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 
 public class BrewCauldronBlock extends BaseEntityBlock implements PolymerBlock {
     public static final TagKey<Item> START_CAULDRON_COOKING = TagKey.create(Registries.ITEM, BreweryInit.id("start_cauldron_cooking"));

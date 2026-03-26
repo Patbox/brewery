@@ -12,10 +12,13 @@ import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.TextDisplayElement;
+import net.minecraft.world.item.ItemStackTemplate;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -75,9 +78,9 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
                 cauldron.timeCooking += world1.getGameRules().get(BrewGameRules.AGE_UNLOADED) ? (currentTime - cauldron.lastTicked) : 1;
 
                 world1.sendParticles(ParticleTypes.BUBBLE_POP,
-                        0.4 * world.random.nextFloat(),
+                        0.4 * world.getRandom().nextFloat(),
                         (6.0D + (double)state.getValue(LayeredCauldronBlock.LEVEL) * 3.0D) / 16.0D,
-                        0.4 * world.random.nextFloat(),
+                        0.4 * world.getRandom().nextFloat(),
                 0, 0, 0, 0, 0);
 
                 if (cauldron.timeCooking % 20 == 0) {
@@ -183,12 +186,12 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
                     }
                 }
 
-                var stacks = new ArrayList<ItemStack>();
+                var stacks = new ArrayList<ItemStackTemplate>();
                 for (var st : this.inventory) {
-                    stacks.add(st.copy());
+                    stacks.add(ItemStackTemplate.fromNonEmptyStack(st));
                 }
 
-                var cookingData = new CookingData(age, stacks, heatSource, container);
+                var cookingData = new CookingData(age, stacks, heatSource, container.isEmpty() ? Optional.empty() : Optional.of(ItemStackTemplate.fromNonEmptyStack(container)));
                 if (match == null || quality < 0) {
                     var out = new ItemStack(BrewItems.INGREDIENT_MIXTURE);
                     out.set(BrewComponents.COOKING_DATA, cookingData);

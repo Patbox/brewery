@@ -8,8 +8,10 @@ import eu.pb4.polymer.core.api.item.PolymerItem;
 import it.unimi.dsi.fastutil.booleans.BooleanList;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.world.item.*;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 
 import java.util.List;
 import java.util.Objects;
@@ -19,10 +21,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.component.TooltipDisplay;
@@ -34,7 +32,7 @@ public class IngredientMixtureItem extends Item implements PolymerItem {
 
     public static List<ItemStack> getIngredients(ItemStack stack) {
         if (stack.has(BrewComponents.COOKING_DATA)) {
-            return Objects.requireNonNull(stack.get(BrewComponents.COOKING_DATA)).ingredients();
+            return Objects.requireNonNull(stack.get(BrewComponents.COOKING_DATA)).ingredients().stream().map(ItemStackTemplate::create).toList();
         }
         return List.of();
     }
@@ -66,7 +64,7 @@ public class IngredientMixtureItem extends Item implements PolymerItem {
     }
 
     @Override
-    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context) {
+    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
         var model = BreweryInit.CONTAINER_TO_INGMIX_MODEL.get(DrinkUtils.getContainer(stack).getItem());
         if (model != null) {
             return model;
@@ -76,7 +74,7 @@ public class IngredientMixtureItem extends Item implements PolymerItem {
     }
 
     @Override
-    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context) {
+    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
         out.set(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(),
                 Optional.of(3694022), List.of(), Optional.empty()));
 

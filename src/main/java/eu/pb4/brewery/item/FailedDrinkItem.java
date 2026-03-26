@@ -6,8 +6,10 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import it.unimi.dsi.fastutil.booleans.BooleanList;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.world.item.*;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,10 +19,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUseAnimation;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.CustomModelData;
@@ -48,7 +46,7 @@ public class FailedDrinkItem extends Item implements PolymerItem {
         if (!user.hasInfiniteMaterials()) {
             var cookingData = stack.get(BrewComponents.COOKING_DATA);
             if (cookingData != null) {
-                user.handleExtraItemsCreatedOnUse(cookingData.container().copy());
+                user.handleExtraItemsCreatedOnUse(cookingData.container().map(ItemStackTemplate::create).orElse(ItemStack.EMPTY));
             }
         }
         return super.finishUsingItem(stack, world, user);
@@ -60,7 +58,7 @@ public class FailedDrinkItem extends Item implements PolymerItem {
     }
 
     @Override
-    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context) {
+    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
         var type = DrinkUtils.getType(stack);
 
         if (type != null) {
@@ -73,7 +71,7 @@ public class FailedDrinkItem extends Item implements PolymerItem {
 
 
     @Override
-    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context) {
+    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
         var type = DrinkUtils.getType(stack);
         var color = type != null ? type.failedColor() : 0x051a0a;
         out.set(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(),

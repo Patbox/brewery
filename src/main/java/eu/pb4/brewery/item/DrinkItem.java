@@ -7,13 +7,16 @@ import eu.pb4.brewery.drink.ExpressionUtil;
 import eu.pb4.brewery.item.comp.BrewData;
 import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.brewery.other.BrewUtils;
+import eu.pb4.polymer.common.api.PolymerCommonUtils;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import it.unimi.dsi.fastutil.booleans.BooleanList;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -22,11 +25,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUseAnimation;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.CustomModelData;
@@ -34,7 +33,6 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 import java.util.Optional;
@@ -108,11 +106,11 @@ public class DrinkItem extends Item implements PolymerItem {
         if (playerEntity == null || !playerEntity.isCreative()) {
             if (cookingData != null) {
                 if (stack.isEmpty()) {
-                    return cookingData.container().copy();
+                    return cookingData.container().map(ItemStackTemplate::create).orElse(ItemStack.EMPTY);
                 }
 
                 if (playerEntity != null) {
-                    playerEntity.getInventory().add(cookingData.container().copy());
+                    playerEntity.getInventory().add(cookingData.container().map(ItemStackTemplate::create).orElse(ItemStack.EMPTY));
                 }
             }
         }
@@ -203,7 +201,7 @@ public class DrinkItem extends Item implements PolymerItem {
     }
 
     @Override
-    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context) {
+    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
         var type = DrinkUtils.getType(stack);
 
         if (type != null) {
@@ -222,7 +220,7 @@ public class DrinkItem extends Item implements PolymerItem {
                     IntList.of(color, color)
             ));
 
-            out.set(DataComponents.CONSUMABLE, new Consumable((float) type.drinkingTime(stack, context.getPlayer()), visual.animation(), visual.soundEvent(), visual.particles(), List.of()));
+            out.set(DataComponents.CONSUMABLE, new Consumable((float) type.drinkingTime(stack, PolymerCommonUtils.getPlayer(context)), visual.animation(), visual.soundEvent(), visual.particles(), List.of()));
         } else {
             out.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(
                     FloatList.of((float) DrinkUtils.getQuality(stack), (float) DrinkUtils.getAgeInSeconds(stack), (float) DrinkUtils.getCookingAgeInSeconds(stack), DrinkUtils.getDistillationCount(stack)),
@@ -234,7 +232,7 @@ public class DrinkItem extends Item implements PolymerItem {
     }
 
     @Override
-    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context) {
+    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider provider) {
         var type = DrinkUtils.getType(stack);
 
         if (type != null) {

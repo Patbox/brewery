@@ -10,6 +10,7 @@ import eu.pb4.sgui.api.gui.BookGui;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.metadata.Person;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ClickEvent;
@@ -32,7 +33,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 
 import java.util.*;
 
@@ -57,7 +58,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
     }
 
     @Override
-    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context) {
+    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
         return null;
     }
 
@@ -181,12 +182,12 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
             list.add(Component.empty());
             for (var i : type.ingredients()) {
                 if (i.items().size() == 1) {
-                    list.add(Component.literal(i.count() + " × ").append(i.items().get(0).getName()));
+                    list.add(Component.literal(i.count() + " × ").append(i.items().get(0).getName(i.items().getFirst().getDefaultInstance())));
                 } else {
                     var text = Component.translatable("polydex.brewery.any_of").append("\n");
 
                     for (var item : i.items()) {
-                        text.append(item.getName()).append("\n");
+                        text.append(item.getName(item.getDefaultInstance())).append("\n");
                     }
 
                     list.add(Component.literal(i.count() + " × ").append(Component.translatable("polydex.brewery.any_of_the_list").withStyle(ChatFormatting.ITALIC))
@@ -275,7 +276,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
                 playSoundToPlayer(this.player, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1f, 1);
                 var page = this.stack.getOrDefault(BrewComponents.BOOK_PAGE, 0);
                 this.book = indexBook;
-                this.screenHandler.broadcastChanges();
+                this.containerMenu.broadcastChanges();
                 this.setPage(page);
             } else {
                 this.close();
@@ -287,7 +288,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
             playSoundToPlayer(this.player, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1f, 1);
             if (page >= 1000 && BOOKS.size() > page - 1000) {
                 this.book = BOOKS.get(page - 1000);
-                this.screenHandler.broadcastChanges();
+                this.containerMenu.broadcastChanges();
                 super.setPage(0);
                 return;
             }

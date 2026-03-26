@@ -1,6 +1,5 @@
 package eu.pb4.brewery.other;
 
-import net.fabricmc.fabric.api.gamerule.v1.CustomGameRuleCategory;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Registry;
@@ -8,11 +7,12 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.gamerules.GameRule;
+import net.minecraft.world.level.gamerules.GameRuleCategory;
 
 import static eu.pb4.brewery.BreweryInit.id;
 
 public class BrewGameRules {
-    public static CustomGameRuleCategory CATEGORY = new CustomGameRuleCategory(id("gamerules"), Component.literal("Brewery").withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD));
+    public static GameRuleCategory CATEGORY = GameRuleCategory.register(id("gamerules")) ;
 
     public static GameRule<Boolean> AGE_UNLOADED = register(
             id("aging_unloaded"), GameRuleBuilder.forBoolean(true)

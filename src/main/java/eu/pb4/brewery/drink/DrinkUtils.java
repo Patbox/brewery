@@ -5,6 +5,7 @@ import eu.pb4.brewery.item.BrewComponents;
 import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.item.comp.BrewData;
 import eu.pb4.brewery.item.comp.CookingData;
+import net.minecraft.world.item.ItemStackTemplate;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -87,7 +88,7 @@ public class DrinkUtils {
 
     public static ItemStack getContainer(ItemStack stack) {
         if (stack.has(BrewComponents.COOKING_DATA)) {
-            return Objects.requireNonNull(stack.get(BrewComponents.COOKING_DATA)).container();
+            return Objects.requireNonNull(stack.get(BrewComponents.COOKING_DATA)).container().map(ItemStackTemplate::create).orElse(ItemStack.EMPTY);
         }
 
         return new ItemStack(Items.GLASS_BOTTLE);
@@ -132,7 +133,7 @@ public class DrinkUtils {
     }
 
     public static ItemStack createDrink(Identifier type, int age, double quality, int distillated, Block heatingSource) {
-        return createDrink(type, age, quality, distillated, new CookingData(0, List.of(), heatingSource, ItemStack.EMPTY));
+        return createDrink(type, age, quality, distillated, new CookingData(0, List.of(), heatingSource, Optional.empty()));
     }
     public static ItemStack createDrink(Identifier type, int age, double quality, int distillated, CookingData cookingData) {
         var stack = new ItemStack(BrewItems.DRINK_ITEM);

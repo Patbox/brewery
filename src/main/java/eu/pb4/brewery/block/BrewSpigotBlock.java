@@ -36,7 +36,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
-import xyz.nucleoid.packettweaker.PacketContext;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 
 public final class BrewSpigotBlock extends HorizontalDirectionalBlock implements PolymerBlock, EntityBlock, BlockWithElementHolder {
     private static final MapCodec<BrewSpigotBlock> CODEC = simpleCodec(BrewSpigotBlock::new);
@@ -114,7 +114,7 @@ public final class BrewSpigotBlock extends HorizontalDirectionalBlock implements
             world.playSound(null,
                     barrelBlock.getBlockPos().getX() + 0.5,
                     barrelBlock.getBlockPos().getY() + 0.5,
-                    barrelBlock.getBlockPos().getZ() + 0.5, SoundEvents.BARREL_OPEN, SoundSource.BLOCKS, 0.5F, world.random.nextFloat() * 0.1F + 0.9F);
+                    barrelBlock.getBlockPos().getZ() + 0.5, SoundEvents.BARREL_OPEN, SoundSource.BLOCKS, 0.5F, world.getRandom().nextFloat() * 0.1F + 0.9F);
             return InteractionResult.SUCCESS_SERVER;
         }
 

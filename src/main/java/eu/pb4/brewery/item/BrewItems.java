@@ -5,8 +5,9 @@ import eu.pb4.brewery.block.BrewBlocks;
 import eu.pb4.brewery.drink.DrinkUtils;
 import eu.pb4.brewery.item.debug.BlockTickerItem;
 import eu.pb4.polymer.core.api.item.PolymerBlockItem;
-import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
 import java.util.function.Function;
+
+import eu.pb4.polymer.core.api.item.PolymerCreativeModeTabUtils;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -55,7 +56,7 @@ public class BrewItems {
             .build();
 
     public static void register() {
-        PolymerItemGroupUtils.registerPolymerItemGroup(id("items"), ITEM_GROUP);
+        PolymerCreativeModeTabUtils.registerPolymerCreativeModeTab(id("items"), ITEM_GROUP);
     }
 
     private static <T extends Item> T register(String path, Function<Item.Properties, T> block) {

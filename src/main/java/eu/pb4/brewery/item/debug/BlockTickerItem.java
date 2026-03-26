@@ -3,6 +3,7 @@ package eu.pb4.brewery.item.debug;
 import eu.pb4.brewery.block.entity.TickableContents;
 import eu.pb4.brewery.item.BrewComponents;
 import eu.pb4.polymer.core.api.item.PolymerItem;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionResult;
@@ -11,7 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 
 public class BlockTickerItem extends Item implements PolymerItem {
     public BlockTickerItem(Properties settings) {
@@ -54,7 +55,7 @@ public class BlockTickerItem extends Item implements PolymerItem {
     }
 
     @Override
-    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context) {
+    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
         return null;
     }
 }
