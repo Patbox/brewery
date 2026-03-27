@@ -4,12 +4,14 @@
   "container.brewery.spruce_barrel": "Смерекова діжка",
   "container.brewery.jungle_barrel": "Тропічна діжка",
   "container.brewery.acacia_barrel": "Акацієва діжка",
-  "container.brewery.dark_oak_barrel": "Темного-дубова діжка",
+  "container.brewery.dark_oak_barrel": "Темно-дубова діжка",
   "container.brewery.mangrove_barrel": "Мангрова діжка",
   "container.brewery.crimson_barrel": "Багряна діжка",
-  "container.brewery.warped_barrel": "Викривлена діжка",
+  "container.brewery.warped_barrel": "Химерна діжка",
   "container.brewery.cherry_barrel": "Вишнева діжка",
   "container.brewery.bamboo_barrel": "Бамбукова діжка",
+  "container.brewery.pale_oak_barrel": "Блідо-дубова діжка",
+
   "block.brewery.barrel_spigot": "Кран",
   "block.brewery.cauldron": "Казанок для бродіння",
   "item.brewery.ingredient_mixture_specific": "Суміш інгредієнтів (%s?)",
@@ -17,6 +19,7 @@
   "item.brewery.drink_bottle": "Невизначена пляшка напою (%s)",
   "item.brewery.failed_drink_bottle": "Зіпсований напій",
   "item.brewery.book_of_brewery": "Броварна книга",
+
   "drinktype.brewery.beer": "Пиво",
   "drinktype.brewery.dark_beer": "Темне пиво",
   "drinktype.brewery.wheat_beer": "Пшеничне пиво",
@@ -27,29 +30,34 @@
   "drinktype.brewery.apple_mead": "Яблунева медовуха",
   "drinktype.brewery.vodka": "Горілка",
   "drinktype.brewery.cider": "Сидр",
-  "drinktype.brewery.apple_liquor": "Яблуневий лікьор",
+  "drinktype.brewery.apple_liquor": "Яблуневий лікер",
   "drinktype.brewery.rum": "Ром",
   "drinktype.brewery.chorus_brew": "Настоянка хорусу",
   "drinktype.brewery.tea": "Чай",
   "drinktype.brewery.green_tea": "Зелений чай",
   "drinktype.brewery.cherry_tea": "Вишневий чай",
+
   "text.brewery.quality": "Якість: %s",
   "text.brewery.cooked_for": "Зварено за: %s",
   "text.brewery.seconds": "%s секунд(и)",
   "text.brewery.minutes": "%s хвилин(и)",
-  "text.brewery.mc_days": "%s MC днів",
+  "text.brewery.mc_days": "%s Minecraft днів",
   "text.brewery.and": "і",
   "text.brewery.age": "Вік: %s",
   "text.brewery.stats": "%s Статистика: Алкоголь: %s, Якість: %s",
+
   "death.attack.brewery.alcohol_poisoning": "%s зсох через алкогольне отруєння",
+  
   "text.brewery.about.version": "Версія: ",
   "text.brewery.about.contributors": "Автори",
+
   "gamerule.brewery:aging_unloaded": "Старіння у вивантажених чанках",
   "gamerule.brewery:alcohol_value_multiplier": "Множник значення алкоголю",
   "gamerule.brewery:barrel_aging_multiplier": "Множник витримки діжки",
   "gamerule.brewery:cauldron_cooking_time_multiplier": "Множник варіння у казані",
   "gamerule.brewery:show_age": "Показувати вік напоїв",
   "gamerule.brewery:show_quality": "Показувати якість напоїв",
+
   "polydex_category.brewery.drink": "Напої броварні",
   "polydex.brewery.brewing_recipe": "Рецепт броварні",
   "polydex.brewery.ingredients": "Інгредієнти",
@@ -60,7 +68,7 @@
   "polydex.brewery.any_of": "Будь-який з:",
   "polydex.brewery.any_of_the_list": "[Будь-який зі списку (наведись)]",
   "polydex.brewery.cook_for": "Варити в казані протягом: %s",
-  "polydex.brewery.open_book": "Відкрита книга броварні",
+  "polydex.brewery.open_book": "Відкрити броварну книгу",
   "polydex.brewery.aging": "Витримка:",
   "polydex.brewery.recipes": "Рецепти:",
   "polydex.brewery.building_barrel": "Будування діжки",
@@ -68,8 +76,11 @@
   "polydex.brewery.building_barrel.fence": "Блоки огорожі",
   "polydex.brewery.building_barrel.stair": "Блоки сходів",
   "polydex.brewery.building_barrel.planks": "Блоки дощок",
+  
   "polydex.brewery.cooking_cauldron": "Варіння у казанку",
   "polydex.brewery.cooking_cauldron.text": "Покладіть необхідні інгредієнти в казан з водою і натисніть/клацніть паличкою, щоб почати готувати. Через певний час дістаньте його за допомогою пляшки. Ви можете отримати як готовий напій, так і суміш, яка потребує додаткової роботи.",
   "polydex.brewery.aging_with_barrel": "Витримка у діжках",
-  "polydex.brewery.aging_with_barrel.text": "Щоб почати процес витримки, помістіть підготовлену суміш у діжку відповідного типу і почекайте, поки вона витримується (це може зайняти деякий час). Тільки не тримайте її занадто довго, оскільки якість може погіршитися. Інформація про створення діжки на наступній сторінці."
+  "polydex.brewery.aging_with_barrel.text": "Щоб почати процес витримки, помістіть підготовлену суміш у діжку відповідного типу і почекайте, поки вона витримується (це може зайняти деякий час). Тільки не тримайте її занадто довго, оскільки якість може погіршитися. Інформація про створення діжки на наступній сторінці.",
+  "polydex.brewery.distillation": "Дистиляція у варильній стійці",
+  "polydex.brewery.distillation.text": "Деякі напої можуть потребувати дистиляції перед тим, як їх можна пити. Для цього потрібно використовувати варильну стійку, що працює на порошку Блейза, але без інгредієнта. Ви кладете напої в слоти для зілля та чекаєте."
 }
