@@ -2,6 +2,7 @@ package eu.pb4.brewery.block;
 
 import eu.pb4.brewery.block.entity.BrewBarrelSpigotBlockEntity;
 import eu.pb4.brewery.block.entity.BrewBarrelPartBlockEntity;
+import eu.pb4.brewery.other.Tuple;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

@@ -44,15 +44,15 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	implementation include('xyz.nucleoid:server-translations-api:3.0.1+26.1')
-	implementation 'eu.pb4:polymer-core:0.16.0-pre.2+26.1-rc-2'
-	implementation 'eu.pb4:polymer-virtual-entity:0.16.0-pre.2+26.1-rc-2'
-	implementation 'eu.pb4:polymer-resource-pack:0.16.0-pre.2+26.1-rc-2'
-	localRuntime 'eu.pb4:polymer-autohost:0.16.0-pre.2+26.1-rc-2'
-	implementation include("eu.pb4:sgui:2.0.0-beta.2+26.1")
-	implementation include("eu.pb4:placeholder-api:3.0.0-beta.2+26.1")
+	implementation include('xyz.nucleoid:server-translations-api:3.1.0+26.2')
+	implementation 'eu.pb4:polymer-core:0.17.0+26.2-rc-2'
+	implementation 'eu.pb4:polymer-virtual-entity:0.17.0+26.2-rc-2'
+	implementation 'eu.pb4:polymer-resource-pack:0.17.0+26.2-rc-2'
+	localRuntime 'eu.pb4:polymer-autohost:0.17.0+26.2-rc-2'
+	implementation include("eu.pb4:sgui:2.1.0+26.2")
+	implementation include("eu.pb4:placeholder-api:3.1.0-beta.1+26.2")
 
-	implementation include("me.lucko:fabric-permissions-api:0.7.0")
+	compileOnly("me.lucko:fabric-permissions-api:0.7.0")
 	implementation include("net.objecthunter:exp4j:0.4.8")
 
 

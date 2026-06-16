@@ -32,6 +32,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.scores.TeamColor;
 import org.jetbrains.annotations.Nullable;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 
@@ -79,7 +80,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
                     ComponentUtils.formatList(List.of(GenericModInfo.getIconBook()), Component.literal("\n")),
                     Component.empty(),
                     Component.empty().append(Component.translatable("item.brewery.book_of_brewery")
-                                    .setStyle(Style.EMPTY.withShadowColor(ARGB.scaleRGB(ChatFormatting.DARK_BLUE.getColor(), 0.6f) | 0xFF000000))
+                                    .setStyle(Style.EMPTY.withShadowColor(ARGB.scaleRGB(TeamColor.DARK_BLUE.textColor().getValue(), 0.6f) | 0xFF000000))
                                     .withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE, ChatFormatting.BLUE))
 
                             .append(Component.literal(" \uD83E\uDDEA").withStyle(ChatFormatting.DARK_RED)),
