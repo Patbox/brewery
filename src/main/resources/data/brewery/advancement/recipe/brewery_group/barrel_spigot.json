@@ -3,13 +3,13 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "brewery:barrel_spigot"
+        "recipes": "brewery:barrel_spigot"
       },
       "trigger": "minecraft:recipe_unlocked"
     },
     "has_the_recipe2": {
       "conditions": {
-        "recipe": "brewery:book_of_brewery"
+        "recipes": "brewery:book_of_brewery"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

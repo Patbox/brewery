@@ -39,15 +39,8 @@ import org.joml.Matrix4f;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 
 public final class BrewSpigotBlock extends HorizontalDirectionalBlock implements PolymerBlock, EntityBlock, BlockWithElementHolder {
-    private static final MapCodec<BrewSpigotBlock> CODEC = simpleCodec(BrewSpigotBlock::new);
-
     public BrewSpigotBlock(Properties settings) {
         super(settings);
-    }
-
-    @Override
-    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-        return CODEC;
     }
 
     @Override

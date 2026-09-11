@@ -7,10 +7,10 @@ import eu.pb4.brewery.other.FloatSelector;
 import eu.pb4.brewery.other.WrappedText;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.Identifier;
@@ -66,7 +66,7 @@ public record DrinkType(Looks looks,
             Codec.list(ConsumptionEffect.CODEC).optionalFieldOf("unfinished_brew_effects", new ArrayList<>()).forGetter(DrinkType::unfinishedEffects),
             DrinkInfo.CODEC.optionalFieldOf("book_information").forGetter(DrinkType::info),
             Codec.BOOL.optionalFieldOf("show_quality", true).forGetter(DrinkType::showQuality),
-            RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("required_heat_source").forGetter(DrinkType::heatSource)
+            RegistryCodecs.holderSet(Registries.BLOCK).optionalFieldOf("required_heat_source").forGetter(DrinkType::heatSource)
     ).apply(instance, DrinkType::new));
     public static MapCodec<DrinkType> CODEC_V3 = RecordCodecBuilder.mapCodec(instance -> instance.group(
             RecordCodecBuilder.<Looks>mapCodec(instance2 -> instance2.group(
@@ -90,7 +90,7 @@ public record DrinkType(Looks looks,
             Codec.list(ConsumptionEffect.CODEC).optionalFieldOf("unfinished_brew_effects", new ArrayList<>()).forGetter(DrinkType::unfinishedEffects),
             DrinkInfo.CODEC.optionalFieldOf("book_information").forGetter(DrinkType::info),
             Codec.BOOL.optionalFieldOf("show_quality", true).forGetter(DrinkType::showQuality),
-            RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("required_heat_source").forGetter(DrinkType::heatSource)
+            RegistryCodecs.holderSet(Registries.BLOCK).optionalFieldOf("required_heat_source").forGetter(DrinkType::heatSource)
     ).apply(instance, DrinkType::new));
 
     public static MapCodec<DrinkType> CODEC_V2 = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -115,7 +115,7 @@ public record DrinkType(Looks looks,
             Codec.list(ConsumptionEffect.CODEC).optionalFieldOf("unfinished_brew_effects", new ArrayList<>()).forGetter(DrinkType::unfinishedEffects),
             DrinkInfo.CODEC.optionalFieldOf("book_information").forGetter(DrinkType::info),
             Codec.BOOL.optionalFieldOf("show_quality", true).forGetter(DrinkType::showQuality),
-            RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("required_heat_source").forGetter(DrinkType::heatSource)
+            RegistryCodecs.holderSet(Registries.BLOCK).optionalFieldOf("required_heat_source").forGetter(DrinkType::heatSource)
     ).apply(instance, DrinkType::new));
 
     public static MapCodec<DrinkType> CODEC_V1 = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -140,7 +140,7 @@ public record DrinkType(Looks looks,
             Codec.list(ConsumptionEffect.CODEC).optionalFieldOf("unfinished_brew_effects", new ArrayList<>()).forGetter(DrinkType::unfinishedEffects),
             DrinkInfo.CODEC.optionalFieldOf("book_information").forGetter(DrinkType::info),
             Codec.BOOL.optionalFieldOf("show_quality", true).forGetter(DrinkType::showQuality),
-            RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("required_heat_source").forGetter(DrinkType::heatSource)
+            RegistryCodecs.holderSet(Registries.BLOCK).optionalFieldOf("required_heat_source").forGetter(DrinkType::heatSource)
     ).apply(instance, DrinkType::new));
     public static final Codec<DrinkType> CODEC = new MapCodec.MapCodecCodec<>(new MapCodec<>() {
         @Override

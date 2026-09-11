@@ -1,8 +1,7 @@
 plugins {
 	id 'net.fabricmc.fabric-loom' version '1.15.+'
 	id 'maven-publish'
-	id "com.modrinth.minotaur" version "2.+"
-	id 'com.matthewprenger.cursegradle' version '1.4.0'
+	id "me.modmuss50.mod-publish-plugin" version "2.2.0"
 }
 
 base {
@@ -17,7 +16,6 @@ repositories {
 	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more formation about repositories.
-	maven { url "https://maven.nucleoid.xyz" }
 	maven { url "https://maven.nucleoid.xyz" }
 	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 	maven {
@@ -44,13 +42,13 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	implementation include('xyz.nucleoid:server-translations-api:3.1.0+26.2')
-	implementation 'eu.pb4:polymer-core:0.17.0+26.2-rc-2'
-	implementation 'eu.pb4:polymer-virtual-entity:0.17.0+26.2-rc-2'
-	implementation 'eu.pb4:polymer-resource-pack:0.17.0+26.2-rc-2'
-	localRuntime 'eu.pb4:polymer-autohost:0.17.0+26.2-rc-2'
-	implementation include("eu.pb4:sgui:2.1.0+26.2")
-	implementation include("eu.pb4:placeholder-api:3.1.0-beta.1+26.2")
+	implementation include('xyz.nucleoid:server-translations-api:3.2.0+26.3')
+	implementation 'eu.pb4:polymer-core:0.18.0+26.3-rc-1'
+	implementation 'eu.pb4:polymer-virtual-entity:0.18.0+26.3-rc-1'
+	implementation 'eu.pb4:polymer-resource-pack:0.18.0+26.3-rc-1'
+	localRuntime 'eu.pb4:polymer-autohost:0.18.0+26.3-rc-1'
+	implementation include("eu.pb4:sgui:2.2.0+26.3")
+	implementation include("eu.pb4:placeholder-api:3.2.0+26.3")
 
 	compileOnly("me.lucko:fabric-permissions-api:0.7.0")
 	implementation include("net.objecthunter:exp4j:0.4.8")
@@ -111,53 +109,44 @@ publishing {
 	}
 }
 
-curseforge {
+
+publishMods {
+	changelog = System.getenv("CHANGELOG")
+	type = project.mod_version.contains("-") ? BETA : STABLE
+	file = jar.archiveFile
+	modLoaders.add("fabric")
+
 	if (System.getenv("CURSEFORGE")) {
-		apiKey = System.getenv("CURSEFORGE")
+		curseforge {
+			projectId = "681703"
+			accessToken = System.getenv("CURSEFORGE")
+			client = true
+			server = true
 
-		project {
-			id = "681703"
-			releaseType = "release"
-			changelog = System.getenv("CHANGELOG")
-			changelogType = "markdown"
-			addGameVersion((project.minecraft_version.contains("-") ? ((String) project.minecraft_version.split("-")[0] + "-snapshot") : project.minecraft_version))
-			addGameVersion "Fabric"
-			relations {
-				requiredDependency 'polymer'
+			minecraftVersions.add((project.minecraft_version.contains("-") ? ((String) project.minecraft_version.split("-")[0] + "-snapshot") : project.minecraft_version))
+			for (String a : project.mc_extra_supported.split(",")) {
+				if (!a.strip().isEmpty()) {
+					minecraftVersions.add(a.strip())
+				}
 			}
-			mainArtifact(jar.archiveFile)
 
-			afterEvaluate {
-				uploadTask.dependsOn("jar")
-			}
+			requires("polymer")
 		}
 	}
 
-	options {
-		forgeGradleIntegration = false
-	}
-	jar {
-		finalizedBy project.tasks.curseforge
-	}
-}
+	if (System.getenv("MODRINTH")) {
+		modrinth {
+			accessToken = System.getenv("MODRINTH")
+			projectId = 'nr7cSJlY'
 
-if (System.getenv("MODRINTH")) {
-	modrinth {
-		token = System.getenv("MODRINTH")
-		projectId = 'nr7cSJlY'// The ID of your modrinth project, slugs will not work.
-		versionNumber = "" + version // The version of the mod to upload.
-		versionType = "release"
-		uploadFile = jar // This links to a task that builds your mod jar and sets "uploadFile" to the mod jar.
-		gameVersions = [((String) project.minecraft_version)]
-		changelog = System.getenv("CHANGELOG")
-		dependencies {
-			required.project "polymer"
+			minecraftVersions.add(project.minecraft_version);
+			for (String a : project.mc_extra_supported.split(",")) {
+				if (!a.strip().isEmpty()) {
+					minecraftVersions.add(a.strip())
+				}
+			}
+
+			requires("polymer")
 		}
-
-		loaders = ["fabric"]
-	}
-
-	jar {
-		finalizedBy project.tasks.modrinth
 	}
 }

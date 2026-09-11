@@ -35,14 +35,8 @@ import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 
 public class BrewCauldronBlock extends BaseEntityBlock implements PolymerBlock {
     public static final TagKey<Item> START_CAULDRON_COOKING = TagKey.create(Registries.ITEM, BreweryInit.id("start_cauldron_cooking"));
-    private static final MapCodec<BrewCauldronBlock> CODEC = simpleCodec(BrewCauldronBlock::new);
     protected BrewCauldronBlock(Properties settings) {
         super(settings);
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
     public static boolean isValid(BlockPos pos, BlockState state, Level world) {

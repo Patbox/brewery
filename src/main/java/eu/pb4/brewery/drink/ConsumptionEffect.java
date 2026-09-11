@@ -10,9 +10,9 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryFixedCodec;
 import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -20,6 +20,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
@@ -439,7 +440,7 @@ public interface ConsumptionEffect {
                     double h = Mth.clamp(user.getY() + user.getRandom().nextDouble() - 0.5d, user.level().getMinY(), user.level().getMinY() + ((ServerLevel) user.level()).getLogicalHeight() - 1);
                     double j = user.getZ() + (user.getRandom().nextDouble() - 0.5D) * distance;
                     Vec3 vec3d = user.position();
-                    if (user.randomTeleport(g, h, j, true)) {
+                    if (user.randomTeleport(g, h, j, true, BlockTags.DANGEROUS_FOR_TELEPORTATION)) {
                         user.level().gameEvent(GameEvent.TELEPORT, vec3d, GameEvent.Context.of(user));
                         SoundEvent soundEvent = user instanceof Fox ? SoundEvents.FOX_TELEPORT : SoundEvents.CHORUS_FRUIT_TELEPORT;
                         user.level().playSound(null, d, e, f, soundEvent, SoundSource.PLAYERS, 1.0F, 1.0F);
@@ -515,7 +516,7 @@ public interface ConsumptionEffect {
 
                 if (user instanceof ServerPlayer player) {
                     //player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
-                    player.connection.send(new ClientboundExplodePacket(player.position().add(0, -99999, 0), 0, 0, Optional.of(vec), ParticleTypes.UNDERWATER, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY), WeightedList.of()));
+                    player.connection.send(new ClientboundExplodePacket(player.position().add(0, -99999, 0), 0, 0, Optional.of(vec), ParticleTypes.UNDERWATER, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY), WeightedList.of(), false));
                 }
             }
         }
