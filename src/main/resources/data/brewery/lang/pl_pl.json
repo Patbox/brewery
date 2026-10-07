@@ -11,6 +11,7 @@
   "container.brewery.cherry_barrel": "Wiśniowa beczka",
   "container.brewery.bamboo_barrel": "Bambusowa beczka",
   "container.brewery.pale_oak_barrel": "Bladodębowa beczka",
+  "container.brewery.poplar_barrel": "Topolowa beczka",
   "block.brewery.barrel_spigot": "Kran",
   "block.brewery.cauldron": "Kocioł do parzenia",
   "item.brewery.ingredient_mixture_specific": "Mieszanka składników (%s?)",
