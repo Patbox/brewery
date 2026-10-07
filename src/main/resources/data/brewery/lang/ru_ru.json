@@ -10,6 +10,9 @@
   "container.brewery.warped_barrel": "Искаженная бочка",
   "container.brewery.cherry_barrel": "Вишнёвая бочка",
   "container.brewery.bamboo_barrel": "Бамбуковая бочка",
+  "container.brewery.poplar_barrel": "Тополиная бочка",
+  "container.brewery.pale_oak_barrel": "Бочка из бледного дуба",
+
   "block.brewery.barrel_spigot": "Кран",
   "block.brewery.cauldron": "Пивоваренный котел",
   "item.brewery.ingredient_mixture_specific": "Смесь из ингредиентов (%s?)",
@@ -71,5 +74,7 @@
   "polydex.brewery.cooking_cauldron": "Готовка в котле",
   "polydex.brewery.cooking_cauldron.text": "Выкинь нужные ингридиенты в бочку и кликни палкой для старта готовки. После опредененного времени вычерпай все с помощью бутылки. Ты можешь получить Микстуру или готовый напиток.",
   "polydex.brewery.aging_with_barrel": "Выдержка в бочках",
-  "polydex.brewery.aging_with_barrel.text": "Чтобы начать выдержку положи Микстуру в нужную бочку. Просто не держи его слишком долго, а то качество упадет. Информация о постройке бочек на следуюйщей странице."
-}
+  "polydex.brewery.aging_with_barrel.text": "Чтобы начать выдержку положи Микстуру в нужную бочку. Просто не держи его слишком долго, а то качество упадет. Информация о постройке бочек на следуюйщей странице.",
+  "polydex.brewery.distillation": "Дистилляция",
+  "polydex.brewery.distillation.text": "Некоторые напитки перед употреблением требуют дистилляции. Для этого используйте зельеварку, заправленную огненным порошком, но без ингредиента.",
+ }

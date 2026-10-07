@@ -71,6 +71,7 @@ public class BrewBlocks {
         registerBarrel("cherry", Blocks.CHERRY_PLANKS, Blocks.CHERRY_STAIRS, Blocks.CHERRY_FENCE);
         registerBarrel("bamboo", Blocks.BAMBOO_PLANKS, Blocks.BAMBOO_STAIRS, Blocks.BAMBOO_FENCE);
         registerBarrel("pale_oak", Blocks.PALE_OAK_PLANKS, Blocks.PALE_OAK_STAIRS, Blocks.PALE_OAK_FENCE);
+        registerBarrel("poplar", Blocks.POPLAR_PLANKS, Blocks.POPLAR_STAIRS, Blocks.POPLAR_FENCE);
     }
 
     private static <T extends Block> T register(String path, Function<BlockBehaviour.Properties, T> block) {
